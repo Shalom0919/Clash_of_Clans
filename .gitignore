@@ -1,0 +1,28 @@
+# 忽略 CMake 生成的构建目录
+build/
+cmake-build-debug/
+
+# 忽略 Visual Studio 的临时文件
+.vs/
+*.user
+*.suo
+*.ipch
+*.aps
+
+# 忽略编译生成的二进制文件
+bin/
+obj/
+*.exe
+*.dll
+*.lib
+*.pdb
+*.a
+*.o
+
+# 忽略系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 如果需要上传整个引擎，注释掉下面这行
+cocos2d/
