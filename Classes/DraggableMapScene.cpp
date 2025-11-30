@@ -28,11 +28,16 @@ bool DraggableMapScene::init()
     _maxScale = 2.5f;
 
     // 初始化地图列表
-    _mapNames = { "202501.png", "202502.png", "202503.png", "202504.png",
-                 "202505.png", "202506.png", "202507.png", "202508.png" };
-    _currentMapName = "202507.png"; // 默认地图
+    _mapNames = { "map/Map1.png", "map/Map2.png", "map/Map3.png" };
+    _currentMapName = "map/Map1.png"; // 默认地图
 
     _isMapListVisible = false;
+
+    // 初始化每张地图的校准配置：scale, startPixel, tileSize
+    _mapConfigs.clear();
+    _mapConfigs["map/Map1.png"] = { 1.3f, Vec2(1406.0f, 2107.2f), 55.6f };
+    _mapConfigs["map/Map2.png"] = { 1.3f, Vec2(1403.0f, 2090.2f), 55.6f };
+    _mapConfigs["map/Map3.png"] = { 1.3f, Vec2(1401.0f, 2077.2f), 55.6f };
 
     setupMap();
     setupUI();
@@ -51,12 +56,35 @@ void DraggableMapScene::setupMap()
         this->addChild(_mapSprite, 0);
 
         // --------------------------------------------------------
-        // 【修改】这里传入小格子的尺寸！
+        // 传入小格子的尺寸！
         // 假设原本 100 是大格子，现在我们把大格子切成 3x3
-        // 那么小格子大约是 33.3f
         // --------------------------------------------------------
-        _gridMap = GridMap::create(mapSize, 33.3f);
+        _gridMap = GridMap::create(mapSize, 55.6f);
         _mapSprite->addChild(_gridMap, 999);
+
+        // 创建 GridMap 时使用该地图的配置（如存在）
+        float tile = 55.6f;
+        Vec2 startPixel = Vec2::ZERO;
+        float mapScale = _currentScale;
+        auto it = _mapConfigs.find(_currentMapName);
+        if (it != _mapConfigs.end()) {
+            tile = it->second.tileSize;
+            startPixel = it->second.startPixel;
+            mapScale = it->second.scale;
+        }
+
+        _currentScale = mapScale;
+        _mapSprite->setScale(_currentScale);
+
+        _gridMap = GridMap::create(mapSize, tile);
+        _mapSprite->addChild(_gridMap, 999);
+
+        if (_gridMap && startPixel != Vec2::ZERO) {
+            _gridMap->setStartPixel(startPixel);
+            _gridStartDefault = startPixel;
+        } else if (_gridMap) {
+            _gridStartDefault = _gridMap->getStartPixel();
+        }
 
         updateBoundary();
         createSampleMapElements();
@@ -78,12 +106,10 @@ void DraggableMapScene::setupMap()
 
 void DraggableMapScene::setupUI()
 {
-
     auto buildBtn = Button::create();
     buildBtn->setTitleText("Build");
     buildBtn->setTitleFontSize(40);
     buildBtn->setContentSize(Size(80, 40));
-    // 放在左下角
     buildBtn->setPosition(Vec2(1000, 1000));
     buildBtn->addClickEventListener([this](Ref* sender) {
         if (_isBuildingMode) {
@@ -119,6 +145,71 @@ void DraggableMapScene::setupUI()
     mapNameLabel->setTextColor(Color4B::GREEN);
     mapNameLabel->setName("mapNameLabel");
     this->addChild(mapNameLabel, 10);
+
+    // --- 添加微调 UI: 四个箭头按钮 + 重置 ---
+    Vec2 uiBase = Vec2(500, 400);
+    float btnSize = 40.0f;
+
+    auto makeArrowBtn = [this, btnSize](const std::string& title, const Vec2& pos, const std::function<void()>& cb) {
+        auto btn = ui::Button::create();
+        btn->setTitleText(title);
+        btn->setTitleFontSize(18);
+        btn->setContentSize(Size(btnSize, btnSize));
+        btn->setScale9Enabled(true);
+        btn->setPosition(pos);
+        btn->addClickEventListener([cb](Ref* sender) { cb(); });
+        this->addChild(btn, 30);
+        return btn;
+    };
+
+    // 左
+    makeArrowBtn("←", uiBase + Vec2(-50, 0), [this]() {
+        if (!_gridMap) return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(-1, 0);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+    });
+
+    // 右
+    makeArrowBtn("→", uiBase + Vec2(50, 0), [this]() {
+        if (!_gridMap) return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(1, 0);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+    });
+
+    // 上
+    makeArrowBtn("↑", uiBase + Vec2(0, 50), [this]() {
+        if (!_gridMap) return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(0, 1);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+    });
+
+    // 下
+    makeArrowBtn("↓", uiBase + Vec2(0, -50), [this]() {
+        if (!_gridMap) return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(0, -1);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+    });
+
+    // 重置按钮
+    makeArrowBtn("Reset", uiBase + Vec2(0, -110), [this]() {
+        if (!_gridMap) return;
+        _gridMap->setStartPixel(_gridStartDefault);
+        _gridMap->showWholeGrid(true);
+        Vec2 p = _gridMap->getStartPixel();
+        CCLOG("Grid reset to default: %.2f, %.2f", p.x, p.y);
+    });
 }
 
 void DraggableMapScene::createMapList()
@@ -185,6 +276,20 @@ void DraggableMapScene::switchMap(const std::string& mapName)
 {
     if (mapName == _currentMapName) return;
 
+    /*
+    如果在建造模式点击了 “切换地图”：
+    switchMap 被调用。
+    this->removeChild(_mapSprite) 被执行。
+    _mapSprite 被移除，它的所有子节点（包括 _ghostSprite）都会被自动 Cleanup 并释放内存。
+    此时 _ghostSprite 指向的对象已经死了（内存变成了 0xDDDDDDDD）。
+    但是！ 你并没有把 _isBuildingMode 设为 false，也没有把 _ghostSprite 指针置为 nullptr。
+    当你再次移动鼠标 (onTouchMoved) 或者点击屏幕 (onTouchEnded) 时，代码检查 if (_ghostSprite)，
+    发现指针不为空（还存着旧地址），于是尝试操作它 -> 崩溃。
+    */
+    if (_isBuildingMode) {
+        cancelPlacing();
+    }
+
     // ... (保存状态、移除旧地图代码保持不变) ...
     saveMapElementsState();
 
@@ -208,8 +313,32 @@ void DraggableMapScene::switchMap(const std::string& mapName)
         // 【新增代码】给新地图添加网格
         // --------------------------------------------------------
         auto mapSize = _mapSprite->getContentSize();
-        _gridMap = GridMap::create(mapSize, 100.0f);
+        _gridMap = GridMap::create(mapSize, 55.6f);
         _mapSprite->addChild(_gridMap, 999);
+
+        // 使用每张地图的配置（如果存在）
+        float tile = 55.6f;
+        Vec2 startPixel = Vec2::ZERO;
+        float mapScale = _currentScale;
+        auto it = _mapConfigs.find(_currentMapName);
+        if (it != _mapConfigs.end()) {
+            tile = it->second.tileSize;
+            startPixel = it->second.startPixel;
+            mapScale = it->second.scale;
+        }
+
+        _currentScale = mapScale;
+        _mapSprite->setScale(_currentScale);
+
+        _gridMap = GridMap::create(mapSize, tile);
+        _mapSprite->addChild(_gridMap, 999);
+
+        if (_gridMap && startPixel != Vec2::ZERO) {
+            _gridMap->setStartPixel(startPixel);
+            _gridStartDefault = startPixel;
+        } else if (_gridMap) {
+            _gridStartDefault = _gridMap->getStartPixel();
+        }
         // --------------------------------------------------------
 
         // 更新边界
@@ -230,7 +359,7 @@ void DraggableMapScene::switchMap(const std::string& mapName)
         CCLOG("Error: Failed to load new map %s", mapName.c_str());
 
         // 恢复旧地图名称
-        _currentMapName = "202507.png"; // 回退到默认地图
+        _currentMapName = "Map7.png"; // 回退到默认地图
         _mapSprite = Sprite::create(_currentMapName);
         if (_mapSprite) {
             _mapSprite->setPosition(_visibleSize.width / 2, _visibleSize.height / 2);
@@ -596,7 +725,7 @@ void DraggableMapScene::startPlacingBuilding()
 
     _isBuildingMode = true;
 
-    // 1. 【新增】开启全屏网格显示
+    // 1. 开启全屏网格显示
     _gridMap->showWholeGrid(true);
 
     // 1. 创建幻影 (Tower.png)

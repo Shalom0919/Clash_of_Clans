@@ -814,6 +814,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\DraggableMapScene.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Building.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\MapConfigManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\main.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\resource.h" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\AppDelegate.cpp" />
@@ -821,21 +822,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\DraggableMapScene.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Building.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\MapConfigManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\main.cpp" />
     <ResourceCompile Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\game.rc" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202501.png" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202502.png" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202503.png" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202504.png" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202505.png" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202506.png" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202507.png" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\202508.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\CloseNormal.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\CloseSelected.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\HelloWorld.png" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\Tower.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\fonts\Marker Felt.ttf" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\fonts\arial.ttf" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\map\Map1.png" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\map\Map2.png" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\map\Map3.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\res\.gitkeep" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\precheader.cpp" />
   </ItemGroup>

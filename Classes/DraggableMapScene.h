@@ -4,6 +4,8 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 #include "GridMap.h" // <--- 1. 引入头文件
+#include <unordered_map>
+#include <string>
 
 class DraggableMapScene : public cocos2d::Scene
 {
@@ -20,6 +22,16 @@ private:
     cocos2d::DrawNode* _baseNode; // 用于画当前鼠标下的绿色底座
 
     GridMap* _gridMap; // <--- 2. 新增网格对象指针
+    cocos2d::Vec2 _gridStartDefault; // 存储网格默认起点，供重置使用
+
+    // 每张地图的校准配置
+    struct MapConfig {
+        float scale; // 显示缩放/压缩系数
+        cocos2d::Vec2 startPixel; // 对齐坐标（地图本地像素）
+        float tileSize; // 小格子尺寸（像素）
+    };
+
+    std::unordered_map<std::string, MapConfig> _mapConfigs;
 
     // --- 建造模式相关 ---
     bool _isBuildingMode;           // 是否处于建造状态
