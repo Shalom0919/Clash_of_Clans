@@ -64,6 +64,7 @@ list(APPEND GAME_SOURCE
      Classes/Managers/ResourceManager.cpp
      Classes/HeroManager.cpp
      Classes/Hero.cpp
+     CLasses/MapConfigManager.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -75,6 +76,7 @@ list(APPEND GAME_HEADER
      Classes/HeroManager.h
      Classes/Hero.h
      Classes/BuildingData.h
+     CLasses/MapConfigManager.h
      )
 
 if(ANDROID)

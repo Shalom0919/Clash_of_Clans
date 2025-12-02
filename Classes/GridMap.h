@@ -14,20 +14,33 @@ class GridMap : public cocos2d::Node
 {
 private:
     cocos2d::Size _mapSize;
-    float _tileSize; // 现在这代表【小方格】的尺寸
+    float _tileSize; // 小方格的尺寸
     cocos2d::DrawNode* _gridNode;
     cocos2d::DrawNode* _baseNode;
 
-    // 冲突检测地图：true = 有建筑/障碍，false = 空地
+    // 冲突检测：true = 有建筑/障碍，false = 空地
     std::vector<std::vector<bool>> _collisionMap;
     int _gridWidth;  // 网格横向数量
     int _gridHeight; // 网格纵向数量
 
+    // 网格起始点（在地图本地坐标系中，表示 grid (0,0) 的中心像素）
+    cocos2d::Vec2 _startPixel;
+    bool _gridVisible;
+
 public:
+    enum Corner { TOP_LEFT = 0, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER };
+
     static GridMap* create(const cocos2d::Size& mapSize, float tileSize);
     virtual bool init(const cocos2d::Size& mapSize, float tileSize);
 
 
+
+    // 设置网格起始点（直接以像素位置指定）
+    void setStartPixel(const cocos2d::Vec2& pixel);
+    cocos2d::Vec2 getStartPixel() const;
+
+    // 将起始点设置为贴图的某一角（方便对齐）
+    void setStartCorner(Corner corner);
 
     // 核心坐标转换（基于 ISO 45度）
     cocos2d::Vec2 getGridPosition(cocos2d::Vec2 worldPosition);

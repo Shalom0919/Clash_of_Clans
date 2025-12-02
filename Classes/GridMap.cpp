@@ -33,11 +33,15 @@ bool GridMap::init(const Size& mapSize, float tileSize)
     this->addChild(_baseNode, 2);
 
     // 初始化冲突地图
-    _gridWidth = mapSize.width / tileSize; // 实际上应该根据地图形状细算，这里简化处理
-    _gridHeight = mapSize.height / tileSize * 2; // ISO地图Y轴比较特殊，预留多一点空间防止越界
+    _gridWidth = (int)round(mapSize.width / tileSize); // 实际上应该根据地图形状细算，这里简化处理
+    _gridHeight = (int)round(mapSize.height / tileSize * 2); // ISO地图Y轴比较特殊，预留多一点空间防止越界
 
     // 初始化二维数组，全部为 false (空)
     _collisionMap.resize(_gridWidth, std::vector<bool>(_gridHeight, false));
+
+    // 默认起始点位于地图中心上方（旧逻辑兼容）
+    _startPixel = Vec2(_mapSize.width / 2.0f, _mapSize.height + 30.0f - _tileSize * 0.5f);
+    _gridVisible = false;
 
     return true;
 }
@@ -45,12 +49,11 @@ bool GridMap::init(const Size& mapSize, float tileSize)
 Vec2 GridMap::getPositionFromGrid(Vec2 gridPos)
 {
     float halfW = _tileSize / 2.0f;
-    float halfH = halfW * 0.7f;
+    float halfH = halfW * 0.75f;
 
-    // 标准 ISO 公式 (上个回答修正后的版本)
-    // 加上偏移量让 (0,0) 在地图上方中心
-    float x = (gridPos.x - gridPos.y) * halfW + _mapSize.width / 2.0f;
-    float y = _mapSize.height - (gridPos.x + gridPos.y) * halfH - halfH; // 这里的微调视具体贴图而定
+    // 使用 _startPixel 作为 (0,0) 对应的格子中心的像素位置偏移
+    float x = (gridPos.x - gridPos.y) * halfW + _startPixel.x;
+    float y = _startPixel.y - (gridPos.x + gridPos.y) * halfH;
 
     return Vec2(x, y);
 }
@@ -65,11 +68,10 @@ Vec2 GridMap::getGridPosition(Vec2 worldPosition)
     //       worldPosition.x, worldPosition.y, localPos.x, localPos.y);
 
     float halfW = _tileSize / 2.0f;
-    float halfH = halfW * 0.7f;
+    float halfH = halfW * 0.75f;
 
-    // 计算相对于地图中心的偏移
-    float dx = localPos.x - _mapSize.width / 2.0f;
-    float dy = _mapSize.height - localPos.y - halfH;
+    float dx = localPos.x - _startPixel.x;
+    float dy = _startPixel.y - localPos.y;
 
     // ISO 坐标转换公式
     float x = (dy / halfH + dx / halfW) / 2.0f;
@@ -93,6 +95,7 @@ Vec2 GridMap::getGridPosition(Vec2 worldPosition)
 
 void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSize)
 {
+    _gridVisible = visible;
     _gridNode->clear();
     if (!visible) return;
 
@@ -104,15 +107,14 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
     }
 
     // 颜色配置
-    Color4F smallGridColor = Color4F(0.3f, 0.3f, 0.3f, 0.1f); // 小格子底色
-    Color4F smallGridLineColor = Color4F(0.5f, 0.5f, 0.5f, 0.3f); // 小格子线
-    Color4F bigGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.6f); // 大格子线
+    Color4F smallGridColor = Color4F(1.0f, 1.0f, 1.0f, 0.03f); // 小格子底色：极淡，几乎看不见，只作为底纹
+    Color4F smallGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.15f); // 小格子线：灰色，半透明
+    Color4F bigGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.35f); // 大格子线：亮白色，半透明
 
     // 基础尺寸计算
     float halfW = _tileSize / 2.0f;
-    float halfH = halfW * 0.7f;
+    float halfH = halfW * 0.79f;
 
-    // 使用 init 里算的 _gridWidth/_gridHeight
     int maxX = _gridWidth;
     int maxY = _gridHeight;
 
@@ -140,13 +142,12 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
     // ===========================================================
     for (int x = 0; x < maxX; x += bigGridStep) {
         for (int y = 0; y < maxY; y += bigGridStep) {
-            // 计算当前大块的宽高
+
             int currentW = (x + bigGridStep > maxX) ? (maxX - x) : bigGridStep;
             int currentH = (y + bigGridStep > maxY) ? (maxY - y) : bigGridStep;
 
             if (currentW <= 0 || currentH <= 0) continue;
 
-            // 计算四个顶点
             Vec2 topGridCenter = getPositionFromGrid(Vec2(x, y));
             Vec2 rightGridCenter = getPositionFromGrid(Vec2(x + currentW - 1, y));
             Vec2 bottomGridCenter = getPositionFromGrid(Vec2(x + currentW - 1, y + currentH - 1));
@@ -158,20 +159,7 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
             p[2] = Vec2(bottomGridCenter.x, bottomGridCenter.y - halfH);
             p[3] = Vec2(leftGridCenter.x - halfW, leftGridCenter.y);
 
-            // 画大格子边框
             _gridNode->drawPoly(p, 4, true, bigGridLineColor);
-        }
-    }
-
-    // 如果当前有建筑尺寸，在屏幕左上角显示提示
-    if (currentBuildingSize.width > 0 && currentBuildingSize.height > 0) {
-        std::string sizeText = StringUtils::format("Current: %dx%d",
-            (int)currentBuildingSize.width, (int)currentBuildingSize.height);
-
-        // 移除旧的提示
-        auto oldLabel = _gridNode->getChildByName("sizeHint");
-        if (oldLabel) {
-            oldLabel->removeFromParent();
         }
 
         // 创建新的提示
@@ -188,15 +176,13 @@ void GridMap::updateBuildingBase(Vec2 gridPos, Size size, bool isValid)
     _baseNode->clear();
 
     float halfW = _tileSize / 2.0f;
-    float halfH = halfW * 0.7f;
+    float halfH = halfW * 0.75f;
 
-    // 获取四个角格子的中心点
     Vec2 topGridCenter = getPositionFromGrid(gridPos);
     Vec2 rightGridCenter = getPositionFromGrid(gridPos + Vec2(size.width - 1, 0));
     Vec2 bottomGridCenter = getPositionFromGrid(gridPos + Vec2(size.width - 1, size.height - 1));
     Vec2 leftGridCenter = getPositionFromGrid(gridPos + Vec2(0, size.height - 1));
 
-    // 向外延伸半个格子的距离以包裹边缘
     Vec2 p[4];
     p[0] = Vec2(topGridCenter.x, topGridCenter.y + halfH);
     p[1] = Vec2(rightGridCenter.x + halfW, rightGridCenter.y);
@@ -207,6 +193,8 @@ void GridMap::updateBuildingBase(Vec2 gridPos, Size size, bool isValid)
     Color4F color;
     Color4F borderColor;
 
+    Color4F color = isValid ? Color4F(0.0f, 1.0f, 0.0f, 0.5f) : Color4F(1.0f, 0.0f, 0.0f, 0.5f);
+    Color4F borderColor = isValid ? Color4F::GREEN : Color4F::RED;
     if (isValid) {
         color = Color4F(0.0f, 1.0f, 0.0f, 0.3f); // 绿色，更透明
         borderColor = Color4F(0.0f, 1.0f, 0.0f, 0.8f); // 绿色边框
@@ -246,21 +234,18 @@ bool GridMap::checkArea(Vec2 startGridPos, Size size)
     int w = (int)size.width;
     int h = (int)size.height;
 
-    // 越界检查
     if (startX < 0 || startY < 0 || startX + w > _gridWidth || startY + h > _gridHeight) {
         return false;
     }
 
-    // 遍历区域内所有小方格
     for (int x = startX; x < startX + w; x++) {
         for (int y = startY; y < startY + h; y++) {
-            // 如果任何一个格子是 true (被占用)，则返回 false (不可造)
             if (_collisionMap[x][y]) {
                 return false;
             }
         }
     }
-    return true; // 所有格子都空闲
+    return true;
 }
 
 void GridMap::markArea(Vec2 startGridPos, Size size, bool occupied)
@@ -277,4 +262,45 @@ void GridMap::markArea(Vec2 startGridPos, Size size, bool occupied)
             _collisionMap[x][y] = occupied;
         }
     }
+}
+
+// 新增：设置起始像素并提供角对齐接口
+void GridMap::setStartPixel(const Vec2& pixel)
+{
+    _startPixel = pixel;
+    if (_gridVisible) showWholeGrid(true); // 重新绘制
+}
+
+Vec2 GridMap::getStartPixel() const
+{
+    return _startPixel;
+}
+
+void GridMap::setStartCorner(GridMap::Corner corner)
+{
+    // 计算基于 corner 的 startPixel 值
+    Vec2 p;
+    switch (corner) {
+    case TOP_LEFT:
+        p = Vec2(0 + _tileSize / 2.0f, _mapSize.height - _tileSize / 2.0f);
+        break;
+    case TOP_RIGHT:
+        p = Vec2(_mapSize.width - _tileSize / 2.0f, _mapSize.height - _tileSize / 2.0f);
+        break;
+    case BOTTOM_LEFT:
+        p = Vec2(0 + _tileSize / 2.0f, 0 + _tileSize / 2.0f);
+        break;
+    case BOTTOM_RIGHT:
+        p = Vec2(_mapSize.width - _tileSize / 2.0f, 0 + _tileSize / 2.0f);
+        break;
+    case CENTER:
+    default:
+        p = Vec2(_mapSize.width / 2.0f, _mapSize.height / 2.0f);
+        break;
+    }
+
+    // 由于我们的 ISO Y 轴换算期望 start 在上方中心，做一些微调
+    p.y += _tileSize * 0.5f;
+
+    setStartPixel(p);
 }
