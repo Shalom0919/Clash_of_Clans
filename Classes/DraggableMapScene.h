@@ -1,23 +1,14 @@
-#pragma once
-/****************************************************************
- * Project Name:  Clash_of_Clans
- * File Name:     Building.h
- * File Function:
- * Author:        ÁõÏà³É
- * Update Date:   2025/12/2
- * License:       MIT License
- ****************************************************************/
-#ifndef __DRAGGABLE_MAP_SCENE_H__
+ï»¿#ifndef __DRAGGABLE_MAP_SCENE_H__
 #define __DRAGGABLE_MAP_SCENE_H__
 
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
-#include "GridMap.h" // <--- 1. ÒıÈëÍ·ÎÄ¼ş
-#include <unordered_map>
-#include <string>
 #include "GridMap.h"
 #include "HeroManager.h"
 #include "BuildingData.h"
+#include <unordered_map>
+#include <string>
+#include <vector>
 
 class DraggableMapScene : public cocos2d::Scene
 {
@@ -25,49 +16,18 @@ public:
     static cocos2d::Scene* createScene();
     virtual bool init() override;
 
-    // É¾³ıÄ¬ÈÏ¹¹Ôìº¯Êı»òÏÔÊ½ÉùÃ÷
     DraggableMapScene() = default;
     ~DraggableMapScene() = default;
 
     CREATE_FUNC(DraggableMapScene);
-    void showWholeGrid(bool visible);
 
 private:
-    cocos2d::Size _mapSize;
-    float _tileSize;
-    cocos2d::DrawNode* _gridNode; // ÓÃÓÚ»­È«ÆÁµ­Íø¸ñ
-    cocos2d::DrawNode* _baseNode; // ÓÃÓÚ»­µ±Ç°Êó±êÏÂµÄÂÌÉ«µ××ù
-
-    GridMap* _gridMap; // <--- 2. ĞÂÔöÍø¸ñ¶ÔÏóÖ¸Õë
-    cocos2d::Vec2 _gridStartDefault; // ´æ´¢Íø¸ñÄ¬ÈÏÆğµã£¬¹©ÖØÖÃÊ¹ÓÃ
-
-    // Ã¿ÕÅµØÍ¼µÄĞ£×¼ÅäÖÃ
     struct MapConfig {
-        float scale; // ÏÔÊ¾Ëõ·Å/Ñ¹ËõÏµÊı
-        cocos2d::Vec2 startPixel; // ¶ÔÆë×ø±ê£¨µØÍ¼±¾µØÏñËØ£©
-        float tileSize; // Ğ¡¸ñ×Ó³ß´ç£¨ÏñËØ£©
+        float scale;
+        cocos2d::Vec2 startPixel;
+        float tileSize;
     };
 
-    std::unordered_map<std::string, MapConfig> _mapConfigs;
-
-    // --- ½¨ÔìÄ£Ê½Ïà¹Ø ---
-    bool _isBuildingMode;           // ÊÇ·ñ´¦ÓÚ½¨Ôì×´Ì¬
-    cocos2d::Sprite* _ghostSprite;  // ¸úËæÊó±êµÄ°ëÍ¸Ã÷½¨Öş
-
-    // ¿ªÊ¼½¨Ôì£¨µã»÷UI°´Å¥´¥·¢£©
-    void startPlacingBuilding();
-    // È·ÈÏ½¨Ôì£¨µã»÷µØÍ¼´¥·¢£©
-    void placeBuilding(cocos2d::Vec2 gridPos);
-    // È¡Ïû½¨Ôì
-    void cancelPlacing();
-    // ½áÊø½¨Ôì£¨Í³Ò»µÄÍË³ö½¨ÔìÄ£Ê½½Ó¿Ú£©
-    void endPlacing();
-
-    cocos2d::Vec2 _lastTouchPos;
-    cocos2d::Sprite* _mapSprite;
-    cocos2d::Vec2 _velocity;
-    cocos2d::Rect _mapBoundary;
-    // »ù±¾³ÉÔ±±äÁ¿ÉùÃ÷
     cocos2d::Size _visibleSize;
     float _currentScale;
     float _minScale;
@@ -77,15 +37,14 @@ private:
     GridMap* _gridMap;
     cocos2d::Rect _mapBoundary;
     cocos2d::Vec2 _lastTouchPos;
-    cocos2d::Vec2 _dragStartPos;    // ÍÏ¶¯ÆğÊ¼Î»ÖÃ
+    cocos2d::Vec2 _dragStartPos;
+    cocos2d::Vec2 _gridStartDefault;
 
-    // ½¨ÔìÄ£Ê½Ïà¹Ø
     bool _isBuildingMode;
-    bool _isDraggingBuilding;       // ÊÇ·ñÕıÔÚÍÏ¶¯½¨Öş
+    bool _isDraggingBuilding;
     cocos2d::Sprite* _ghostSprite;
     BuildingData _selectedBuilding;
 
-    // UIÔªËØ
     cocos2d::ui::Button* _buildButton;
     cocos2d::ui::Button* _mapButton;
     cocos2d::ui::ListView* _buildingListUI;
@@ -93,30 +52,22 @@ private:
     bool _isBuildingListVisible;
     bool _isMapListVisible;
 
-    // Ó¢ĞÛ¹ÜÀíÆ÷
     HeroManager* _heroManager;
 
-    // Êı¾İ
     std::string _currentMapName;
     std::vector<std::string> _mapNames;
     std::vector<BuildingData> _buildingList;
+    std::unordered_map<std::string, MapConfig> _mapConfigs;
 
-    // µØÍ¼ÔªËØ
     struct MapElement {
         cocos2d::Node* node;
         cocos2d::Vec2 localPosition;
     };
     std::vector<MapElement> _mapElements;
 
-    // ==== ĞÂÔöµÄ¸¨Öúº¯ÊıÉùÃ÷ ====
-
-    // ÏÔÊ¾½¨Öş·ÅÖÃÌáÊ¾
     void showBuildingHint(const std::string& hint);
-
-    // ¼ÆËã½¨ÖşÎ»ÖÃ
     cocos2d::Vec2 calculateBuildingPosition(const cocos2d::Vec2& gridPos);
 
-    // ³õÊ¼»¯·½·¨
     void setupMap();
     void setupUI();
     void setupTouchListener();
@@ -125,19 +76,16 @@ private:
     void createBuildingSelection();
     void createMapList();
 
-    // ´¥ÃşÊÂ¼ş
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchCancelled(cocos2d::Touch* touch, cocos2d::Event* event);
 
-    // ½¨ÔìÏµÍ³
     void startPlacingBuilding(const BuildingData& building);
     void placeBuilding(cocos2d::Vec2 gridPos);
     void cancelPlacing();
     void endPlacing();
 
-    // UI½»»¥
     void toggleBuildingSelection();
     void onBuildingItemClicked(cocos2d::Ref* sender, const BuildingData& building);
     void toggleMapList();
@@ -145,13 +93,11 @@ private:
     void onMapItemClicked(cocos2d::Ref* sender);
     void switchMap(const std::string& mapName);
 
-    // µØÍ¼²Ù×÷
     void moveMap(const cocos2d::Vec2& delta);
     void ensureMapInBoundary();
     void zoomMap(float scaleFactor, const cocos2d::Vec2& pivotPoint = cocos2d::Vec2::ZERO);
     void updateBoundary();
 
-    // µØÍ¼ÔªËØ¹ÜÀí
     void saveMapElementsState();
     void restoreMapElementsState();
     void createSampleMapElements();

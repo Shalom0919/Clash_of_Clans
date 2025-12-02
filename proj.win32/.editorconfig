@@ -1,0 +1,12 @@
+# 顶层配置文件
+root = true
+
+# 对所有文件有效
+[*]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
+
+# 针对 C++ 源代码文件（可选，明确指定）
+[*.{cpp,h,hpp,c,cc}]
+charset = utf-8-bom

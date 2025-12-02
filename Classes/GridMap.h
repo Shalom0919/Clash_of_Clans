@@ -1,12 +1,5 @@
-#pragma once
-/****************************************************************
- * Project Name:  Clash_of_Clans
- * File Name:     Building.h
- * File Function:
- * Author:        ÕÔ³çÖÎ
- * Update Date:   2025/11/29
- * License:       MIT License
- ****************************************************************/
+ï»¿#pragma once
+
 #include "cocos2d.h"
 #include <vector>
 
@@ -14,16 +7,14 @@ class GridMap : public cocos2d::Node
 {
 private:
     cocos2d::Size _mapSize;
-    float _tileSize; // Ğ¡·½¸ñµÄ³ß´ç
+    float _tileSize;
     cocos2d::DrawNode* _gridNode;
     cocos2d::DrawNode* _baseNode;
 
-    // ³åÍ»¼ì²â£ºtrue = ÓĞ½¨Öş/ÕÏ°­£¬false = ¿ÕµØ
     std::vector<std::vector<bool>> _collisionMap;
-    int _gridWidth;  // Íø¸ñºáÏòÊıÁ¿
-    int _gridHeight; // Íø¸ñ×İÏòÊıÁ¿
+    int _gridWidth;
+    int _gridHeight;
 
-    // Íø¸ñÆğÊ¼µã£¨ÔÚµØÍ¼±¾µØ×ø±êÏµÖĞ£¬±íÊ¾ grid (0,0) µÄÖĞĞÄÏñËØ£©
     cocos2d::Vec2 _startPixel;
     bool _gridVisible;
 
@@ -33,30 +24,17 @@ public:
     static GridMap* create(const cocos2d::Size& mapSize, float tileSize);
     virtual bool init(const cocos2d::Size& mapSize, float tileSize);
 
-
-
-    // ÉèÖÃÍø¸ñÆğÊ¼µã£¨Ö±½ÓÒÔÏñËØÎ»ÖÃÖ¸¶¨£©
     void setStartPixel(const cocos2d::Vec2& pixel);
     cocos2d::Vec2 getStartPixel() const;
-
-    // ½«ÆğÊ¼µãÉèÖÃÎªÌùÍ¼µÄÄ³Ò»½Ç£¨·½±ã¶ÔÆë£©
     void setStartCorner(Corner corner);
 
-    // ºËĞÄ×ø±ê×ª»»£¨»ùÓÚ ISO 45¶È£©
     cocos2d::Vec2 getGridPosition(cocos2d::Vec2 worldPosition);
     cocos2d::Vec2 getPositionFromGrid(cocos2d::Vec2 gridPos);
 
-    // ¡¾Éı¼¶¡¿Ö§³Ö´«Èë½¨Öş³ß´ç (width x height)
-    // gridPos: ½¨Öş×óÉÏ½Ç£¨ÆäÊµÊÇISOµÄTop½Ç£©ËùÔÚµÄ¸ñ×Ó
-    // size: ½¨ÖşÕ¼¾İ¶àÉÙ¸öĞ¡¸ñ×Ó£¬ÀıÈç Size(3, 3)
     void updateBuildingBase(cocos2d::Vec2 gridPos, cocos2d::Size size, bool isValid);
-
     void hideBuildingBase();
 
-    // ¡¾ĞÂÔö¡¿³åÍ»¼ì²â API
-    // ¼ì²éÕâ¸öÇøÓòÊÇ·ñ¿ÉÒÔ½¨Ôì
     bool checkArea(cocos2d::Vec2 startGridPos, cocos2d::Size size);
     void showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSize = cocos2d::Size::ZERO);
-    // ±ê¼ÇÕâ¸öÇøÓò±»Õ¼ÓÃ
     void markArea(cocos2d::Vec2 startGridPos, cocos2d::Size size, bool occupied);
 };

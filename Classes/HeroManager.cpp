@@ -1,8 +1,8 @@
-/****************************************************************
+ï»¿/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     Building.h
  * File Function:
- * Author:        ÁõÏà³É
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/2
  * License:       MIT License
  ****************************************************************/
@@ -34,10 +34,10 @@ bool HeroManager::init()
     _isHeroListVisible = false;
     _selectedHero = nullptr;
 
-    // ¼ÓÔØ¾«ÁéÖ¡»º´æ
+    // åŠ è½½ç²¾çµå¸§ç¼“å­˜
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile("archer/archer.plist", "archer/archer.png");
 
-    // ¼ÓÔØÓ¢ĞÛÊı¾İ
+    // åŠ è½½è‹±é›„æ•°æ®
     loadHeroData();
 
     return true;
@@ -45,13 +45,13 @@ bool HeroManager::init()
 
 void HeroManager::loadHeroData()
 {
-    // ¿ÉÓÃµÄÓ¢ĞÛ - ÏÖÔÚÖ»ÓĞÒ»¸öarcherÓ¢ĞÛ
+    // å¯ç”¨çš„è‹±é›„ - ç°åœ¨åªæœ‰ä¸€ä¸ªarcherè‹±é›„
     _availableHeroes = {
-        "archer"  // Ö»ÏÔÊ¾Ò»¸öarcherÓ¢ĞÛÑ¡Ïî
+        "archer"  // åªæ˜¾ç¤ºä¸€ä¸ªarcherè‹±é›„é€‰é¡¹
 
     };
 
-    // ¼ÓÔØ¾«ÁéÖ¡»º´æ
+    // åŠ è½½ç²¾çµå¸§ç¼“å­˜
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile("archer/archer.plist", "archer/archer.png");
 }
 
@@ -59,7 +59,7 @@ void HeroManager::setupHeroUI(cocos2d::Node* parent, const cocos2d::Size& visibl
 {
     _visibleSize = visibleSize;
 
-    // Ó¢ĞÛÑ¡Ôñ°´Å¥ - Ôö´ó³ß´ç
+    // è‹±é›„é€‰æ‹©æŒ‰é’® - å¢å¤§å°ºå¯¸
     _heroButton = Button::create();
     _heroButton->setTitleText("Hero");
     _heroButton->setTitleFontSize(24);
@@ -68,14 +68,14 @@ void HeroManager::setupHeroUI(cocos2d::Node* parent, const cocos2d::Size& visibl
     _heroButton->addClickEventListener(CC_CALLBACK_1(HeroManager::onHeroButtonClicked, this));
     parent->addChild(_heroButton, 10);
 
-    // ´´½¨Ó¢ĞÛÁĞ±í
+    // åˆ›å»ºè‹±é›„åˆ—è¡¨
     createHeroList();
 }
 
 void HeroManager::createHeroList()
 {
     _heroList = ListView::create();
-    _heroList->setContentSize(Size(200, 100)); // ¼õĞ¡¸ß¶È£¬ÒòÎªÖ»ÓĞÒ»¸öÓ¢ĞÛ
+    _heroList->setContentSize(Size(200, 100)); // å‡å°é«˜åº¦ï¼Œå› ä¸ºåªæœ‰ä¸€ä¸ªè‹±é›„
     _heroList->setPosition(Vec2(_visibleSize.width - 210, _visibleSize.height - 220));
     _heroList->setBackGroundColor(Color3B(80, 80, 80));
     _heroList->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
@@ -89,29 +89,29 @@ void HeroManager::createHeroList()
         item->setContentSize(Size(180, 60));
         item->setTouchEnabled(true);
 
-        // ´´½¨Ó¢ĞÛÍ¼±ê - Ê¹ÓÃµÚÒ»Ö¡×÷ÎªÍ¼±ê£¬Ôö´ó³ß´ç
+        // åˆ›å»ºè‹±é›„å›¾æ ‡ - ä½¿ç”¨ç¬¬ä¸€å¸§ä½œä¸ºå›¾æ ‡ï¼Œå¢å¤§å°ºå¯¸
         auto heroSprite = Sprite::createWithSpriteFrameName("archer1.0.png");
         if (heroSprite) {
-            heroSprite->setScale(1.0f); // Ôö´óÔ¤ÀÀÍ¼±ê
+            heroSprite->setScale(1.0f); // å¢å¤§é¢„è§ˆå›¾æ ‡
             heroSprite->setPosition(Vec2(40, 30));
             heroSprite->setName("sprite");
             item->addChild(heroSprite);
         }
 
-        // Ó¢ĞÛÃû³ÆÏÔÊ¾
+        // è‹±é›„åç§°æ˜¾ç¤º
         auto label = Label::createWithSystemFont(heroName, "Arial", 16);
         label->setPosition(Vec2(120, 30));
         label->setTextColor(Color4B::WHITE);
         label->setName("label");
         item->addChild(label);
 
-        // Ìí¼Ó±³¾°É«£¬±ãÓÚÇø·ÖÏîÄ¿
+        // æ·»åŠ èƒŒæ™¯è‰²ï¼Œä¾¿äºåŒºåˆ†é¡¹ç›®
         auto itemBg = LayerColor::create(Color4B(60, 60, 60, 255));
         itemBg->setContentSize(Size(180, 60));
         itemBg->setPosition(Vec2::ZERO);
         item->addChild(itemBg, -1);
 
-        // Ìí¼Óµã»÷ÊÂ¼ş
+        // æ·»åŠ ç‚¹å‡»äº‹ä»¶
         item->addClickEventListener([this, heroName](Ref* sender) {
             this->onHeroItemClicked(sender);
             });
@@ -160,20 +160,20 @@ void HeroManager::selectHero(const std::string& heroName)
 {
     _selectedHeroName = heroName;
 
-    // ÒÆ³ı¾ÉµÄÔ¤ÀÀ
+    // ç§»é™¤æ—§çš„é¢„è§ˆ
     if (_selectedHero) {
         _selectedHero->removeFromParent();
         _selectedHero = nullptr;
     }
 
-    // ´´½¨Ñ¡ÖĞÓ¢ĞÛµÄÔ¤ÀÀ£¬Ôö´ó³ß´ç
+    // åˆ›å»ºé€‰ä¸­è‹±é›„çš„é¢„è§ˆï¼Œå¢å¤§å°ºå¯¸
     _selectedHero = Hero::create("archer1.0.png");
     if (_selectedHero) {
-        _selectedHero->setScale(0.8f); // Ôö´óÔ¤ÀÀ³ß´ç
+        _selectedHero->setScale(0.8f); // å¢å¤§é¢„è§ˆå°ºå¯¸
         _selectedHero->setPosition(Vec2(_visibleSize.width - 120, _visibleSize.height - 180));
         this->getParent()->addChild(_selectedHero, 15);
 
-        // ÏÔÊ¾ÌáÊ¾
+        // æ˜¾ç¤ºæç¤º
         auto tip = Label::createWithSystemFont("Click on map to place " + heroName, "Arial", 16);
         tip->setPosition(Vec2(_visibleSize.width - 120, _visibleSize.height - 220));
         tip->setTextColor(Color4B::YELLOW);
@@ -189,13 +189,13 @@ void HeroManager::placeHero(const cocos2d::Vec2& worldPosition, cocos2d::Node* m
         return;
     }
 
-    // ÒÆ³ıÔ¤ÀÀµÄÓ¢ĞÛ
+    // ç§»é™¤é¢„è§ˆçš„è‹±é›„
     if (_selectedHero) {
         _selectedHero->removeFromParent();
         _selectedHero = nullptr;
     }
 
-    // ÒÆ³ıÌáÊ¾
+    // ç§»é™¤æç¤º
     auto parent = this->getParent();
     if (parent) {
         auto tip = parent->getChildByName("heroTip");
@@ -204,27 +204,27 @@ void HeroManager::placeHero(const cocos2d::Vec2& worldPosition, cocos2d::Node* m
         }
     }
 
-    // ´´½¨ĞÂµÄÓ¢ĞÛÊµÀı²¢Ìí¼Óµ½µØÍ¼ÖĞ£¬Ôö´ó»ù´¡³ß´ç
+    // åˆ›å»ºæ–°çš„è‹±é›„å®ä¾‹å¹¶æ·»åŠ åˆ°åœ°å›¾ä¸­ï¼Œå¢å¤§åŸºç¡€å°ºå¯¸
     auto hero = Hero::create("archer1.0.png");
     if (hero) {
-        // ½«ÊÀ½ç×ø±ê×ª»»ÎªµØÍ¼±¾µØ×ø±ê
+        // å°†ä¸–ç•Œåæ ‡è½¬æ¢ä¸ºåœ°å›¾æœ¬åœ°åæ ‡
         Vec2 localPos = mapNode->convertToNodeSpace(worldPosition);
 
         hero->setPosition(localPos);
-        // »ñÈ¡µØÍ¼µÄµ±Ç°Ëõ·Å±ÈÀı
+        // è·å–åœ°å›¾çš„å½“å‰ç¼©æ”¾æ¯”ä¾‹
         float mapScale = mapNode->getScale();
-        hero->updateScale(mapScale);  // Ê¹ÓÃµØÍ¼Ëõ·ÅÀ´¸üĞÂÓ¢ĞÛ³ß´ç
+        hero->updateScale(mapScale);  // ä½¿ç”¨åœ°å›¾ç¼©æ”¾æ¥æ›´æ–°è‹±é›„å°ºå¯¸
 
-        mapNode->addChild(hero, 2); // Ìí¼Óµ½µØÍ¼ÖĞ£¬²ã¼¶¸ßÓÚµØÍ¼
+        mapNode->addChild(hero, 2); // æ·»åŠ åˆ°åœ°å›¾ä¸­ï¼Œå±‚çº§é«˜äºåœ°å›¾
 
         _placedHeroes.pushBack(hero);
 
         CCLOG("Hero placed at: %.1f, %.1f", localPos.x, localPos.y);
 
-        // Çå³ıÑ¡ÖĞµÄÓ¢ĞÛÃû³Æ£¬±íÊ¾Ã»ÓĞ´ı·ÅÖÃµÄÓ¢ĞÛ
+        // æ¸…é™¤é€‰ä¸­çš„è‹±é›„åç§°ï¼Œè¡¨ç¤ºæ²¡æœ‰å¾…æ”¾ç½®çš„è‹±é›„
         _selectedHeroName.clear();
-        deselectAllHeroes(); // ÏÈÈ¡ÏûËùÓĞÑ¡Ôñ
-        hero->setSelected(true); // Ñ¡ÖĞĞÂ·ÅÖÃµÄÓ¢ĞÛ
+        deselectAllHeroes(); // å…ˆå–æ¶ˆæ‰€æœ‰é€‰æ‹©
+        hero->setSelected(true); // é€‰ä¸­æ–°æ”¾ç½®çš„è‹±é›„
     }
 }
 
@@ -232,23 +232,23 @@ void HeroManager::handleHeroTouch(const cocos2d::Vec2& worldPosition, cocos2d::N
 {
     if (!mapNode) return;
 
-    // Èç¹ûÓĞ´ı·ÅÖÃµÄĞÂÓ¢ĞÛ£¬ÓÅÏÈ·ÅÖÃ
+    // å¦‚æœæœ‰å¾…æ”¾ç½®çš„æ–°è‹±é›„ï¼Œä¼˜å…ˆæ”¾ç½®
     if (!_selectedHeroName.empty() && isPlacingNewHero) {
         placeHero(worldPosition, mapNode);
         return;
     }
 
-    // ¼ì²éÊÇ·ñµã»÷ÁËÒÑ·ÅÖÃµÄÓ¢ĞÛ
+    // æ£€æŸ¥æ˜¯å¦ç‚¹å‡»äº†å·²æ”¾ç½®çš„è‹±é›„
     bool clickedOnHero = false;
     for (auto& hero : _placedHeroes) {
         if (hero && hero->containsTouch(worldPosition, mapNode)) {
-            // ÇĞ»»Ñ¡ÖĞ×´Ì¬
+            // åˆ‡æ¢é€‰ä¸­çŠ¶æ€
             bool wasSelected = hero->isSelected();
 
-            // ÏÈÈ¡ÏûËùÓĞÓ¢ĞÛµÄÑ¡ÖĞ×´Ì¬
+            // å…ˆå–æ¶ˆæ‰€æœ‰è‹±é›„çš„é€‰ä¸­çŠ¶æ€
             deselectAllHeroes();
 
-            // Èç¹ûÕâ¸öÓ¢ĞÛÖ®Ç°Ã»ÓĞ±»Ñ¡ÖĞ£¬ÏÖÔÚÑ¡ÖĞËü
+            // å¦‚æœè¿™ä¸ªè‹±é›„ä¹‹å‰æ²¡æœ‰è¢«é€‰ä¸­ï¼Œç°åœ¨é€‰ä¸­å®ƒ
             if (!wasSelected) {
                 hero->setSelected(true);
                 CCLOG("Hero selected");
@@ -261,8 +261,8 @@ void HeroManager::handleHeroTouch(const cocos2d::Vec2& worldPosition, cocos2d::N
         }
     }
 
-    // Èç¹ûÃ»ÓĞµã»÷Ó¢ĞÛÇÒÃ»ÓĞ´ı·ÅÖÃµÄÓ¢ĞÛ£¬¼ì²éÊÇ·ñÓĞÑ¡ÖĞµÄÓ¢ĞÛĞèÒªÒÆ¶¯
-    if (!clickedOnHero && _selectedHeroName.empty()) { // ĞŞ¸ÄÕâÀï£ºÈ·±£Ã»ÓĞ´ı·ÅÖÃµÄÓ¢ĞÛ
+    // å¦‚æœæ²¡æœ‰ç‚¹å‡»è‹±é›„ä¸”æ²¡æœ‰å¾…æ”¾ç½®çš„è‹±é›„ï¼Œæ£€æŸ¥æ˜¯å¦æœ‰é€‰ä¸­çš„è‹±é›„éœ€è¦ç§»åŠ¨
+    if (!clickedOnHero && _selectedHeroName.empty()) { // ä¿®æ”¹è¿™é‡Œï¼šç¡®ä¿æ²¡æœ‰å¾…æ”¾ç½®çš„è‹±é›„
         for (auto& hero : _placedHeroes) {
             if (hero && hero->isSelected()) {
                 hero->moveTo(worldPosition, mapNode);
@@ -284,11 +284,11 @@ void HeroManager::deselectAllHeroes()
 
 void HeroManager::moveSelectedHero(const cocos2d::Vec2& worldPosition, cocos2d::Node* mapNode)
 {
-    // Õâ¸ö·½·¨ÏÖÔÚ±» handleHeroTouch Ìæ´ú
-    // ±£ÁôÓÃÓÚ¼æÈİĞÔ
+    // è¿™ä¸ªæ–¹æ³•ç°åœ¨è¢« handleHeroTouch æ›¿ä»£
+    // ä¿ç•™ç”¨äºå…¼å®¹æ€§
     if (_placedHeroes.empty() || !mapNode) return;
 
-    // ÒÆ¶¯Ñ¡ÖĞµÄÓ¢ĞÛ
+    // ç§»åŠ¨é€‰ä¸­çš„è‹±é›„
     for (auto& hero : _placedHeroes) {
         if (hero && hero->isSelected()) {
             hero->moveTo(worldPosition, mapNode);
@@ -299,7 +299,7 @@ void HeroManager::moveSelectedHero(const cocos2d::Vec2& worldPosition, cocos2d::
 
 void HeroManager::updateHeroesScale(float mapScale)
 {
-    // ¸üĞÂËùÓĞÒÑ·ÅÖÃÓ¢ĞÛµÄËõ·Å
+    // æ›´æ–°æ‰€æœ‰å·²æ”¾ç½®è‹±é›„çš„ç¼©æ”¾
     for (auto& hero : _placedHeroes) {
         if (hero) {
             hero->updateScale(mapScale);
@@ -311,21 +311,21 @@ void HeroManager::onMapSwitched(cocos2d::Node* newMapNode)
 {
     if (!newMapNode) return;
 
-    // ±£´æµ±Ç°Ó¢ĞÛµÄÎ»ÖÃĞÅÏ¢
+    // ä¿å­˜å½“å‰è‹±é›„çš„ä½ç½®ä¿¡æ¯
     Vector<Hero*> oldHeroes = _placedHeroes;
     _placedHeroes.clear();
     float mapScale = newMapNode->getScale();
-    // ½«Ó¢ĞÛ×ªÒÆµ½ĞÂµØÍ¼ÖĞ
+    // å°†è‹±é›„è½¬ç§»åˆ°æ–°åœ°å›¾ä¸­
     for (auto& hero : oldHeroes) {
         if (hero) {
             auto newHero = Hero::create("archer1.0.png");
             if (newHero) {
                 newHero->setPosition(hero->getPosition());
-                newHero->updateScale(mapScale);  // Ê¹ÓÃĞÂµØÍ¼µÄËõ·Å
+                newHero->updateScale(mapScale);  // ä½¿ç”¨æ–°åœ°å›¾çš„ç¼©æ”¾
                 newMapNode->addChild(newHero, 2);
                 _placedHeroes.pushBack(newHero);
 
-                // ±£³ÖÑ¡ÖĞ×´Ì¬
+                // ä¿æŒé€‰ä¸­çŠ¶æ€
                 if (hero->isSelected()) {
                     newHero->setSelected(true);
                 }

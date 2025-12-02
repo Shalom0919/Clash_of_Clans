@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 /****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     Building.h
  * File Function:
- * Author:        ÁõÏà³É
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/2
  * License:       MIT License
  ****************************************************************/
@@ -20,27 +20,27 @@ public:
     static HeroManager* create();
     virtual bool init() override;
 
-    // UI ÉèÖÃ
+    // UI è®¾ç½®
     void setupHeroUI(cocos2d::Node* parent, const cocos2d::Size& visibleSize);
     void showHeroList();
     void hideHeroList();
     bool isHeroListVisible() const { return _isHeroListVisible; }
 
-    // Ó¢ĞÛ²Ù×÷
+    // è‹±é›„æ“ä½œ
     void selectHero(const std::string& heroName);
     void placeHero(const cocos2d::Vec2& worldPosition, cocos2d::Node* mapNode);
     void moveSelectedHero(const cocos2d::Vec2& worldPosition, cocos2d::Node* mapNode);
     void updateHeroesScale(float mapScale);
 
-    // »ñÈ¡Ñ¡ÖĞµÄÓ¢ĞÛ
+    // è·å–é€‰ä¸­çš„è‹±é›„
     Hero* getSelectedHero() const { return _selectedHero; }
     const std::string& getSelectedHeroName() const { return _selectedHeroName; }
 
-    // µØÍ¼ÇĞ»»Ê±´¦Àí
+    // åœ°å›¾åˆ‡æ¢æ—¶å¤„ç†
     void onMapSwitched(cocos2d::Node* newMapNode);
 
-    // ĞÂÔö£º´¦ÀíÓ¢ĞÛµã»÷
-    // ÔÚ HeroManager.h µÄ public ²¿·ÖĞŞ¸Ä·½·¨ÉùÃ÷
+    // æ–°å¢ï¼šå¤„ç†è‹±é›„ç‚¹å‡»
+    // åœ¨ HeroManager.h çš„ public éƒ¨åˆ†ä¿®æ”¹æ–¹æ³•å£°æ˜
     void handleHeroTouch(const cocos2d::Vec2& worldPosition, cocos2d::Node* mapNode, bool isPlacingNewHero = false);
     void deselectAllHeroes();
     cocos2d::Vector<Hero*>& getPlacedHeroes() { return _placedHeroes; }

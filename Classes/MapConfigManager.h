@@ -1,7 +1,7 @@
-#pragma once
+ï»¿#pragma once
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
-#include "json/document.h" // ÒýÈë rapidjson
+#include "json/document.h" // å¼•å…¥ rapidjson
 #include <unordered_map>
 #include <string>
 #include <functional>

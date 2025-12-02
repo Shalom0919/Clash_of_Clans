@@ -1,12 +1,5 @@
-#include "GridMap.h"
-/****************************************************************
- * Project Name:  Clash_of_Clans
- * File Name:     Building.h
- * File Function:
- * Author:        ÕÔ³çÖÎ
- * Update Date:   2025/11/29
- * License:       MIT License
- ****************************************************************/
+ï»¿#include "GridMap.h"
+
 USING_NS_CC;
 
 GridMap* GridMap::create(const Size& mapSize, float tileSize)
@@ -32,14 +25,11 @@ bool GridMap::init(const Size& mapSize, float tileSize)
     _baseNode = DrawNode::create();
     this->addChild(_baseNode, 2);
 
-    // ³õÊ¼»¯³åÍ»µØÍ¼
-    _gridWidth = (int)round(mapSize.width / tileSize); // Êµ¼ÊÉÏÓ¦¸Ã¸ù¾İµØÍ¼ĞÎ×´Ï¸Ëã£¬ÕâÀï¼ò»¯´¦Àí
-    _gridHeight = (int)round(mapSize.height / tileSize * 2); // ISOµØÍ¼YÖá±È½ÏÌØÊâ£¬Ô¤Áô¶àÒ»µã¿Õ¼ä·ÀÖ¹Ô½½ç
+    _gridWidth = (int)round(mapSize.width / tileSize);
+    _gridHeight = (int)round(mapSize.height / tileSize * 2);
 
-    // ³õÊ¼»¯¶şÎ¬Êı×é£¬È«²¿Îª false (¿Õ)
     _collisionMap.resize(_gridWidth, std::vector<bool>(_gridHeight, false));
 
-    // Ä¬ÈÏÆğÊ¼µãÎ»ÓÚµØÍ¼ÖĞĞÄÉÏ·½£¨¾ÉÂß¼­¼æÈİ£©
     _startPixel = Vec2(_mapSize.width / 2.0f, _mapSize.height + 30.0f - _tileSize * 0.5f);
     _gridVisible = false;
 
@@ -51,7 +41,6 @@ Vec2 GridMap::getPositionFromGrid(Vec2 gridPos)
     float halfW = _tileSize / 2.0f;
     float halfH = halfW * 0.75f;
 
-    // Ê¹ÓÃ _startPixel ×÷Îª (0,0) ¶ÔÓ¦µÄ¸ñ×ÓÖĞĞÄµÄÏñËØÎ»ÖÃÆ«ÒÆ
     float x = (gridPos.x - gridPos.y) * halfW + _startPixel.x;
     float y = _startPixel.y - (gridPos.x + gridPos.y) * halfH;
 
@@ -60,12 +49,7 @@ Vec2 GridMap::getPositionFromGrid(Vec2 gridPos)
 
 Vec2 GridMap::getGridPosition(Vec2 worldPosition)
 {
-    // ½«ÊÀ½ç×ø±ê×ª»»Îªµ±Ç°½ÚµãµÄ±¾µØ×ø±ê
     Vec2 localPos = this->convertToNodeSpace(worldPosition);
-
-    // µ÷ÊÔÊä³ö
-    // CCLOG("World: (%.1f, %.1f) -> Local: (%.1f, %.1f)", 
-    //       worldPosition.x, worldPosition.y, localPos.x, localPos.y);
 
     float halfW = _tileSize / 2.0f;
     float halfH = halfW * 0.75f;
@@ -73,25 +57,17 @@ Vec2 GridMap::getGridPosition(Vec2 worldPosition)
     float dx = localPos.x - _startPixel.x;
     float dy = _startPixel.y - localPos.y;
 
-    // ISO ×ø±ê×ª»»¹«Ê½
     float x = (dy / halfH + dx / halfW) / 2.0f;
     float y = (dy / halfH - dx / halfW) / 2.0f;
 
-    // ËÄÉáÎåÈëµ½×î½üµÄÕûÊı
     int gridX = (int)round(x);
     int gridY = (int)round(y);
 
-    // È·±£²»Ô½½ç
     gridX = MAX(0, MIN(_gridWidth - 1, gridX));
     gridY = MAX(0, MIN(_gridHeight - 1, gridY));
 
-    // µ÷ÊÔÊä³ö
-    // CCLOG("Grid position: (%d, %d)", gridX, gridY);
-
     return Vec2(gridX, gridY);
 }
-
-// ÔÚ showWholeGrid º¯ÊıÖĞ£¬ĞŞ¸ÄÍø¸ñ»æÖÆÂß¼­£º
 
 void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSize)
 {
@@ -99,28 +75,21 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
     _gridNode->clear();
     if (!visible) return;
 
-    // --- ÅäÖÃ²ÎÊı ---
-    // Èç¹ûÓĞµ±Ç°½¨ÖşµÄ³ß´ç£¬ÔòÊ¹ÓÃ¸Ã³ß´ç×÷Îª´ó¸ñ×ÓµÄ²½³¤
-    int bigGridStep = 3; // Ä¬ÈÏ 3x3
+    int bigGridStep = 3;
     if (currentBuildingSize.width > 0 && currentBuildingSize.height > 0) {
-        bigGridStep = (int)currentBuildingSize.width; // Ê¹ÓÃ½¨Öş¿í¶È×÷Îª²½³¤
+        bigGridStep = (int)currentBuildingSize.width;
     }
 
-    // ÑÕÉ«ÅäÖÃ
-    Color4F smallGridColor = Color4F(1.0f, 1.0f, 1.0f, 0.03f); // Ğ¡¸ñ×Óµ×É«£º¼«µ­£¬¼¸ºõ¿´²»¼û£¬Ö»×÷Îªµ×ÎÆ
-    Color4F smallGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.15f); // Ğ¡¸ñ×ÓÏß£º»ÒÉ«£¬°ëÍ¸Ã÷
-    Color4F bigGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.35f); // ´ó¸ñ×ÓÏß£ºÁÁ°×É«£¬°ëÍ¸Ã÷
+    Color4F smallGridColor = Color4F(1.0f, 1.0f, 1.0f, 0.03f);
+    Color4F smallGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.15f);
+    Color4F bigGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.35f);
 
-    // »ù´¡³ß´ç¼ÆËã
     float halfW = _tileSize / 2.0f;
     float halfH = halfW * 0.79f;
 
     int maxX = _gridWidth;
     int maxY = _gridHeight;
 
-    // ===========================================================
-    // »­ËùÓĞĞ¡Íø¸ñ
-    // ===========================================================
     for (int x = 0; x < maxX; x++) {
         for (int y = 0; y < maxY; y++) {
             Vec2 center = getPositionFromGrid(Vec2(x, y));
@@ -131,15 +100,11 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
             p[2] = Vec2(center.x, center.y - halfH);
             p[3] = Vec2(center.x - halfW, center.y);
 
-            // »­Ğ¡¸ñ×Ó
             _gridNode->drawSolidPoly(p, 4, smallGridColor);
             _gridNode->drawPoly(p, 4, true, smallGridLineColor);
         }
     }
 
-    // ===========================================================
-    // »­´óÍø¸ñ - ¸ù¾İµ±Ç°½¨Öş³ß´çÈ·¶¨²½³¤
-    // ===========================================================
     for (int x = 0; x < maxX; x += bigGridStep) {
         for (int y = 0; y < maxY; y += bigGridStep) {
 
@@ -161,13 +126,6 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
 
             _gridNode->drawPoly(p, 4, true, bigGridLineColor);
         }
-
-        // ´´½¨ĞÂµÄÌáÊ¾
-        auto label = Label::createWithSystemFont(sizeText, "Arial", 16);
-        label->setPosition(Vec2(100, Director::getInstance()->getVisibleSize().height - 100));
-        label->setTextColor(Color4B::YELLOW);
-        label->setName("sizeHint");
-        _gridNode->addChild(label);
     }
 }
 
@@ -189,37 +147,20 @@ void GridMap::updateBuildingBase(Vec2 gridPos, Size size, bool isValid)
     p[2] = Vec2(bottomGridCenter.x, bottomGridCenter.y - halfH);
     p[3] = Vec2(leftGridCenter.x - halfW, leftGridCenter.y);
 
-    // ÑÕÉ«ÅäÖÃ - ¸ù¾İÊÇ·ñ¿ÉÒÔ½¨ÔìÊ¹ÓÃ²»Í¬ÑÕÉ«
     Color4F color;
     Color4F borderColor;
 
-    Color4F color = isValid ? Color4F(0.0f, 1.0f, 0.0f, 0.5f) : Color4F(1.0f, 0.0f, 0.0f, 0.5f);
-    Color4F borderColor = isValid ? Color4F::GREEN : Color4F::RED;
     if (isValid) {
-        color = Color4F(0.0f, 1.0f, 0.0f, 0.3f); // ÂÌÉ«£¬¸üÍ¸Ã÷
-        borderColor = Color4F(0.0f, 1.0f, 0.0f, 0.8f); // ÂÌÉ«±ß¿ò
+        color = Color4F(0.0f, 1.0f, 0.0f, 0.3f);
+        borderColor = Color4F(0.0f, 1.0f, 0.0f, 0.8f);
     }
     else {
-        color = Color4F(1.0f, 0.0f, 0.0f, 0.3f); // ºìÉ«£¬¸üÍ¸Ã÷
-        borderColor = Color4F(1.0f, 0.0f, 0.0f, 0.8f); // ºìÉ«±ß¿ò
+        color = Color4F(1.0f, 0.0f, 0.0f, 0.3f);
+        borderColor = Color4F(1.0f, 0.0f, 0.0f, 0.8f);
     }
 
     _baseNode->drawSolidPoly(p, 4, color);
     _baseNode->drawPoly(p, 4, true, borderColor);
-
-    // ÔÚµ××ùÖĞĞÄÏÔÊ¾³ß´çĞÅÏ¢
-    /*std::string sizeText = StringUtils::format("%dx%d", (int)size.width, (int)size.height);
-    auto sizeLabel = Label::createWithSystemFont(sizeText, "Arial", 12);
-    sizeLabel->setPosition((p[0] + p[2]) / 2.0f);
-
-    if (isValid) {
-        sizeLabel->setTextColor(Color4B::GREEN);
-    }
-    else {
-        sizeLabel->setTextColor(Color4B::RED);
-    }
-
-    _baseNode->addChild(sizeLabel);*/
 }
 
 void GridMap::hideBuildingBase()
@@ -264,11 +205,10 @@ void GridMap::markArea(Vec2 startGridPos, Size size, bool occupied)
     }
 }
 
-// ĞÂÔö£ºÉèÖÃÆğÊ¼ÏñËØ²¢Ìá¹©½Ç¶ÔÆë½Ó¿Ú
 void GridMap::setStartPixel(const Vec2& pixel)
 {
     _startPixel = pixel;
-    if (_gridVisible) showWholeGrid(true); // ÖØĞÂ»æÖÆ
+    if (_gridVisible) showWholeGrid(true);
 }
 
 Vec2 GridMap::getStartPixel() const
@@ -278,7 +218,6 @@ Vec2 GridMap::getStartPixel() const
 
 void GridMap::setStartCorner(GridMap::Corner corner)
 {
-    // ¼ÆËã»ùÓÚ corner µÄ startPixel Öµ
     Vec2 p;
     switch (corner) {
     case TOP_LEFT:
@@ -299,7 +238,6 @@ void GridMap::setStartCorner(GridMap::Corner corner)
         break;
     }
 
-    // ÓÉÓÚÎÒÃÇµÄ ISO Y Öá»»ËãÆÚÍû start ÔÚÉÏ·½ÖĞĞÄ£¬×öÒ»Ğ©Î¢µ÷
     p.y += _tileSize * 0.5f;
 
     setStartPixel(p);

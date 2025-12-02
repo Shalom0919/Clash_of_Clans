@@ -1,49 +1,49 @@
-#pragma once
+ï»¿#pragma once
 /****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     Building.h
  * File Function:
- * Author:        ÁõÏà³É
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/2
  * License:       MIT License
  ****************************************************************/
 #include "cocos2d.h"
-#include <string>  // È·±£°üº¬ string
+#include <string>  // ç¡®ä¿åŒ…å« string
 
 struct BuildingData {
-    std::string name;       // ½¨ÖşÃû³Æ
-    std::string imageFile;  // Í¼Æ¬ÎÄ¼şÃû
-    cocos2d::Size gridSize; // Õ¼ÓÃ¸ñ×ÓÊı (Èç 3x3, 2x2)
-    float scaleFactor;      // Ëõ·Å±ÈÀı£¨¸ù¾İ¸ñ×Ó³ß´çµ÷Õû£©
-    float cost;            // ½¨Ôì·ÑÓÃ
-    float buildTime;       // ½¨ÔìÊ±¼ä
+    std::string name;       // å»ºç­‘åç§°
+    std::string imageFile;  // å›¾ç‰‡æ–‡ä»¶å
+    cocos2d::Size gridSize; // å ç”¨æ ¼å­æ•° (å¦‚ 3x3, 2x2)
+    float scaleFactor;      // ç¼©æ”¾æ¯”ä¾‹ï¼ˆæ ¹æ®æ ¼å­å°ºå¯¸è°ƒæ•´ï¼‰
+    float cost;            // å»ºé€ è´¹ç”¨
+    float buildTime;       // å»ºé€ æ—¶é—´
 
-    // Ä¬ÈÏ¹¹Ôìº¯Êı
+    // é»˜è®¤æ„é€ å‡½æ•°
     BuildingData()
         : name(""), imageFile(""), gridSize(cocos2d::Size::ZERO),
         scaleFactor(1.0f), cost(0), buildTime(0) {
     }
 
-    // ²ÎÊı»¯¹¹Ôìº¯Êı
+    // å‚æ•°åŒ–æ„é€ å‡½æ•°
     BuildingData(const std::string& n, const std::string& img,
         const cocos2d::Size& size, float scale = 1.0f, float c = 0, float t = 0)
         : name(n), imageFile(img), gridSize(size),
         scaleFactor(scale), cost(c), buildTime(t) {
     }
 
-    // »ñÈ¡·ÅÖÃËµÃ÷ - ĞŞ¸´°æ±¾
+    // è·å–æ”¾ç½®è¯´æ˜ - ä¿®å¤ç‰ˆæœ¬
     std::string getPlacementInstructions() const {
-        // ·½·¨1£ºÊ¹ÓÃ std::to_string
+        // æ–¹æ³•1ï¼šä½¿ç”¨ std::to_string
         return name + " - " +
             std::to_string((int)gridSize.width) + "x" +
             std::to_string((int)gridSize.height) +
-            " - µã»÷¿ªÊ¼£¬ÍÏ¶¯µ÷Õû£¬ÔÙ´Îµã»÷È·ÈÏ";
+            " - ç‚¹å‡»å¼€å§‹ï¼Œæ‹–åŠ¨è°ƒæ•´ï¼Œå†æ¬¡ç‚¹å‡»ç¡®è®¤";
 
-        // »òÕß·½·¨2£ºÊ¹ÓÃ cocos2d µÄ·½·¨£¨Èç¹ûÄãÓĞÕıÈ·µÄÍ·ÎÄ¼ş£©
-        // ĞèÒª°üº¬ "base/CCConsole.h" »ò "platform/CCStdC.h"
+        // æˆ–è€…æ–¹æ³•2ï¼šä½¿ç”¨ cocos2d çš„æ–¹æ³•ï¼ˆå¦‚æœä½ æœ‰æ­£ç¡®çš„å¤´æ–‡ä»¶ï¼‰
+        // éœ€è¦åŒ…å« "base/CCConsole.h" æˆ– "platform/CCStdC.h"
     }
 
-    // ÁíÒ»¸ö¸¨Öú·½·¨£¬ÓÃÓÚÏÔÊ¾³ß´çĞÅÏ¢
+    // å¦ä¸€ä¸ªè¾…åŠ©æ–¹æ³•ï¼Œç”¨äºæ˜¾ç¤ºå°ºå¯¸ä¿¡æ¯
     std::string getSizeInfo() const {
         char buffer[100];
         snprintf(buffer, sizeof(buffer), "%dx%d",
@@ -51,9 +51,9 @@ struct BuildingData {
         return std::string(buffer);
     }
 
-    // »ñÈ¡ÍêÕûµÄÃèÊöĞÅÏ¢
+    // è·å–å®Œæ•´çš„æè¿°ä¿¡æ¯
     std::string getDescription() const {
-        return name + " [" + getSizeInfo() + "] - ·ÑÓÃ: " +
+        return name + " [" + getSizeInfo() + "] - è´¹ç”¨: " +
             std::to_string((int)cost);
     }
 };

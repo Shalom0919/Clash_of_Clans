@@ -1,8 +1,8 @@
-/****************************************************************
+ï»¿/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     Building.h
  * File Function:
- * Author:        ÁõÏà³É
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/2
  * License:       MIT License
  ****************************************************************/
@@ -30,15 +30,15 @@ bool Hero::init(const std::string& frameName)
         return false;
     }
 
-    _heroName = "archer"; // Í³Ò»Ó¢ĞÛÃû³Æ
+    _heroName = "archer"; // ç»Ÿä¸€è‹±é›„åç§°
     _isSelected = false;
-    _baseScale = 0.5f; // Ôö´ó»ù´¡³ß´ç
+    _baseScale = 0.5f; // å¢å¤§åŸºç¡€å°ºå¯¸
     _isMoving = false;
 
-    // ÉèÖÃÃû³Æ
+    // è®¾ç½®åç§°
     this->setName("Hero");
 
-    // ÉèÖÃ³õÊ¼Ëõ·Å
+    // è®¾ç½®åˆå§‹ç¼©æ”¾
     this->setScale(_baseScale);
 
     return true;
@@ -46,23 +46,23 @@ bool Hero::init(const std::string& frameName)
 
 void Hero::moveTo(const cocos2d::Vec2& worldPosition, cocos2d::Node* mapNode)
 {
-    if (!mapNode || !_isSelected) return; // Ö»ÓĞÑ¡ÖĞµÄÓ¢ĞÛ²ÅÄÜÒÆ¶¯
+    if (!mapNode || !_isSelected) return; // åªæœ‰é€‰ä¸­çš„è‹±é›„æ‰èƒ½ç§»åŠ¨
 
-    // ½«ÊÀ½ç×ø±ê×ª»»ÎªµØÍ¼±¾µØ×ø±ê
+    // å°†ä¸–ç•Œåæ ‡è½¬æ¢ä¸ºåœ°å›¾æœ¬åœ°åæ ‡
     Vec2 localPos = mapNode->convertToNodeSpace(worldPosition);
 
-    // Í£Ö¹ËùÓĞ¶¯×÷
+    // åœæ­¢æ‰€æœ‰åŠ¨ä½œ
     this->stopAllActions();
 
-    // ¼ÆËãÒÆ¶¯¾àÀëºÍÊ±¼ä
+    // è®¡ç®—ç§»åŠ¨è·ç¦»å’Œæ—¶é—´
     float distance = this->getPosition().getDistance(localPos);
     float duration = distance / 100.0f;
 
-    // ²¥·ÅĞĞ×ß¶¯»­
+    // æ’­æ”¾è¡Œèµ°åŠ¨ç”»
     playWalkAnimation();
     _isMoving = true;
 
-    // ÒÆ¶¯¶¯×÷
+    // ç§»åŠ¨åŠ¨ä½œ
     auto moveTo = MoveTo::create(duration, localPos);
     auto callback = CallFunc::create([this]() {
         this->stopWalkAnimation();
@@ -87,13 +87,13 @@ void Hero::setSelected(bool selected)
     _isSelected = selected;
 
     if (selected) {
-        // Ìí¼ÓÑ¡ÖĞĞ§¹û - »ÆÉ«Ô²È¦£¬Ôö´ó³ß´ç
+        // æ·»åŠ é€‰ä¸­æ•ˆæœ - é»„è‰²åœ†åœˆï¼Œå¢å¤§å°ºå¯¸
         auto glow = DrawNode::create();
         glow->drawCircle(Vec2::ZERO, 25, 0, 20, false, 1.0f, 1.0f, Color4F::YELLOW);
         glow->setName("selectionGlow");
         this->addChild(glow, -1);
 
-        // Ìí¼ÓÂö³å¶¯»­
+        // æ·»åŠ è„‰å†²åŠ¨ç”»
         float currentScale = this->getScale();
         auto scaleUp = ScaleTo::create(0.5f, currentScale * 1.2f);
         auto scaleDown = ScaleTo::create(0.5f, currentScale);
@@ -105,7 +105,7 @@ void Hero::setSelected(bool selected)
 
     }
     else {
-        // ÒÆ³ıÑ¡ÖĞĞ§¹û
+        // ç§»é™¤é€‰ä¸­æ•ˆæœ
         float currentScale = this->getScale();
         this->removeChildByName("selectionGlow");
         this->stopActionByTag(999);
@@ -117,10 +117,10 @@ void Hero::setSelected(bool selected)
 
 void Hero::playWalkAnimation()
 {
-    // Èç¹ûÒÑ¾­ÓĞ¶¯»­ÔÚÔËĞĞ£¬²»ÖØ¸´´´½¨
+    // å¦‚æœå·²ç»æœ‰åŠ¨ç”»åœ¨è¿è¡Œï¼Œä¸é‡å¤åˆ›å»º
     if (this->getActionByTag(666)) return;
 
-    // ´´½¨ĞĞ×ß¶¯»­Ö¡ĞòÁĞ
+    // åˆ›å»ºè¡Œèµ°åŠ¨ç”»å¸§åºåˆ—
     Vector<SpriteFrame*> frames;
     for (int i = 1; i <= 52; i++) {
         std::string frameName = StringUtils::format("archer%d.0.png", i);
@@ -131,14 +131,14 @@ void Hero::playWalkAnimation()
     }
 
     if (frames.size() > 0) {
-        auto animation = Animation::createWithSpriteFrames(frames, 0.05f); // Ã¿Ö¡0.05Ãë
+        auto animation = Animation::createWithSpriteFrames(frames, 0.05f); // æ¯å¸§0.05ç§’
         auto animate = Animate::create(animation);
         auto repeat = RepeatForever::create(animate);
-        repeat->setTag(666); // ÉèÖÃtagÒÔ±ãÍ£Ö¹
+        repeat->setTag(666); // è®¾ç½®tagä»¥ä¾¿åœæ­¢
         this->runAction(repeat);
     }
 
-    // Ìí¼ÓÉÏÏÂ¸¡¶¯Ğ§¹û
+    // æ·»åŠ ä¸Šä¸‹æµ®åŠ¨æ•ˆæœ
     auto floatUp = MoveBy::create(0.5f, Vec2(0, 5));
     auto floatDown = MoveBy::create(0.5f, Vec2(0, -5));
     auto floatSequence = Sequence::create(floatUp, floatDown, nullptr);
@@ -149,11 +149,11 @@ void Hero::playWalkAnimation()
 
 void Hero::stopWalkAnimation()
 {
-    this->stopActionByTag(666); // Í£Ö¹¶¯»­
-    this->stopActionByTag(777); // Í£Ö¹¸¡¶¯Ğ§¹û
-    this->setRotation(0); // »Ö¸´Ô­Ê¼½Ç¶È
+    this->stopActionByTag(666); // åœæ­¢åŠ¨ç”»
+    this->stopActionByTag(777); // åœæ­¢æµ®åŠ¨æ•ˆæœ
+    this->setRotation(0); // æ¢å¤åŸå§‹è§’åº¦
 
-    // »Ö¸´µ½µÚÒ»Ö¡
+    // æ¢å¤åˆ°ç¬¬ä¸€å¸§
     this->setSpriteFrame("archer1.0.png");
 }
 
@@ -161,17 +161,17 @@ bool Hero::containsTouch(const cocos2d::Vec2& worldPosition, cocos2d::Node* mapN
 {
     if (!mapNode) return false;
 
-    // ½«ÊÀ½ç×ø±ê×ª»»ÎªµØÍ¼±¾µØ×ø±ê
+    // å°†ä¸–ç•Œåæ ‡è½¬æ¢ä¸ºåœ°å›¾æœ¬åœ°åæ ‡
     Vec2 localPos = mapNode->convertToNodeSpace(worldPosition);
 
-    // »ñÈ¡Ó¢ĞÛÔÚµØÍ¼×ø±êÖĞµÄ±ß½ç¿ò
+    // è·å–è‹±é›„åœ¨åœ°å›¾åæ ‡ä¸­çš„è¾¹ç•Œæ¡†
     Rect heroRect = this->getBoundingBox();
     Vec2 heroPos = this->getPosition();
 
-    // ¼ÆËã´¥ÃşµãÏà¶ÔÓÚÓ¢ĞÛµÄÎ»ÖÃ
+    // è®¡ç®—è§¦æ‘¸ç‚¹ç›¸å¯¹äºè‹±é›„çš„ä½ç½®
     Vec2 touchInHero = localPos - heroPos;
 
-    // Ó¢ĞÛµÄÅö×²¼ì²â°ë¾¶£¬Ôö´ó¼ì²â·¶Î§
+    // è‹±é›„çš„ç¢°æ’æ£€æµ‹åŠå¾„ï¼Œå¢å¤§æ£€æµ‹èŒƒå›´
     float radius = 40.0f * this->getScale();
     bool contains = touchInHero.length() <= radius;
 

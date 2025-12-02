@@ -1,4 +1,4 @@
-#include "MapConfigManager.h"
+ï»¿#include "MapConfigManager.h"
 #include "ui/CocosGUI.h"
 #include "json/writer.h"
 #include "json/stringbuffer.h"
@@ -127,7 +127,7 @@ void MapConfigManager::refreshUIForMap(const std::string& mapName)
 
 void MapConfigManager::createEditorUI()
 {
-    // Î»ÖÃºÍ³ß´ç¿ÉÒÔ¸ù¾İĞèÒªµ÷Õû
+    // ä½ç½®å’Œå°ºå¯¸å¯ä»¥æ ¹æ®éœ€è¦è°ƒæ•´
     Vec2 base = Vec2(300, 300);
 
     // Map list
