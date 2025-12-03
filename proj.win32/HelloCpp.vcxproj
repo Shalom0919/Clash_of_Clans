@@ -93,12 +93,22 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;COCOS2D_DEBUG=1;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;CC_STATIC;LWS_WITH_LIBUV;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
@@ -121,7 +131,7 @@
       <Message>
       </Message>
       <Command>setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libssl-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libssl-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -130,7 +140,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libcrypto-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libcrypto-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -139,7 +149,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/uv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/uv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -148,7 +158,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/websockets.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/websockets.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -157,7 +167,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libcurl.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libcurl.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -166,7 +176,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/glew32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/glew32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -175,7 +185,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/iconv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/iconv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -184,7 +194,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libmpg123.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libmpg123.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -193,7 +203,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libogg.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libogg.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -202,7 +212,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libvorbis.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libvorbis.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -211,7 +221,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libvorbisfile.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/libvorbisfile.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -220,7 +230,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/OpenAL32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/OpenAL32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -229,7 +239,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/zlib1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/zlib1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -242,10 +252,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalDependencies>lib\Debug\cocos2d.lib;lib\Debug\external.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\Box2D\prebuilt\win32\debug\libbox2d.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\chipmunk\prebuilt\win32\debug-lib\libchipmunk.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\freetype2\prebuilt\win32\freetype.lib;lib\Debug\ext_recast.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\bullet\prebuilt\win32\debug\libbullet.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\jpeg\prebuilt\win32\libjpeg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\webp\prebuilt\win32\libwebp.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\websockets\prebuilt\win32\websockets.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libssl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libcrypto.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\uv\prebuilt\win32\uv_a.lib;lib\Debug\ext_tinyxml2.lib;lib\Debug\ext_xxhash.lib;lib\Debug\ext_xxtea.lib;lib\Debug\ext_clipper.lib;lib\Debug\ext_edtaa3func.lib;lib\Debug\ext_convertUTF.lib;lib\Debug\ext_poly2tri.lib;lib\Debug\ext_md5.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\curl\prebuilt\win32\libcurl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\png\prebuilt\win32\libpng.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\gles\prebuilt\glew32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\icon\prebuilt\libiconv.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\MP3Decoder\prebuilt\libmpg123.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libogg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbis.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbisfile.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OpenalSoft\prebuilt\OpenAL32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\glfw3\prebuilt\win32\glfw3.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\zlib\..\win32-specific\zlib\prebuilt\libzlib.lib;lib\Debug\ext_unzip.lib;ws2_32.lib;userenv.lib;psapi.lib;winmm.lib;Version.lib;Iphlpapi.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/Debug/HelloCpp.lib</ImportLibrary>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Debug/HelloCpp.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -257,14 +275,25 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalIncludeDirectories>C:\Users\Shalom\Documents\GitHub\coc\Classes;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\audio\include;C:\Users\Shalom\Documents\GitHub\coc\cocos2d;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\extensions;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\platform;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\editor-support;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\base;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\platform\win32;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\recast\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\tinyxml2\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxhash\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxtea\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\clipper\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\edtaa3func\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\ConvertUTF\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\poly2tri\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\md5\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\unzip\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/chipmunk/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/freetype2/include/win32/freetype2" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include/bullet" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/jpeg/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/webp/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/png/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/include/OGLES" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/glfw3/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;CC_STATIC;LWS_WITH_LIBUV;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
@@ -289,7 +318,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Message>
       </Message>
       <Command>setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libssl-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libssl-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -298,7 +327,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libcrypto-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libcrypto-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -307,7 +336,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/uv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/uv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -316,7 +345,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/websockets.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/websockets.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -325,7 +354,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libcurl.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libcurl.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -334,7 +363,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/glew32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/glew32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -343,7 +372,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/iconv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/iconv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -352,7 +381,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libmpg123.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libmpg123.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -361,7 +390,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libogg.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libogg.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -370,7 +399,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libvorbis.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libvorbis.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -379,7 +408,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libvorbisfile.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/libvorbisfile.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -388,7 +417,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/OpenAL32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/OpenAL32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -397,7 +426,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/zlib1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/zlib1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -410,10 +439,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalDependencies>lib\Release\cocos2d.lib;lib\Release\external.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\Box2D\prebuilt\win32\release\libbox2d.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\chipmunk\prebuilt\win32\release-lib\libchipmunk.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\freetype2\prebuilt\win32\freetype.lib;lib\Release\ext_recast.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\bullet\prebuilt\win32\release\libbullet.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\jpeg\prebuilt\win32\libjpeg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\webp\prebuilt\win32\libwebp.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\websockets\prebuilt\win32\websockets.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libssl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libcrypto.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\uv\prebuilt\win32\uv_a.lib;lib\Release\ext_tinyxml2.lib;lib\Release\ext_xxhash.lib;lib\Release\ext_xxtea.lib;lib\Release\ext_clipper.lib;lib\Release\ext_edtaa3func.lib;lib\Release\ext_convertUTF.lib;lib\Release\ext_poly2tri.lib;lib\Release\ext_md5.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\curl\prebuilt\win32\libcurl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\png\prebuilt\win32\libpng.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\gles\prebuilt\glew32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\icon\prebuilt\libiconv.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\MP3Decoder\prebuilt\libmpg123.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libogg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbis.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbisfile.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OpenalSoft\prebuilt\OpenAL32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\glfw3\prebuilt\win32\glfw3.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\zlib\..\win32-specific\zlib\prebuilt\libzlib.lib;lib\Release\ext_unzip.lib;ws2_32.lib;userenv.lib;psapi.lib;winmm.lib;Version.lib;Iphlpapi.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/Release/HelloCpp.lib</ImportLibrary>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/Release/HelloCpp.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -425,14 +462,25 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalIncludeDirectories>C:\Users\Shalom\Documents\GitHub\coc\Classes;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\audio\include;C:\Users\Shalom\Documents\GitHub\coc\cocos2d;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\extensions;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\platform;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\editor-support;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\base;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\platform\win32;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\recast\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\tinyxml2\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxhash\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxtea\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\clipper\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\edtaa3func\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\ConvertUTF\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\poly2tri\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\md5\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\unzip\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/chipmunk/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/freetype2/include/win32/freetype2" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include/bullet" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/jpeg/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/webp/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/png/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/include/OGLES" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/glfw3/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>MinSpace</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;CC_STATIC;LWS_WITH_LIBUV;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
@@ -457,7 +505,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Message>
       </Message>
       <Command>setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libssl-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libssl-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -466,7 +514,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libcrypto-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libcrypto-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -475,7 +523,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/uv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/uv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -484,7 +532,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/websockets.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/websockets.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -493,7 +541,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libcurl.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libcurl.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -502,7 +550,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/glew32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/glew32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -511,7 +559,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/iconv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/iconv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -520,7 +568,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libmpg123.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libmpg123.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -529,7 +577,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libogg.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libogg.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -538,7 +586,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libvorbis.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libvorbis.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -547,7 +595,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libvorbisfile.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/libvorbisfile.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -556,7 +604,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/OpenAL32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/OpenAL32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -565,7 +613,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/zlib1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/zlib1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -578,10 +626,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalDependencies>lib\MinSizeRel\cocos2d.lib;lib\MinSizeRel\external.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\Box2D\prebuilt\win32\release\libbox2d.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\chipmunk\prebuilt\win32\release-lib\libchipmunk.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\freetype2\prebuilt\win32\freetype.lib;lib\MinSizeRel\ext_recast.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\bullet\prebuilt\win32\release\libbullet.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\jpeg\prebuilt\win32\libjpeg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\webp\prebuilt\win32\libwebp.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\websockets\prebuilt\win32\websockets.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libssl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libcrypto.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\uv\prebuilt\win32\uv_a.lib;lib\MinSizeRel\ext_tinyxml2.lib;lib\MinSizeRel\ext_xxhash.lib;lib\MinSizeRel\ext_xxtea.lib;lib\MinSizeRel\ext_clipper.lib;lib\MinSizeRel\ext_edtaa3func.lib;lib\MinSizeRel\ext_convertUTF.lib;lib\MinSizeRel\ext_poly2tri.lib;lib\MinSizeRel\ext_md5.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\curl\prebuilt\win32\libcurl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\png\prebuilt\win32\libpng.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\gles\prebuilt\glew32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\icon\prebuilt\libiconv.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\MP3Decoder\prebuilt\libmpg123.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libogg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbis.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbisfile.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OpenalSoft\prebuilt\OpenAL32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\glfw3\prebuilt\win32\glfw3.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\zlib\..\win32-specific\zlib\prebuilt\libzlib.lib;lib\MinSizeRel\ext_unzip.lib;ws2_32.lib;userenv.lib;psapi.lib;winmm.lib;Version.lib;Iphlpapi.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/MinSizeRel/HelloCpp.lib</ImportLibrary>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/MinSizeRel/HelloCpp.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -593,15 +649,26 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalIncludeDirectories>C:\Users\Shalom\Documents\GitHub\coc\Classes;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\audio\include;C:\Users\Shalom\Documents\GitHub\coc\cocos2d;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\extensions;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\platform;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\editor-support;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\base;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\platform\win32;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\recast\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\tinyxml2\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxhash\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxtea\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\clipper\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\edtaa3func\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\ConvertUTF\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\poly2tri\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\md5\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\unzip\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/chipmunk/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/freetype2/include/win32/freetype2" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include/bullet" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/jpeg/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/webp/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/png/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/include/OGLES" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/glfw3/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;CC_STATIC;LWS_WITH_LIBUV;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
@@ -624,7 +691,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Message>
       </Message>
       <Command>setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libssl-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libssl-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libssl-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -633,7 +700,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libcrypto-1_1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/prebuilt/win32/libcrypto-1_1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libcrypto-1_1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -642,7 +709,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/uv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/prebuilt/win32/uv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/uv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -651,7 +718,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/websockets.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/prebuilt/win32/websockets.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/websockets.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -660,7 +727,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libcurl.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/prebuilt/win32/libcurl.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libcurl.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -669,7 +736,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/glew32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/prebuilt/glew32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/glew32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -678,7 +745,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/iconv.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/iconv.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -687,7 +754,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libmpg123.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/prebuilt/libmpg123.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libmpg123.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -696,7 +763,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libogg.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libogg.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libogg.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -705,7 +772,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libvorbis.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbis.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libvorbis.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -714,7 +781,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libvorbisfile.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/prebuilt/libvorbisfile.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/libvorbisfile.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -723,7 +790,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/OpenAL32.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/prebuilt/OpenAL32.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/OpenAL32.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -732,7 +799,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
 setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/zlib1.dll
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E copy_if_different C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/prebuilt/zlib1.dll C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/zlib1.dll
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -745,10 +812,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalDependencies>lib\RelWithDebInfo\cocos2d.lib;lib\RelWithDebInfo\external.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\Box2D\prebuilt\win32\release\libbox2d.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\chipmunk\prebuilt\win32\release-lib\libchipmunk.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\freetype2\prebuilt\win32\freetype.lib;lib\RelWithDebInfo\ext_recast.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\bullet\prebuilt\win32\release\libbullet.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\jpeg\prebuilt\win32\libjpeg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\webp\prebuilt\win32\libwebp.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\websockets\prebuilt\win32\websockets.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libssl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\openssl\prebuilt\win32\libcrypto.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\uv\prebuilt\win32\uv_a.lib;lib\RelWithDebInfo\ext_tinyxml2.lib;lib\RelWithDebInfo\ext_xxhash.lib;lib\RelWithDebInfo\ext_xxtea.lib;lib\RelWithDebInfo\ext_clipper.lib;lib\RelWithDebInfo\ext_edtaa3func.lib;lib\RelWithDebInfo\ext_convertUTF.lib;lib\RelWithDebInfo\ext_poly2tri.lib;lib\RelWithDebInfo\ext_md5.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\curl\prebuilt\win32\libcurl.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\png\prebuilt\win32\libpng.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\gles\prebuilt\glew32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\icon\prebuilt\libiconv.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\MP3Decoder\prebuilt\libmpg123.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libogg.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbis.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OggDecoder\prebuilt\libvorbisfile.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\win32-specific\OpenalSoft\prebuilt\OpenAL32.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\glfw3\prebuilt\win32\glfw3.lib;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\zlib\..\win32-specific\zlib\prebuilt\libzlib.lib;lib\RelWithDebInfo\ext_unzip.lib;ws2_32.lib;userenv.lib;psapi.lib;winmm.lib;Version.lib;Iphlpapi.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/RelWithDebInfo/HelloCpp.lib</ImportLibrary>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/Shalom/Documents/GitHub/coc/proj.win32/bin/HelloCpp/RelWithDebInfo/HelloCpp.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -760,7 +835,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <UseUtf8Encoding>Always</UseUtf8Encoding>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -768,12 +843,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -781,12 +856,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -794,12 +869,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -807,7 +882,7 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\3.29.5-msvc4\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeParseArguments.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildHelpers.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosBuildSet.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDefine.cmake;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cmake\Modules\CocosConfigDepend.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeCXXCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeRCCompiler.cmake;C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\4.1.1-msvc1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\Shalom\Documents\GitHub\coc\proj.win32\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
     </CustomBuild>
@@ -822,6 +897,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HeroManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Hero.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\BuildingData.h" />
@@ -838,6 +914,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HeroManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Hero.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\MapConfigManager.cpp" />
@@ -974,16 +1051,16 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\archer\archer8.0.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\archer\archer9.0.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\archer\shadow.png" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Going.mp3" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Lose.mp3" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Preparing.mp3" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Win.mp3" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\fonts\Marker Felt.ttf" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\fonts\arial.ttf" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\map\Map1.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\map\Map2.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\map\Map3.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\res\.gitkeep" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Going.mp3" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Lose.mp3" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Preparing.mp3" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Win.mp3" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\town-hall-8.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\town-hall-9.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\大本营\town-hall-1.png" />
@@ -1005,6 +1082,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\大本营\town-hall-9.png" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\cocos2d\cocos\precheader.cpp" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\ZERO_CHECK.vcxproj">
       <Project>{E31DC935-4DCB-31F3-B3C2-CCCE2CA1658D}</Project>

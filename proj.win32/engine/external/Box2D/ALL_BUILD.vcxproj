@@ -112,7 +112,7 @@
       <UseUtf8Encoding>Always</UseUtf8Encoding>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -125,7 +125,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -138,7 +138,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -151,7 +151,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/Box2D/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -166,6 +166,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\ZERO_CHECK.vcxproj">
       <Project>{E31DC935-4DCB-31F3-B3C2-CCCE2CA1658D}</Project>

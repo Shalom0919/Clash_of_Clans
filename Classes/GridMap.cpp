@@ -27,8 +27,9 @@ bool GridMap::init(const Size& mapSize, float tileSize)
     _baseNode = DrawNode::create();
     this->addChild(_baseNode, 2);
 
-    _gridWidth = (int)round(mapSize.width / tileSize);
-    _gridHeight = (int)round(mapSize.height / tileSize * 2);
+    // 长边与短边相同
+    _gridWidth = (int)round(mapSize.width / tileSize) - 1;
+    _gridHeight = _gridWidth;
 
     _collisionMap.resize(_gridWidth, std::vector<bool>(_gridHeight, false));
 
@@ -78,54 +79,64 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
     if (!visible)
         return;
 
+    // 根据建筑尺寸确定大网格步长，默认为3x3
     int bigGridStep = 3;
     if (currentBuildingSize.width > 0 && currentBuildingSize.height > 0)
     {
         bigGridStep = (int)currentBuildingSize.width;
     }
 
+    // 定义网格颜色：小网格填充、小网格边线、大网格边线
     Color4F smallGridColor = Color4F(1.0f, 1.0f, 1.0f, 0.03f);
     Color4F smallGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.15f);
     Color4F bigGridLineColor = Color4F(1.0f, 1.0f, 1.0f, 0.35f);
 
+    // 计算菱形网格的半宽和半高（0.79是isometric视角的比例系数）
     float halfW = _tileSize / 2.0f;
     float halfH = halfW * 0.79f;
 
     int maxX = _gridWidth;
     int maxY = _gridHeight;
 
+    // 第一步：绘制所有小网格
     for (int x = 0; x < maxX; x++)
     {
         for (int y = 0; y < maxY; y++)
         {
             Vec2 center = getPositionFromGrid(Vec2(x, y));
 
+            // 计算菱形的四个顶点：上、右、下、左
             Vec2 p[4];
             p[0] = Vec2(center.x, center.y + halfH);
             p[1] = Vec2(center.x + halfW, center.y);
             p[2] = Vec2(center.x, center.y - halfH);
             p[3] = Vec2(center.x - halfW, center.y);
 
+            // 先填充菱形，再绘制边线
             _gridNode->drawSolidPoly(p, 4, smallGridColor);
             _gridNode->drawPoly(p, 4, true, smallGridLineColor);
         }
     }
 
+    // 第二步：绘制大网格边框（用于标识建筑占用区域）
     for (int x = 0; x < maxX; x += bigGridStep)
     {
         for (int y = 0; y < maxY; y += bigGridStep)
         {
+            // 处理边界情况：如果剩余网格不足一个完整的bigGridStep
             int currentW = (x + bigGridStep > maxX) ? (maxX - x) : bigGridStep;
             int currentH = (y + bigGridStep > maxY) ? (maxY - y) : bigGridStep;
 
             if (currentW <= 0 || currentH <= 0)
                 continue;
 
+            // 获取大网格区域的四个角对应的网格中心点
             Vec2 topGridCenter = getPositionFromGrid(Vec2(x, y));
             Vec2 rightGridCenter = getPositionFromGrid(Vec2(x + currentW - 1, y));
             Vec2 bottomGridCenter = getPositionFromGrid(Vec2(x + currentW - 1, y + currentH - 1));
             Vec2 leftGridCenter = getPositionFromGrid(Vec2(x, y + currentH - 1));
 
+            // 连接四个角的外边缘顶点，形成大网格边框
             Vec2 p[4];
             p[0] = Vec2(topGridCenter.x, topGridCenter.y + halfH);
             p[1] = Vec2(rightGridCenter.x + halfW, rightGridCenter.y);
@@ -158,7 +169,7 @@ void GridMap::updateBuildingBase(Vec2 gridPos, Size size, bool isValid)
         borderColor = Color4F(1.0f, 0.0f, 0.0f, 0.8f);
     }
 
-    // 修改：循环绘制建筑底下的每一个网格，实现"只显示建筑脚下的网格"
+    // 循环绘制建筑底下的每一个网格，只显示建筑脚下的网格
     for (int i = 0; i < size.width; i++)
     {
         for (int j = 0; j < size.height; j++)

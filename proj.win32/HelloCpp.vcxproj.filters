@@ -28,6 +28,9 @@
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HeroManager.cpp">
       <Filter>Source Files\Classes</Filter>
     </ClCompile>
@@ -73,6 +76,9 @@
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HeroManager.h">
@@ -486,6 +492,18 @@
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\archer\shadow.png">
       <Filter>Resources\archer</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Going.mp3">
+      <Filter>Resources\audio\background</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Lose.mp3">
+      <Filter>Resources\audio\background</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Preparing.mp3">
+      <Filter>Resources\audio\background</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\audio\background\Battle_Win.mp3">
+      <Filter>Resources\audio\background</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\fonts\Marker Felt.ttf">
       <Filter>Resources\fonts</Filter>
     </ClInclude>
@@ -503,18 +521,6 @@
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\res\.gitkeep">
       <Filter>Resources\res</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Going.mp3">
-      <Filter>Resources\sound\bgm</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Lose.mp3">
-      <Filter>Resources\sound\bgm</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Preparing.mp3">
-      <Filter>Resources\sound\bgm</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\sound\bgm\Battle_Win.mp3">
-      <Filter>Resources\sound\bgm</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\town-hall-8.png">
       <Filter>Resources</Filter>
@@ -607,6 +613,12 @@
     <Filter Include="Resources\archer\archer\Ruler">
       <UniqueIdentifier>{3672C70B-D1FF-342A-A3C4-95AAF415EDF7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\audio">
+      <UniqueIdentifier>{C32BCC71-4B67-3ACF-BE25-8206BD3700C6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\audio\background">
+      <UniqueIdentifier>{B3235A84-9E30-3B96-9860-0B0A74B905D5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Resources\fonts">
       <UniqueIdentifier>{8D570436-F86F-3059-A126-CA452719EA1B}</UniqueIdentifier>
     </Filter>
@@ -615,12 +627,6 @@
     </Filter>
     <Filter Include="Resources\res">
       <UniqueIdentifier>{8DF75AC7-3876-3C12-AD3E-8990078AA7FF}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\sound">
-      <UniqueIdentifier>{BC092547-BD68-33EA-AAC6-3B8C6751DC24}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\sound\bgm">
-      <UniqueIdentifier>{5359A931-E2B2-3415-B2A9-280968022F03}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resources\大本营">
       <UniqueIdentifier>{1CE675FE-1DC3-3E66-AF97-AB178D078F7F}</UniqueIdentifier>

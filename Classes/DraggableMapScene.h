@@ -44,6 +44,8 @@ private:
     bool _isDraggingBuilding;
     cocos2d::Sprite* _ghostSprite;
     BuildingData _selectedBuilding;
+    cocos2d::Vec2 _pendingGridPos;
+    bool _isWaitingConfirm;
 
     cocos2d::ui::Button* _buildButton;
     cocos2d::ui::Button* _mapButton;
@@ -51,6 +53,9 @@ private:
     cocos2d::ui::ListView* _mapList;
     bool _isBuildingListVisible;
     bool _isMapListVisible;
+
+    cocos2d::ui::Button* _confirmButton;
+    cocos2d::ui::Button* _cancelButton;
 
     HeroManager* _heroManager;
 
@@ -93,6 +98,11 @@ private:
     void placeBuilding(cocos2d::Vec2 gridPos);
     void cancelPlacing();
     void endPlacing();
+    
+    void showConfirmButtons(const cocos2d::Vec2& buildingWorldPos);
+    void hideConfirmButtons();
+    void onConfirmBuilding();
+    void onCancelBuilding();
 
     void toggleBuildingSelection();
     void onBuildingItemClicked(cocos2d::Ref* sender, const BuildingData& building);

@@ -2,6 +2,7 @@
 
 #include "DraggableMapScene.h"
 #include "Managers/AccountManager.h"
+#include "Managers/MusicManager.h"
 
 USING_NS_CC;
 
@@ -21,6 +22,9 @@ bool AccountSelectScene::init()
 
     refreshList();
 
+    // 播放准备界面背景音乐
+    MusicManager::getInstance().playMusic(MusicType::BATTLE_PREPARING, true);
+
     return true;
 }
 
@@ -30,20 +34,50 @@ void AccountSelectScene::buildUI()
     auto vs = Director::getInstance()->getVisibleSize();
 
     // 标题文本
-    auto title = Label::createWithSystemFont("选择账号", "Arial", 36);
+    auto title = Label::createWithSystemFont("选择账号", "Arial", 32);
     title->setPosition(Vec2(vs.width / 2, vs.height - 120));
     title->setTextColor(Color4B::WHITE);
     this->addChild(title, 1);
 
     // 账号列表容器
     _list = ListView::create();
-    _list->setContentSize(Size(600, 500));
-    _list->setPosition(Vec2(vs.width / 2 - 300, vs.height / 2 - 250));
+    _list->setContentSize(Size(800, 250));
+    _list->setPosition(Vec2(vs.width / 2 - 400, vs.height / 2 - 125));
     _list->setBackGroundColor(Color3B(60, 60, 60));
     _list->setBackGroundColorType(Layout::BackGroundColorType::SOLID);
     _list->setBounceEnabled(true);
     _list->setScrollBarEnabled(true);
     this->addChild(_list, 1);
+
+    // 保持 ListView 的事件监听（仅注册一次）
+    _list->addEventListener([this](Ref* sender, ui::ListView::EventType type) {
+        if (type == ui::ListView::EventType::ON_SELECTED_ITEM_END)
+        {
+            auto listView = static_cast<ui::ListView*>(sender);
+            auto item = listView->getItem(listView->getCurSelectedIndex());
+            if (item)
+            {
+                _selectedUserId = item->getName();
+                // 不重建列表，只更新选中样式，避免滚动位置重置和闪烁
+                // 更新所有项的选中状态
+                for (int i = 0; i < listView->getItems().size(); ++i)
+                {
+                    auto it = listView->getItem(i);
+                    bool sel = (it->getName() == _selectedUserId);
+                    if (auto marker = it->getChildByName<Label*>("marker"))
+                        marker->setVisible(sel);
+                    // 背景颜色更新
+                    for (auto child : it->getChildren())
+                    {
+                        if (auto layer = dynamic_cast<LayerColor*>(child))
+                        {
+                            layer->setColor(sel ? Color3B(70, 70, 90) : Color3B(50, 50, 70));
+                        }
+                    }
+                }
+            }
+        }
+    });
 
     // 新增账号按钮
     auto addBtn = Button::create();
@@ -73,6 +107,9 @@ void AccountSelectScene::buildUI()
 // 刷新账号列表显示
 void AccountSelectScene::refreshList()
 {
+    // 记录滚动位置，避免重建后跳到顶部
+    Vec2 innerPos = _list->getInnerContainerPosition();
+
     _list->removeAllItems();
 
     auto& mgr = AccountManager::getInstance();
@@ -112,11 +149,12 @@ void AccountSelectScene::refreshList()
     {
         auto item = Layout::create();
         item->setContentSize(Size(600, 80));
-        item->setTouchEnabled(true);
+        item->setTouchEnabled(true); // 允许触摸选择
 
-        // 列表项背景
-        auto bg = LayerColor::create(Color4B(50, 50, 70, 255));
-        bg->setContentSize(Size(600, 80));
+        // 列表项背景 - 选中时高亮
+        Color4B bgColor = (a.userId == _selectedUserId) ? Color4B(70, 70, 90, 255) : Color4B(50, 50, 70, 255);
+        auto bg = LayerColor::create(bgColor);
+        bg->setContentSize(Size(800, 80));
         bg->setPosition(Vec2::ZERO);
         item->addChild(bg, -1);
 
@@ -130,20 +168,45 @@ void AccountSelectScene::refreshList()
 
         // 选中标记（绿色勾）
         auto selectMarker = Label::createWithSystemFont("✓", "Arial", 28);
-        selectMarker->setPosition(Vec2(560, 40));
+        selectMarker->setPosition(Vec2(750, 40));
         selectMarker->setColor(Color3B::GREEN);
         selectMarker->setName("marker");
         selectMarker->setVisible(a.userId == _selectedUserId);
         item->addChild(selectMarker);
 
-        // 点击列表项选中账号
-        item->addClickEventListener([this, a](Ref*) {
-            _selectedUserId = a.userId;
-            refreshList();
+        // 使用 name 来存储 userId，避免内存管理问题
+        item->setName(a.userId);
+
+        // 行点击选择逻辑（不重建列表，只更新样式）
+        item->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+            if (type == ui::Widget::TouchEventType::ENDED)
+            {
+                auto w = static_cast<ui::Widget*>(sender);
+                _selectedUserId = w->getName();
+
+                // 更新所有项的选中状态
+                for (int i = 0; i < _list->getItems().size(); ++i)
+                {
+                    auto it = _list->getItem(i);
+                    bool sel = (it->getName() == _selectedUserId);
+                    if (auto marker = it->getChildByName<Label*>("marker"))
+                        marker->setVisible(sel);
+                    for (auto child : it->getChildren())
+                    {
+                        if (auto layer = dynamic_cast<LayerColor*>(child))
+                        {
+                            layer->setColor(sel ? Color3B(70, 70, 90) : Color3B(50, 50, 70));
+                        }
+                    }
+                }
+            }
         });
 
         _list->pushBackCustomItem(item);
     }
+
+    // 恢复滚动位置，避免自动回到顶部
+    _list->setInnerContainerPosition(innerPos);
 }
 
 // 处理新增账号：显示创建账号对话框

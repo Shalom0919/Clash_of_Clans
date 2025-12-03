@@ -65,6 +65,7 @@ list(APPEND GAME_SOURCE
      Classes/Managers/AccountManager.cpp
      Classes/Managers/StorageManager.cpp
      Classes/Managers/NetworkManager.cpp
+     Classes/Managers/MusicManager.cpp
      Classes/HeroManager.cpp
      Classes/Hero.cpp
      Classes/MapConfigManager.cpp
@@ -80,6 +81,7 @@ list(APPEND GAME_HEADER
      Classes/Managers/AccountManager.h
      Classes/Managers/StorageManager.h
      Classes/Managers/NetworkManager.h
+     Classes/Managers/MusicManager.h
      Classes/HeroManager.h
      Classes/Hero.h
      Classes/BuildingData.h

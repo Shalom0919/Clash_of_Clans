@@ -85,11 +85,16 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;LWS_WITH_LIBUV;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
@@ -117,13 +122,19 @@
       <AdditionalIncludeDirectories>C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\recast\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\tinyxml2\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxhash\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxtea\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\clipper\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\edtaa3func\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\ConvertUTF\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\poly2tri\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\md5\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\unzip\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/chipmunk/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/freetype2/include/win32/freetype2" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include/bullet" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/jpeg/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/webp/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/png/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/include/OGLES" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/glfw3/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LWS_WITH_LIBUV;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
@@ -153,13 +164,19 @@
       <AdditionalIncludeDirectories>C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\recast\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\tinyxml2\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxhash\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxtea\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\clipper\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\edtaa3func\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\ConvertUTF\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\poly2tri\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\md5\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\unzip\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/chipmunk/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/freetype2/include/win32/freetype2" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include/bullet" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/jpeg/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/webp/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/png/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/include/OGLES" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/glfw3/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
       <Optimization>MinSpace</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LWS_WITH_LIBUV;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
@@ -189,14 +206,20 @@
       <AdditionalIncludeDirectories>C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\recast\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\tinyxml2\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxhash\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\xxtea\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\clipper\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\edtaa3func\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\ConvertUTF\.;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\poly2tri\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\md5\..;C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\unzip\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/Box2D/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/chipmunk/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/freetype2/include/win32/freetype2" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/bullet/include/bullet" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/jpeg/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/openssl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/uv/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/webp/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/websockets/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/curl/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/png/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/gles/include/OGLES" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/icon/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/MP3Decoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OggDecoder/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/win32-specific/OpenalSoft/include" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/glfw3/include/win32" /external:I "C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/zlib/../win32-specific/zlib/include"</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LWS_WITH_LIBUV;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
@@ -224,7 +247,7 @@
       <UseUtf8Encoding>Always</UseUtf8Encoding>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -237,7 +260,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -250,7 +273,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -263,7 +286,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule C:/Users/Shalom/Documents/GitHub/coc/cocos2d/external/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
-"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Shalom/Documents/GitHub/coc -BC:/Users/Shalom/Documents/GitHub/coc/proj.win32 --check-stamp-file C:/Users/Shalom/Documents/GitHub/coc/proj.win32/engine/external/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -279,6 +302,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemGroup>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\cocos2d\external\empty.cpp" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\ZERO_CHECK.vcxproj">
       <Project>{E31DC935-4DCB-31F3-B3C2-CCCE2CA1658D}</Project>

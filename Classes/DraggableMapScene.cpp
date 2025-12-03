@@ -21,7 +21,7 @@ bool DraggableMapScene::init()
 
     _visibleSize = Director::getInstance()->getVisibleSize();
     _currentScale = 1.3f;
-    _minScale = 1.0f;
+    _minScale = 0.7f;
     _maxScale = 2.5f;
 
     _mapNames = {"map/Map1.png", "map/Map2.png", "map/Map3.png"};
@@ -35,6 +35,8 @@ bool DraggableMapScene::init()
     _isDraggingBuilding = false;
     _ghostSprite = nullptr;
     _selectedBuilding = BuildingData();
+    _isWaitingConfirm = false;
+    _pendingGridPos = Vec2::ZERO;
 
     _buildButton = nullptr;
     _mapButton = nullptr;
@@ -43,10 +45,14 @@ bool DraggableMapScene::init()
     _isBuildingListVisible = false;
     _isMapListVisible = false;
 
+    _confirmButton = nullptr;
+    _cancelButton = nullptr;
+
     _heroManager = nullptr;
 
     initBuildingData();
 
+    // 不要修改这里的参数，这里已经过测试，可以正确对齐地图和网格
     _mapConfigs.clear();
     _mapConfigs["map/Map1.png"] = {1.3f, Vec2(1406.0f, 2107.2f), 55.6f};
     _mapConfigs["map/Map2.png"] = {1.3f, Vec2(1402.0f, 2097.2f), 56.1f};
@@ -170,113 +176,171 @@ void DraggableMapScene::setupMap()
 
 void DraggableMapScene::setupUI()
 {
+    // ============================================================
+    // 1. 基础功能按钮 (Build / Map)
+    // ============================================================
+
+    // [建造按钮]：用于切换建造模式或打开建筑选择列表
     _buildButton = Button::create();
     _buildButton->setTitleText("Build");
     _buildButton->setTitleFontSize(24);
     _buildButton->setContentSize(Size(100, 50));
-    _buildButton->setPosition(Vec2(80, _visibleSize.height - 50));
+    _buildButton->setPosition(Vec2(80, _visibleSize.height - 50));  // 左上角
     _buildButton->addClickEventListener([this](Ref* sender) {
         if (_isBuildingMode)
         {
+            // 如果已经在建造模式，再次点击则取消
             this->cancelPlacing();
         }
         else
         {
+            // 否则打开建筑选择面板
             this->toggleBuildingSelection();
         }
     });
-    this->addChild(_buildButton, 10);
+    this->addChild(_buildButton, 10);  // Z-Order: 10 (UI层)
 
+    // [地图切换按钮]：打开地图列表
     _mapButton = Button::create();
     _mapButton->setTitleText("Map");
     _mapButton->setTitleFontSize(24);
     _mapButton->setContentSize(Size(120, 60));
-    _mapButton->setPosition(Vec2(_visibleSize.width - 80, _visibleSize.height - 50));
+    _mapButton->setPosition(Vec2(_visibleSize.width - 80, _visibleSize.height - 50));  // 右上角
     _mapButton->addClickEventListener(CC_CALLBACK_1(DraggableMapScene::onMapButtonClicked, this));
     this->addChild(_mapButton, 10);
 
+    // [英雄UI]：初始化英雄管理器相关的UI (头像、状态栏等)
     _heroManager->setupHeroUI(this, _visibleSize);
 
+    // 初始化其他不可见的UI组件
     createBuildingSelection();
     createMapList();
 
+    // ============================================================
+    // 2. 信息提示文本
+    // ============================================================
+
+    // [操作指南]：底部居中显示操作提示
     auto tipLabel = Label::createWithSystemFont(
         "Drag: Move Map  Scroll: Zoom  Buttons: Switch Map/Hero/Build\nClick Hero to Select, Click Ground to Move",
         "Arial", 14);
-    tipLabel->setPosition(Vec2(_visibleSize.width / 2, 40));
+    tipLabel->setPosition(Vec2(_visibleSize.width / 2.0f, 40.0f));
     tipLabel->setTextColor(Color4B::YELLOW);
     tipLabel->setAlignment(TextHAlignment::CENTER);
     this->addChild(tipLabel, 10);
 
+    // [当前地图名称]：顶部居中显示
     auto mapNameLabel = Label::createWithSystemFont("Current: " + _currentMapName, "Arial", 18);
-    mapNameLabel->setPosition(Vec2(_visibleSize.width / 2, _visibleSize.height - 30));
+    mapNameLabel->setPosition(Vec2(_visibleSize.width / 2.0f, _visibleSize.height - 30.0f));
     mapNameLabel->setTextColor(Color4B::GREEN);
-    mapNameLabel->setName("mapNameLabel");
+    mapNameLabel->setName("mapNameLabel");  // 设置名字以便后续可以通过 getChildByName 获取并更新
     this->addChild(mapNameLabel, 10);
 
-    Vec2 uiBase = Vec2(500, 400);
+    // ============================================================
+    // 3. 网格调试工具 (Grid Calibration Tools)
+    // 功能：用于手动微调网格与地图背景的对齐偏差
+    // ============================================================
+
+    // 创建一个容器节点来管理所有调试按钮，方便统一显示/隐藏
+    auto debugLayer = Node::create();
+    debugLayer->setPosition(Vec2::ZERO);
+    debugLayer->setVisible(false);   // 默认隐藏调试工具
+    this->addChild(debugLayer, 30);  // Z-Order: 30 (最顶层，避免被其他UI遮挡)
+
+    // 定义调试按钮的基准位置和尺寸
+    Vec2 uiBase = Vec2(500.0f, 400.0f);  // 屏幕中间偏右位置
     float btnSize = 40.0f;
 
-    auto makeArrowBtn = [this, btnSize](const std::string& title, const Vec2& pos, const std::function<void()>& cb) {
+    // Lambda: 快速创建方向微调按钮的辅助函数
+    auto makeArrowBtn = [this, debugLayer, btnSize](const std::string& title, const Vec2& pos,
+                                                    const std::function<void()>& cb) {
         auto btn = ui::Button::create();
         btn->setTitleText(title);
         btn->setTitleFontSize(18);
         btn->setContentSize(Size(btnSize, btnSize));
-        btn->setScale9Enabled(true);
+        btn->setScale9Enabled(true);  // 开启九宫格缩放以支持自定义尺寸
         btn->setPosition(pos);
         btn->addClickEventListener([cb](Ref* sender) { cb(); });
-        this->addChild(btn, 30);
-        return btn;
+        debugLayer->addChild(btn);  // 注意：添加到 debugLayer 而不是 this
     };
 
+    // --- 左移 ---
     makeArrowBtn("←", uiBase + Vec2(-50, 0), [this]() {
         if (!_gridMap)
             return;
         Vec2 p = _gridMap->getStartPixel();
-        p += Vec2(-1, 0);
+        p += Vec2(-1.0f, 0.0f);
         _gridMap->setStartPixel(p);
-        _gridMap->showWholeGrid(true);
-        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+        _gridMap->showWholeGrid(true);  // 强制重绘网格以查看对齐效果
+        CCLOG("Grid Debug: Offset X-1 -> (%.2f, %.2f)", p.x, p.y);
     });
 
+    // --- 右移 ---
     makeArrowBtn("→", uiBase + Vec2(50, 0), [this]() {
         if (!_gridMap)
             return;
         Vec2 p = _gridMap->getStartPixel();
-        p += Vec2(1, 0);
+        p += Vec2(1.0f, 0.0f);
         _gridMap->setStartPixel(p);
         _gridMap->showWholeGrid(true);
-        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+        CCLOG("Grid Debug: Offset X+1 -> (%.2f, %.2f)", p.x, p.y);
     });
 
+    // --- 上移 ---
     makeArrowBtn("↑", uiBase + Vec2(0, 50), [this]() {
         if (!_gridMap)
             return;
         Vec2 p = _gridMap->getStartPixel();
-        p += Vec2(0, 1);
+        p += Vec2(0.0f, 1.0f);
         _gridMap->setStartPixel(p);
         _gridMap->showWholeGrid(true);
-        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+        CCLOG("Grid Debug: Offset Y+1 -> (%.2f, %.2f)", p.x, p.y);
     });
 
+    // --- 下移 ---
     makeArrowBtn("↓", uiBase + Vec2(0, -50), [this]() {
         if (!_gridMap)
             return;
         Vec2 p = _gridMap->getStartPixel();
-        p += Vec2(0, -1);
+        p += Vec2(0.0f, -1.0f);
         _gridMap->setStartPixel(p);
         _gridMap->showWholeGrid(true);
-        CCLOG("Grid start pixel: %.2f, %.2f", p.x, p.y);
+        CCLOG("Grid Debug: Offset Y-1 -> (%.2f, %.2f)", p.x, p.y);
     });
 
+    // --- 重置 ---
     makeArrowBtn("Reset", uiBase + Vec2(0, -110), [this]() {
         if (!_gridMap)
             return;
-        _gridMap->setStartPixel(_gridStartDefault);
+        _gridMap->setStartPixel(_gridStartDefault);  // 恢复到默认配置
         _gridMap->showWholeGrid(true);
         Vec2 p = _gridMap->getStartPixel();
-        CCLOG("Grid reset to default: %.2f, %.2f", p.x, p.y);
+        CCLOG("Grid Debug: Reset to default -> (%.2f, %.2f)", p.x, p.y);
     });
+
+    // ============================================================
+    // 4. 调试开关按钮
+    // ============================================================
+
+    auto toggleDebugBtn = Button::create();
+    toggleDebugBtn->setTitleText("Grid Dev");  // 按钮文字
+    toggleDebugBtn->setTitleFontSize(20);
+    toggleDebugBtn->setTitleColor(Color3B::MAGENTA);                   // 用醒目的颜色区分
+    toggleDebugBtn->setPosition(Vec2(180, _visibleSize.height - 50));  // 放在 Build 按钮旁边
+    toggleDebugBtn->addClickEventListener([debugLayer, this](Ref* sender) {
+        // 切换调试层的可见性
+        bool isVisible = debugLayer->isVisible();
+        debugLayer->setVisible(!isVisible);
+
+        // 如果开启调试，显示全图网格；如果关闭，隐藏全图网格
+        if (_gridMap)
+        {
+            _gridMap->showWholeGrid(!isVisible);
+        }
+
+        CCLOG("Debug Mode: %s", !isVisible ? "ON" : "OFF");
+    });
+    this->addChild(toggleDebugBtn, 10);
 }
 
 void DraggableMapScene::toggleBuildingSelection()
@@ -644,19 +708,23 @@ void DraggableMapScene::zoomMap(float scaleFactor, const cocos2d::Vec2& pivotPoi
         return;
     }
 
-    Vec2 oldPosition = _mapSprite->getPosition();
-
     if (pivotPoint != Vec2::ZERO)
     {
-        Vec2 worldPos = pivotPoint;
-        Vec2 localPos = _mapSprite->convertToNodeSpace(worldPos);
+        // 获取鼠标在地图节点空间中的局部坐标
+        Vec2 localPos = _mapSprite->convertToNodeSpace(pivotPoint);
 
-        Vec2 offsetBefore = localPos * _currentScale;
-        Vec2 offsetAfter = localPos * newScale;
-        Vec2 positionDelta = offsetAfter - offsetBefore;
+        // 计算缩放前该点在世界空间的位置
+        Vec2 worldPosBefore = _mapSprite->convertToWorldSpace(localPos);
 
+        // 应用新的缩放
         _mapSprite->setScale(newScale);
-        _mapSprite->setPosition(oldPosition - positionDelta);
+
+        // 计算缩放后该点在世界空间的位置
+        Vec2 worldPosAfter = _mapSprite->convertToWorldSpace(localPos);
+
+        // 计算位置偏移并修正
+        Vec2 positionDelta = worldPosBefore - worldPosAfter;
+        _mapSprite->setPosition(_mapSprite->getPosition() + positionDelta);
     }
     else
     {
@@ -700,50 +768,47 @@ bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
 {
     _lastTouchPos = touch->getLocation();
 
-    if (_isBuildingMode && !_isDraggingBuilding)
+    // 1. 处理建筑放置模式下的点击逻辑
+    if (_isBuildingMode && !_isDraggingBuilding && !_isWaitingConfirm)
     {
         _dragStartPos = _lastTouchPos;
         _isDraggingBuilding = true;
 
         if (_ghostSprite && _gridMap)
         {
-            // 修改逻辑：计算中心偏移量，使得建筑中心对齐鼠标
+            // 将触摸点转换为网格坐标
             Vec2 rawGridPos = _gridMap->getGridPosition(_dragStartPos);
-            Vec2 offset = Vec2((int)((_selectedBuilding.gridSize.width - 1) / 2),
-                               (int)((_selectedBuilding.gridSize.height - 1) / 2));
+
+            // 计算网格中心偏移量，确保建筑占据的网格以触摸点为中心
+            // 使用 static_cast 消除 float 转 int 的警告
+            int offsetX = static_cast<int>((_selectedBuilding.gridSize.width - 1.0f) / 2.0f);
+            int offsetY = static_cast<int>((_selectedBuilding.gridSize.height - 1.0f) / 2.0f);
+            Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+
             Vec2 centerAlignedGridPos = rawGridPos - offset;
 
+            // 计算实际像素坐标并更新虚影位置
             Vec2 buildingPos = calculateBuildingPosition(centerAlignedGridPos);
             _ghostSprite->setPosition(buildingPos);
             _ghostSprite->setVisible(true);
 
+            // 检查当前位置是否合法并更新底座颜色提示
             bool canBuild = _gridMap->checkArea(centerAlignedGridPos, _selectedBuilding.gridSize);
             _gridMap->updateBuildingBase(centerAlignedGridPos, _selectedBuilding.gridSize, canBuild);
-            showBuildingHint("拖动调整位置，再次点击确认放置");
+            showBuildingHint("拖动调整位置，松开鼠标后确认");
         }
 
         return true;
     }
 
-    if (_isBuildingMode && _isDraggingBuilding)
-    {
-        // 放置逻辑同样需要应用偏移量
-        Vec2 rawGridPos = _gridMap->getGridPosition(_lastTouchPos);
-        Vec2 offset =
-            Vec2((int)((_selectedBuilding.gridSize.width - 1) / 2), (int)((_selectedBuilding.gridSize.height - 1) / 2));
-        Vec2 centerAlignedGridPos = rawGridPos - offset;
-
-        placeBuilding(centerAlignedGridPos);
-        _isDraggingBuilding = false;
-        return true;
-    }
-
+    // 2. 处理选中英雄时的逻辑
     if (!_isBuildingMode && !_heroManager->getSelectedHeroName().empty())
     {
         _heroManager->handleHeroTouch(_lastTouchPos, _mapSprite, true);
         return true;
     }
 
+    // 3. 处理普通模式下的英雄点击检测
     if (!_isBuildingMode)
     {
         _heroManager->handleHeroTouch(_lastTouchPos, _mapSprite, false);
@@ -751,7 +816,7 @@ bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
         {
             if (hero && hero->containsTouch(_lastTouchPos, _mapSprite))
             {
-                break;
+                break;  // 命中英雄后中断，避免穿透
             }
         }
     }
@@ -763,14 +828,19 @@ void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
 {
     Vec2 currentTouchPos = touch->getLocation();
 
+    // 1. 建筑拖拽逻辑：保持建筑跟随手指移动，并实时检测合法性
     if (_isBuildingMode && _isDraggingBuilding && _ghostSprite && _gridMap)
     {
-        // 移动逻辑：计算中心偏移量，保持建筑跟手
         Vec2 rawGridPos = _gridMap->getGridPosition(currentTouchPos);
-        Vec2 offset =
-            Vec2((int)((_selectedBuilding.gridSize.width - 1) / 2), (int)((_selectedBuilding.gridSize.height - 1) / 2));
+
+        // 计算中心偏移
+        int offsetX = static_cast<int>((_selectedBuilding.gridSize.width - 1.0f) / 2.0f);
+        int offsetY = static_cast<int>((_selectedBuilding.gridSize.height - 1.0f) / 2.0f);
+        Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+
         Vec2 centerAlignedGridPos = rawGridPos - offset;
 
+        // 实时检测建造区域是否合法
         bool canBuild = _gridMap->checkArea(centerAlignedGridPos, _selectedBuilding.gridSize);
 
         _gridMap->updateBuildingBase(centerAlignedGridPos, _selectedBuilding.gridSize, canBuild);
@@ -778,6 +848,7 @@ void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
         Vec2 buildingPos = calculateBuildingPosition(centerAlignedGridPos);
         _ghostSprite->setPosition(buildingPos);
 
+        // 根据能否建造改变虚影颜色（白色可用，红色不可用）
         if (canBuild)
         {
             _ghostSprite->setColor(Color3B::WHITE);
@@ -790,12 +861,61 @@ void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
         return;
     }
 
+    // 2. 地图拖拽逻辑
     Vec2 delta = currentTouchPos - _lastTouchPos;
     moveMap(delta);
     _lastTouchPos = currentTouchPos;
 }
 
-void DraggableMapScene::onTouchEnded(Touch* touch, Event* event) {}
+void DraggableMapScene::onTouchEnded(Touch* touch, Event* event)
+{
+    // 处理建筑拖拽结束：定格位置或报错
+    if (_isBuildingMode && _isDraggingBuilding && _gridMap && _ghostSprite)
+    {
+        Vec2 currentTouchPos = touch->getLocation();
+        Vec2 rawGridPos = _gridMap->getGridPosition(currentTouchPos);
+
+        // 计算偏移
+        int offsetX = static_cast<int>((_selectedBuilding.gridSize.width - 1.0f) / 2.0f);
+        int offsetY = static_cast<int>((_selectedBuilding.gridSize.height - 1.0f) / 2.0f);
+        Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+
+        Vec2 centerAlignedGridPos = rawGridPos - offset;
+
+        bool canBuild = _gridMap->checkArea(centerAlignedGridPos, _selectedBuilding.gridSize);
+
+        if (canBuild)
+        {
+            // 位置合法：进入“待确认”状态，显示勾选/取消按钮
+            _pendingGridPos = centerAlignedGridPos;
+            _isDraggingBuilding = false;
+            _isWaitingConfirm = true;
+
+            Vec2 buildingPos = calculateBuildingPosition(centerAlignedGridPos);
+            Vec2 worldPos = _mapSprite->convertToWorldSpace(buildingPos);
+
+            showConfirmButtons(worldPos);
+            showBuildingHint("点击按钮确认或取消建造");
+        }
+        else
+        {
+            // 位置非法：播放红色闪烁和震动动画提示
+            auto flashRed = TintTo::create(0.1f, 255, 0, 0);
+            auto flashNormal = TintTo::create(0.1f, 255, 255, 255);
+            auto shake = MoveBy::create(0.05f, Vec2(5.0f, 0.0f));
+            auto shakeBack = MoveBy::create(0.05f, Vec2(-10.0f, 0.0f));
+            auto shakeEnd = MoveBy::create(0.05f, Vec2(5.0f, 0.0f));
+
+            auto sequence = Sequence::create(Spawn::create(flashRed, shake, nullptr),
+                                             Spawn::create(flashNormal, shakeBack, nullptr), shakeEnd, nullptr);
+            _ghostSprite->runAction(sequence);
+
+            showBuildingHint("无法在此处建造！请重新选择位置");
+        }
+
+        return;
+    }
+}
 
 void DraggableMapScene::onTouchCancelled(cocos2d::Touch* touch, cocos2d::Event* event)
 {
@@ -819,6 +939,7 @@ void DraggableMapScene::ensureMapInBoundary()
     cocos2d::Vec2 currentPos = _mapSprite->getPosition();
     cocos2d::Vec2 newPos = currentPos;
 
+    // 限制 X 轴范围
     if (currentPos.x < _mapBoundary.getMinX())
     {
         newPos.x = _mapBoundary.getMinX();
@@ -828,6 +949,7 @@ void DraggableMapScene::ensureMapInBoundary()
         newPos.x = _mapBoundary.getMaxX();
     }
 
+    // 限制 Y 轴范围
     if (currentPos.y < _mapBoundary.getMinY())
     {
         newPos.y = _mapBoundary.getMinY();
@@ -837,6 +959,7 @@ void DraggableMapScene::ensureMapInBoundary()
         newPos.y = _mapBoundary.getMaxY();
     }
 
+    // 仅在位置确实改变时更新，减少不必要的渲染开销
     if (newPos != currentPos)
     {
         _mapSprite->setPosition(newPos);
@@ -858,11 +981,11 @@ void DraggableMapScene::startPlacingBuilding(const BuildingData& building)
     _ghostSprite = Sprite::create(building.imageFile);
     if (_ghostSprite)
     {
-        _ghostSprite->setOpacity(150);
-        _ghostSprite->setAnchorPoint(Vec2(0.5f, 0.2f));
+        _ghostSprite->setOpacity(150);                   // 半透明显示
+        _ghostSprite->setAnchorPoint(Vec2(0.5f, 0.2f));  // 设置锚点偏下，符合2.5D视角
         _ghostSprite->setScale(building.scaleFactor);
-        _ghostSprite->setPosition(Vec2(-1000, -1000));
-        _mapSprite->addChild(_ghostSprite, 2000);
+        _ghostSprite->setPosition(Vec2(-1000.0f, -1000.0f));  // 初始移出屏幕
+        _mapSprite->addChild(_ghostSprite, 2000);             // 这里的2000是临时的最高层级
         showBuildingHint("点击地图开始放置建筑");
     }
 }
@@ -878,11 +1001,12 @@ void DraggableMapScene::placeBuilding(Vec2 gridPos)
     {
         CCLOG("Cannot build here! Area occupied or out of bounds.");
 
+        // 播放拒绝动画
         auto flashRed = TintTo::create(0.1f, 255, 0, 0);
         auto flashNormal = TintTo::create(0.1f, 255, 255, 255);
-        auto shake = MoveBy::create(0.05f, Vec2(5, 0));
-        auto shakeBack = MoveBy::create(0.05f, Vec2(-10, 0));
-        auto shakeEnd = MoveBy::create(0.05f, Vec2(5, 0));
+        auto shake = MoveBy::create(0.05f, Vec2(5.0f, 0.0f));
+        auto shakeBack = MoveBy::create(0.05f, Vec2(-10.0f, 0.0f));
+        auto shakeEnd = MoveBy::create(0.05f, Vec2(5.0f, 0.0f));
         auto sequence = Sequence::create(Spawn::create(flashRed, shake, nullptr),
                                          Spawn::create(flashNormal, shakeBack, nullptr), shakeEnd, nullptr);
         _ghostSprite->runAction(sequence);
@@ -891,18 +1015,25 @@ void DraggableMapScene::placeBuilding(Vec2 gridPos)
         return;
     }
 
+    // 1. 标记网格被占用
     _gridMap->markArea(gridPos, _selectedBuilding.gridSize, true);
 
+    // 2. 创建正式建筑 Sprite
     auto building = Sprite::create(_selectedBuilding.imageFile);
     building->setAnchorPoint(Vec2(0.5f, 0.2f));
     building->setScale(_selectedBuilding.scaleFactor);
 
     Vec2 buildingPos = calculateBuildingPosition(gridPos);
     building->setPosition(buildingPos);
-    building->setLocalZOrder(10000 - buildingPos.y);
+
+    // 3. 设置动态 Z-Order (Y-Sorting)
+    // 核心逻辑：Y坐标越小（越靠下），Z-Order 越大，实现近大远小的遮挡效果
+    // 使用 static_cast 解决 float 转 int 的截断警告
+    building->setLocalZOrder(10000 - static_cast<int>(buildingPos.y));
 
     _mapSprite->addChild(building);
 
+    // 4. 播放落地动画（回弹 + 淡入）
     building->setScale(0.0f);
     auto scaleAction = EaseBackOut::create(ScaleTo::create(0.4f, _selectedBuilding.scaleFactor));
     auto fadeIn = FadeIn::create(0.3f);
@@ -912,6 +1043,7 @@ void DraggableMapScene::placeBuilding(Vec2 gridPos)
 
     CCLOG("Building placed: %s at grid (%.0f, %.0f)", _selectedBuilding.name.c_str(), gridPos.x, gridPos.y);
 
+    // 5. 延迟退出建造模式
     auto delay = DelayTime::create(1.0f);
     auto callback = CallFunc::create([this]() { endPlacing(); });
     this->runAction(Sequence::create(delay, callback, nullptr));
@@ -919,13 +1051,17 @@ void DraggableMapScene::placeBuilding(Vec2 gridPos)
 
 void DraggableMapScene::cancelPlacing()
 {
-    if (_isDraggingBuilding)
+    if (_isWaitingConfirm)
+    {
+        onCancelBuilding();
+    }
+    else if (_isDraggingBuilding)
     {
         _isDraggingBuilding = false;
 
         if (_ghostSprite)
         {
-            _ghostSprite->setPosition(Vec2(-1000, -1000));
+            _ghostSprite->setPosition(Vec2(-1000.0f, -1000.0f));
         }
 
         if (_gridMap)
@@ -945,6 +1081,8 @@ void DraggableMapScene::endPlacing()
 {
     _isBuildingMode = false;
     _isDraggingBuilding = false;
+    _isWaitingConfirm = false;
+    _pendingGridPos = Vec2::ZERO;
     _selectedBuilding = BuildingData("", "", Size::ZERO);
 
     auto hint = this->getChildByName("buildingHint");
@@ -964,4 +1102,100 @@ void DraggableMapScene::endPlacing()
         _ghostSprite->removeFromParent();
         _ghostSprite = nullptr;
     }
+
+    hideConfirmButtons();
+}
+
+void DraggableMapScene::showConfirmButtons(const cocos2d::Vec2& buildingWorldPos)
+{
+    hideConfirmButtons();
+
+    float buttonSize = 45.0f;
+    float offsetX = 60.0f;
+    float offsetY = 80.0f;
+
+    // 创建确认按钮（绿色）
+    _confirmButton = ui::Button::create();
+    _confirmButton->setTitleText("✓");
+    _confirmButton->setTitleFontSize(30);
+    _confirmButton->setTitleColor(Color3B::WHITE);
+    _confirmButton->setContentSize(Size(buttonSize, buttonSize));
+    _confirmButton->setPosition(Vec2(buildingWorldPos.x + offsetX, buildingWorldPos.y + offsetY));
+
+    // 使用LayerColor作为背景
+    auto confirmBg = LayerColor::create(Color4B(0, 200, 0, 200), buttonSize, buttonSize);
+    confirmBg->setPosition(Vec2(-buttonSize / 2, -buttonSize / 2));
+    _confirmButton->addChild(confirmBg, -1);
+
+    _confirmButton->addClickEventListener([this](Ref* sender) { this->onConfirmBuilding(); });
+    this->addChild(_confirmButton, 10000);
+
+    // 创建取消按钮（红色）
+    _cancelButton = ui::Button::create();
+    _cancelButton->setTitleText("✗");
+    _cancelButton->setTitleFontSize(30);
+    _cancelButton->setTitleColor(Color3B::WHITE);
+    _cancelButton->setContentSize(Size(buttonSize, buttonSize));
+    _cancelButton->setPosition(Vec2(buildingWorldPos.x - offsetX, buildingWorldPos.y + offsetY));
+
+    // 使用LayerColor作为背景
+    auto cancelBg = LayerColor::create(Color4B(200, 0, 0, 200), buttonSize, buttonSize);
+    cancelBg->setPosition(Vec2(-buttonSize / 2, -buttonSize / 2));
+    _cancelButton->addChild(cancelBg, -1);
+
+    _cancelButton->addClickEventListener([this](Ref* sender) { this->onCancelBuilding(); });
+    this->addChild(_cancelButton, 10000);
+
+    // 添加缩放动画
+    auto scaleIn = ScaleTo::create(0.2f, 1.0f);
+    _confirmButton->setScale(0.0f);
+    _confirmButton->runAction(EaseBackOut::create(scaleIn->clone()));
+    _cancelButton->setScale(0.0f);
+    _cancelButton->runAction(EaseBackOut::create(scaleIn->clone()));
+}
+
+void DraggableMapScene::hideConfirmButtons()
+{
+    if (_confirmButton)
+    {
+        _confirmButton->removeFromParent();
+        _confirmButton = nullptr;
+    }
+
+    if (_cancelButton)
+    {
+        _cancelButton->removeFromParent();
+        _cancelButton = nullptr;
+    }
+}
+
+void DraggableMapScene::onConfirmBuilding()
+{
+    if (!_isWaitingConfirm || !_ghostSprite || !_gridMap)
+        return;
+
+    placeBuilding(_pendingGridPos);
+}
+
+void DraggableMapScene::onCancelBuilding()
+{
+    if (!_isWaitingConfirm)
+        return;
+
+    _isWaitingConfirm = false;
+    _isDraggingBuilding = false;
+    _pendingGridPos = Vec2::ZERO;
+
+    if (_ghostSprite)
+    {
+        _ghostSprite->setPosition(Vec2(-1000, -1000));
+    }
+
+    if (_gridMap)
+    {
+        _gridMap->hideBuildingBase();
+    }
+
+    hideConfirmButtons();
+    showBuildingHint("已取消建造，点击地图重新选择位置");
 }
