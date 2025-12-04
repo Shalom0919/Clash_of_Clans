@@ -1,10 +1,10 @@
 ﻿#include "DraggableMapScene.h"
 
+#include "BattleScene.h"
+#include "Managers/AccountManager.h"
+#include "Managers/SocketClient.h"
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
-#include "Managers/SocketClient.h"
-#include "Managers/AccountManager.h"
-#include "BattleScene.h"
 
 USING_NS_CC;
 using namespace ui;
@@ -84,14 +84,15 @@ bool DraggableMapScene::init()
 
     connectToServer();
     setupNetworkCallbacks();
-    
+
     // 添加每帧更新以处理网络回调
     scheduleUpdate();
-    
+
     return true;
 }
 
-void DraggableMapScene::update(float dt) {
+void DraggableMapScene::update(float dt)
+{
     SocketClient::getInstance().processCallbacks();
 }
 
@@ -226,15 +227,15 @@ void DraggableMapScene::setupUI()
     _battleButton = Button::create();
     _battleButton->setTitleText("Attack!");
     _battleButton->setTitleFontSize(24);
-    _battleButton->setPosition(Vec2(100, _visibleSize.height - 50));
+    _battleButton->setPosition(Vec2(100, 100));
     _battleButton->addClickEventListener(CC_CALLBACK_1(DraggableMapScene::onBattleButtonClicked, this));
     this->addChild(_battleButton, 20);
-    
+
     // 部落按钮
     _clanButton = Button::create();
     _clanButton->setTitleText("Clan");
     _clanButton->setTitleFontSize(24);
-    _clanButton->setPosition(Vec2(200, _visibleSize.height - 50));
+    _clanButton->setPosition(Vec2(_visibleSize.width - 50, 100));
     _clanButton->addClickEventListener(CC_CALLBACK_1(DraggableMapScene::onClanButtonClicked, this));
     this->addChild(_clanButton, 20);
 
@@ -1229,60 +1230,65 @@ void DraggableMapScene::onCancelBuilding()
     showBuildingHint("已取消建造，点击地图重新选择位置");
 }
 
-void DraggableMapScene::connectToServer() {
+void DraggableMapScene::connectToServer()
+{
     auto& client = SocketClient::getInstance();
-    
-    if (!client.isConnected()) {
+
+    if (!client.isConnected())
+    {
         // 连接到服务器（本地测试用 127.0.0.1）
         bool connected = client.connect("127.0.0.1", 8888);
-        
-        if (connected) {
+
+        if (connected)
+        {
             // 登录
             auto account = AccountManager::getInstance().getCurrentAccount();
-            if (account) {
+            if (account)
+            {
                 client.login(account->userId, account->username, 1000);  // 初始奖杯1000
             }
         }
     }
 }
 
-void DraggableMapScene::setupNetworkCallbacks() {
+void DraggableMapScene::setupNetworkCallbacks()
+{
     auto& client = SocketClient::getInstance();
-    
+
     client.setOnLoginResult([](bool success, const std::string& msg) {
-        if (success) {
+        if (success)
+        {
             cocos2d::log("Login successful!");
-        } else {
+        }
+        else
+        {
             cocos2d::log("Login failed: %s", msg.c_str());
         }
     });
-    
-    client.setOnDisconnected([]() {
-        cocos2d::log("Disconnected from server!");
-    });
+
+    client.setOnDisconnected([]() { cocos2d::log("Disconnected from server!"); });
 }
 
-void DraggableMapScene::onBattleButtonClicked(Ref* sender) {
-    if (!SocketClient::getInstance().isConnected()) {
+void DraggableMapScene::onBattleButtonClicked(Ref* sender)
+{
+    if (!SocketClient::getInstance().isConnected())
+    {
         // 显示未连接提示
         auto label = Label::createWithSystemFont("未连接到服务器!", "Arial", 24);
         label->setPosition(_visibleSize / 2);
         label->setTextColor(Color4B::RED);
         this->addChild(label, 100);
-        
-        label->runAction(Sequence::create(
-            DelayTime::create(2.0f),
-            RemoveSelf::create(),
-            nullptr
-        ));
+
+        label->runAction(Sequence::create(DelayTime::create(2.0f), RemoveSelf::create(), nullptr));
         return;
     }
-    
+
     auto scene = BattleScene::createScene();
     Director::getInstance()->pushScene(TransitionFade::create(0.3f, scene));
 }
 
-void DraggableMapScene::onClanButtonClicked(Ref* sender) {
+void DraggableMapScene::onClanButtonClicked(Ref* sender)
+{
     // TODO: 打开部落界面
     cocos2d::log("Clan button clicked");
 }
