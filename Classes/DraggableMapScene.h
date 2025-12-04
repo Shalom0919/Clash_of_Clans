@@ -1,4 +1,5 @@
-﻿#ifndef __DRAGGABLE_MAP_SCENE_H__
+﻿// DraggableMapScene.h - 简化版本
+#ifndef __DRAGGABLE_MAP_SCENE_H__
 #define __DRAGGABLE_MAP_SCENE_H__
 
 #include "cocos2d.h"
@@ -6,6 +7,7 @@
 #include "GridMap.h"
 #include "HeroManager.h"
 #include "BuildingData.h"
+#include "TownHallSystem.h"  // 只包含这个头文件
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -15,10 +17,9 @@ class DraggableMapScene : public cocos2d::Scene
 public:
     static cocos2d::Scene* createScene();
     virtual bool init() override;
-
-    DraggableMapScene() = default;
-    ~DraggableMapScene() = default;
-
+    virtual ~DraggableMapScene();
+    void closeUpgradeUI();  // 关闭升级界面
+    void cleanupUpgradeUI();
     CREATE_FUNC(DraggableMapScene);
 
 private:
@@ -59,6 +60,10 @@ private:
 
     HeroManager* _heroManager;
 
+    // 使用新系统的类
+    TownHallUpgradeUI* _currentUpgradeUI;
+    ResourceDisplayUI* _resourceUI;
+
     std::string _currentMapName;
     std::vector<std::string> _mapNames;
     std::vector<BuildingData> _buildingList;
@@ -70,11 +75,10 @@ private:
     };
     std::vector<MapElement> _mapElements;
 
-    // --- Combat/Pathing ---
     struct PlacedBuildingInfo {
-        cocos2d::Size size;       // grid size
-        cocos2d::Vec2 gridPos;    // top-left grid
-        cocos2d::Node* node;      // visual node
+        cocos2d::Size size;
+        cocos2d::Vec2 gridPos;
+        cocos2d::Node* node;
     };
     std::vector<PlacedBuildingInfo> _placedBuildings;
 
@@ -89,6 +93,8 @@ private:
     void createBuildingSelection();
     void createMapList();
 
+    void setupResourceDisplay();
+
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
@@ -98,7 +104,7 @@ private:
     void placeBuilding(cocos2d::Vec2 gridPos);
     void cancelPlacing();
     void endPlacing();
-    
+
     void showConfirmButtons(const cocos2d::Vec2& buildingWorldPos);
     void hideConfirmButtons();
     void onConfirmBuilding();
@@ -121,10 +127,10 @@ private:
     void createSampleMapElements();
     void updateMapElementsPosition();
 
-    // Compute the closest walkable grid cell adjacent to a placed building
-    bool getClosestAdjacentFreeCell(const PlacedBuildingInfo& bld, const cocos2d::Vec2& fromGrid, cocos2d::Vec2& outTargetGrid) const;
+    // 大本营点击处理
+    void onTownHallClicked(TownHallBuilding* townHall);
 
-    // Order the selected hero to attack nearest building by pathfinding
+    bool getClosestAdjacentFreeCell(const PlacedBuildingInfo& bld, const cocos2d::Vec2& fromGrid, cocos2d::Vec2& outTargetGrid) const;
     void commandSelectedHeroAttackNearest();
 };
 

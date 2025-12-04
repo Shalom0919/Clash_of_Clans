@@ -216,7 +216,7 @@ int ResourceManager::GetResourceCapacity(ResourceType type) const {
 
     auto it = capacities_.find(type);
 
-    return (it != resources_.end()) ? it->second : 0;
+    return (it != capacities_.end()) ? it->second : 0;
 
 }
 

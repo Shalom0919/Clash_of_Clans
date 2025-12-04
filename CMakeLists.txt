@@ -70,6 +70,7 @@ list(APPEND GAME_SOURCE
      Classes/Hero.cpp
      Classes/MapConfigManager.cpp
      Classes/AccountSelectScene.cpp
+     Classes/TownHallSystem.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -87,6 +88,7 @@ list(APPEND GAME_HEADER
      Classes/BuildingData.h
      Classes/MapConfigManager.h
      Classes/AccountSelectScene.h
+     Classes/TownHallSystem.h
      )
 
 if(ANDROID)
