@@ -66,13 +66,12 @@ list(APPEND GAME_SOURCE
      Classes/Managers/StorageManager.cpp
      Classes/Managers/NetworkManager.cpp
      Classes/Managers/MusicManager.cpp
-     Classes/HeroManager.cpp
-     Classes/Hero.cpp
      Classes/MapConfigManager.cpp
      Classes/AccountSelectScene.cpp
      Classes/Managers/SocketClient.cpp
      Classes/BattleScene.cpp
      Classes/TownHallSystem.cpp
+     Classes/Unit/unit.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -85,14 +84,13 @@ list(APPEND GAME_HEADER
      Classes/Managers/StorageManager.h
      Classes/Managers/NetworkManager.h
      Classes/Managers/MusicManager.h
-     Classes/HeroManager.h
-     Classes/Hero.h
      Classes/BuildingData.h
      Classes/MapConfigManager.h
      Classes/AccountSelectScene.h
      Classes/Managers/SocketClient.h
      Classes/BattleScene.h
      Classes/TownHallSystem.h
+     Classes/Unit/unit.h
      )
 
 if(ANDROID)

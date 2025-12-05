@@ -5,7 +5,8 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 #include "GridMap.h"
-#include "HeroManager.h"
+//#include "HeroManager.h"
+#include "Unit/unit.h"//从hero类改变到unit类
 #include "BuildingData.h"
 #include "TownHallSystem.h"  // 只包含这个头文件
 #include <unordered_map>
@@ -58,7 +59,7 @@ private:
     cocos2d::ui::Button* _confirmButton;
     cocos2d::ui::Button* _cancelButton;
 
-    HeroManager* _heroManager;
+    //HeroManager* _heroManager;
 
     // 使用新系统的类
     TownHallUpgradeUI* _currentUpgradeUI;
