@@ -1,0 +1,587 @@
+﻿/**
+ * @file BuildingManager.cpp
+ * @brief 建筑管理器实现
+ */
+#include "BuildingManager.h"
+#include "ArmyBuilding.h"
+#include "ResourceBuilding.h"
+#include "TownHallBuilding.h"
+USING_NS_CC;
+bool BuildingManager::init()
+{
+    if (!Node::init())
+        return false;
+    // 启用每帧更新
+    scheduleUpdate();
+    return true;
+}
+void BuildingManager::setup(cocos2d::Sprite* mapSprite, GridMap* gridMap)
+{
+    _mapSprite = mapSprite;
+    _gridMap = gridMap;
+}
+void BuildingManager::startPlacing(const BuildingData& buildingData)
+{
+    if (!_mapSprite || !_gridMap)
+    {
+        CCLOG("BuildingManager: Map or grid not set!");
+        return;
+    }
+    _isBuildingMode = true;
+    _isDraggingBuilding = false;
+    _isWaitingConfirm = false;
+    _selectedBuilding = buildingData;
+    // 创建虚影精灵
+    _ghostSprite = Sprite::create(buildingData.imageFile);
+    if (_ghostSprite)
+    {
+        _ghostSprite->setOpacity(150);
+        _ghostSprite->setAnchorPoint(Vec2(0.5f, 0.2f));
+        _ghostSprite->setScale(buildingData.scaleFactor);
+        _ghostSprite->setPosition(Vec2(-1000.0f, -1000.0f)); // 初始位置在屏幕外
+        _mapSprite->addChild(_ghostSprite, 2000);
+        showHint("点击地图开始放置建筑");
+    }
+}
+void BuildingManager::cancelPlacing()
+{
+    endPlacing();
+    showHint("已取消建造，点击地图重新选择位置");
+}
+bool BuildingManager::onTouchBegan(const cocos2d::Vec2& touchPos)
+{
+    if (!_isBuildingMode || _isDraggingBuilding || _isWaitingConfirm)
+        return false;
+    _isDraggingBuilding = true;
+    if (_ghostSprite && _ghostSprite->getParent() && _gridMap)
+    {
+        Vec2 rawGridPos = _gridMap->getGridPosition(touchPos);
+        int offsetX = static_cast<int>((_selectedBuilding.gridSize.width - 1.0f) / 2.0f);
+        int offsetY = static_cast<int>((_selectedBuilding.gridSize.height - 1.0f) / 2.0f);
+        Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+        Vec2 centerAlignedGridPos = rawGridPos - offset;
+        Vec2 buildingPos = calculateBuildingPosition(centerAlignedGridPos);
+        _ghostSprite->setPosition(buildingPos);
+        _ghostSprite->setVisible(true);
+        bool canBuild = _gridMap->checkArea(centerAlignedGridPos, _selectedBuilding.gridSize);
+        _gridMap->updateBuildingBase(centerAlignedGridPos, _selectedBuilding.gridSize, canBuild);
+        showHint("拖动调整位置，松开鼠标后确认");
+    }
+    return true;
+}
+
+void BuildingManager::onTouchMoved(const cocos2d::Vec2& touchPos)
+{
+    if (!_isBuildingMode || !_isDraggingBuilding || !_ghostSprite || !_gridMap || !_ghostSprite->getParent())
+        return;
+    Vec2 rawGridPos = _gridMap->getGridPosition(touchPos);
+    int offsetX = static_cast<int>((_selectedBuilding.gridSize.width - 1.0f) / 2.0f);
+    int offsetY = static_cast<int>((_selectedBuilding.gridSize.height - 1.0f) / 2.0f);
+    Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+    Vec2 centerAlignedGridPos = rawGridPos - offset;
+    bool canBuild = _gridMap->checkArea(centerAlignedGridPos, _selectedBuilding.gridSize);
+    _gridMap->updateBuildingBase(centerAlignedGridPos, _selectedBuilding.gridSize, canBuild);
+    Vec2 buildingPos = calculateBuildingPosition(centerAlignedGridPos);
+    _ghostSprite->setPosition(buildingPos);
+    _ghostSprite->setColor(canBuild ? Color3B::WHITE : Color3B(255, 100, 100));
+}
+
+void BuildingManager::onTouchEnded(const cocos2d::Vec2& touchPos)
+{
+    if (!_isBuildingMode || !_isDraggingBuilding || !_gridMap || !_ghostSprite || !_ghostSprite->getParent())
+        return;
+    Vec2 rawGridPos = _gridMap->getGridPosition(touchPos);
+    int offsetX = static_cast<int>((_selectedBuilding.gridSize.width - 1.0f) / 2.0f);
+    int offsetY = static_cast<int>((_selectedBuilding.gridSize.height - 1.0f) / 2.0f);
+    Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+    Vec2 centerAlignedGridPos = rawGridPos - offset;
+    bool canBuild = _gridMap->checkArea(centerAlignedGridPos, _selectedBuilding.gridSize);
+    if (canBuild)
+    {
+        // 位置合法：进入待确认状态
+        _pendingGridPos = centerAlignedGridPos;
+        _isDraggingBuilding = false;
+        _isWaitingConfirm = true;
+        showHint("点击按钮确认或取消建造");
+    }
+    else
+    {
+        // 位置非法：播放拒绝动画
+        auto flashRed = TintTo::create(0.1f, 255, 0, 0);
+        auto flashNormal = TintTo::create(0.1f, 255, 255, 255);
+        auto shake = MoveBy::create(0.05f, Vec2(5.0f, 0.0f));
+        auto shakeBack = MoveBy::create(0.05f, Vec2(-10.0f, 0.0f));
+        auto shakeEnd = MoveBy::create(0.05f, Vec2(5.0f, 0.0f));
+        auto sequence = Sequence::create(Spawn::create(flashRed, shake, nullptr),
+                                         Spawn::create(flashNormal, shakeBack, nullptr), shakeEnd, nullptr);
+        _ghostSprite->runAction(sequence);
+        showHint("无法在此处建造！请重新选择位置");
+    }
+}
+void BuildingManager::confirmBuilding()
+{
+    if (!_isWaitingConfirm)
+        return;
+    placeBuilding(_pendingGridPos);
+}
+void BuildingManager::cancelBuilding()
+{
+    if (!_isWaitingConfirm)
+        return;
+    _isWaitingConfirm = false;
+    _isDraggingBuilding = false;
+    _pendingGridPos = Vec2::ZERO;
+    if (_ghostSprite)
+    {
+        _ghostSprite->setPosition(Vec2(-1000, -1000));
+    }
+    if (_gridMap)
+    {
+        _gridMap->hideBuildingBase();
+    }
+    showHint("已取消建造，点击地图重新选择位置");
+}
+cocos2d::Vec2 BuildingManager::getPendingBuildingWorldPos() const
+{
+    if (!_mapSprite || !_gridMap)
+        return Vec2::ZERO;
+    Vec2 buildingPos = calculateBuildingPosition(_pendingGridPos);
+    return _mapSprite->convertToWorldSpace(buildingPos);
+}
+void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
+{
+    if (!_ghostSprite || !_isBuildingMode || _selectedBuilding.name.empty() || !_gridMap)
+        return;
+    bool canBuild = _gridMap->checkArea(gridPos, _selectedBuilding.gridSize);
+    if (!canBuild)
+    {
+        showHint("无法在此处建造！区域被占用或越界");
+        return;
+    }
+    // ==================== 检查并扣除建造费用 ====================
+    auto& resMgr = ResourceManager::getInstance();
+    int cost = _selectedBuilding.cost;
+    ResourceType costType = _selectedBuilding.costType;
+    if (cost > 0 && !resMgr.consume(costType, cost))
+    {
+        std::string resName = (costType == ResourceType::kGold) ? "金币" : "圣水";
+        showHint(StringUtils::format("%s不足！需要 %d %s", resName.c_str(), cost, resName.c_str()));
+        return;
+    }
+    // 1. 标记网格被占用
+    _gridMap->markArea(gridPos, _selectedBuilding.gridSize, true);
+    // 2. 创建建筑实体
+    BaseBuilding* building = createBuildingEntity(_selectedBuilding);
+    if (!building)
+    {
+        // 建造失败，退还资源
+        if (cost > 0)
+        {
+            resMgr.addResource(costType, cost);
+        }
+        showHint("创建建筑失败！");
+        return;
+    }
+    // 3. 设置建筑属性
+    building->setGridPosition(gridPos);
+    building->setGridSize(_selectedBuilding.gridSize);
+    building->setAnchorPoint(Vec2(0.5f, 0.2f));
+    building->setScale(_selectedBuilding.scaleFactor);
+    Vec2 buildingPos = calculateBuildingPosition(gridPos);
+    building->setPosition(buildingPos);
+    // 4. 设置动态 Z-Order (Y-Sorting)
+    building->setLocalZOrder(10000 - static_cast<int>(buildingPos.y));
+    _mapSprite->addChild(building);
+    // 5. 播放落地动画
+    building->setScale(0.0f);
+    auto scaleAction = EaseBackOut::create(ScaleTo::create(0.4f, _selectedBuilding.scaleFactor));
+    auto fadeIn = FadeIn::create(0.3f);
+    building->runAction(Spawn::create(scaleAction, fadeIn, nullptr));
+    // 6. 保存到建筑列表
+    _buildings.pushBack(building);
+    showHint(StringUtils::format("%s 建造完成！", _selectedBuilding.name.c_str()));
+    CCLOG("Building placed: %s at grid (%.0f, %.0f)", _selectedBuilding.name.c_str(), gridPos.x, gridPos.y);
+    
+    // 7. 为建筑添加点击监听器
+    setupBuildingClickListener(building);
+    
+    // 8. 触发回调
+    if (_onBuildingPlaced)
+    {
+        _onBuildingPlaced(building);
+    }
+    // 9. 延迟退出建造模式
+    auto delay = DelayTime::create(1.0f);
+    auto callback = CallFunc::create([this]() { endPlacing(); });
+    this->runAction(Sequence::create(delay, callback, nullptr));
+}
+BaseBuilding* BuildingManager::createBuildingEntity(const BuildingData& buildingData)
+{
+    if (buildingData.name == "大本营")
+    {
+        return TownHallBuilding::create(1);
+    }
+    else if (buildingData.name == "金矿")
+    {
+        return ResourceBuilding::create(ResourceType::kGold, 1);
+    }
+    else if (buildingData.name == "圣水收集器")
+    {
+        return ResourceBuilding::create(ResourceType::kElixir, 1);
+    }
+    else if (buildingData.name == "兵营")
+    {
+        return ArmyBuilding::create(1);
+    }
+    else
+    {
+        CCLOG("BuildingManager: Unknown building type: %s", buildingData.name.c_str());
+        return nullptr;
+    }
+}
+cocos2d::Vec2 BuildingManager::calculateBuildingPosition(const cocos2d::Vec2& gridPos) const
+{
+    if (!_gridMap)
+        return Vec2::ZERO;
+    Vec2 posStart = _gridMap->getPositionFromGrid(gridPos);
+    Vec2 posEnd = _gridMap->getPositionFromGrid(
+        gridPos + Vec2(_selectedBuilding.gridSize.width - 1, _selectedBuilding.gridSize.height - 1));
+    Vec2 centerPos = (posStart + posEnd) / 2.0f;
+    return centerPos;
+}
+void BuildingManager::endPlacing()
+{
+    _isBuildingMode = false;
+    _isDraggingBuilding = false;
+    _isWaitingConfirm = false;
+    _pendingGridPos = Vec2::ZERO;
+    _selectedBuilding = BuildingData("", "", Size::ZERO);
+    if (_gridMap)
+    {
+        _gridMap->showWholeGrid(false);
+        _gridMap->hideBuildingBase();
+    }
+    if (_ghostSprite)
+    {
+        _ghostSprite->removeFromParent();
+        _ghostSprite = nullptr;
+    }
+}
+void BuildingManager::update(float dt)
+{
+    // 遍历所有建筑，调用 tick 方法
+    for (auto* building : _buildings)
+    {
+        if (building)
+        {
+            building->tick(dt);
+        }
+    }
+}
+BaseBuilding* BuildingManager::getBuildingAtPosition(const cocos2d::Vec2& touchPos)
+{
+    if (!_mapSprite)
+        return nullptr;
+    // 从后往前遍历（后添加的在上层）
+    for (auto it = _buildings.rbegin(); it != _buildings.rend(); ++it)
+    {
+        BaseBuilding* building = *it;
+        if (!building || !building->isVisible())
+            continue;
+        // 将触摸点转换到建筑的本地坐标系
+        Vec2 localPos = building->convertToNodeSpace(touchPos);
+        Rect rect = Rect(Vec2::ZERO, building->getContentSize());
+        if (rect.containsPoint(localPos))
+        {
+            return building;
+        }
+    }
+    return nullptr;
+}
+void BuildingManager::showHint(const std::string& hint)
+{
+    if (_onHint)
+    {
+        _onHint(hint);
+    }
+}
+
+void BuildingManager::setupBuildingClickListener(BaseBuilding* building)
+{
+    /**
+     * 为建筑添加点击监听器
+     * 支持功能：
+     * 1. 单击 - 打开升级UI
+     * 2. 长按拖动 - 移动建筑位置
+     */
+    if (!building)
+        return;
+
+    Director::getInstance()->getEventDispatcher()->removeEventListenersForTarget(building);
+
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->setSwallowTouches(true);
+
+    listener->onTouchBegan = [this, building](Touch* touch, Event* event) {
+        if (!building->isVisible())
+            return false;
+
+        Vec2 touchInNode = building->convertTouchToNodeSpace(touch);
+        Rect rect = Rect(Vec2::ZERO, building->getContentSize());
+
+        if (rect.containsPoint(touchInNode))
+        {
+            // 记录触摸起点，用于判断是否拖动
+            return true;
+        }
+        return false;
+    };
+
+    listener->onTouchMoved = [this, building](Touch* touch, Event* event) {
+        // 长按后拖动，进入移动模式
+        if (!_isMovingBuilding && !_isBuildingMode)
+        {
+            startMovingBuilding(building);
+        }
+        
+        // 如果正在移动建筑，更新幽灵精灵位置
+        if (_isMovingBuilding && _movingBuilding == building)
+        {
+            onBuildingTouchMoved(touch->getLocation());
+        }
+    };
+
+    listener->onTouchEnded = [this, building](Touch* touch, Event* event) {
+        if (_isMovingBuilding && _movingBuilding == building && building)
+        {
+            // 在移动模式下释放触摸，确认新位置或取消
+            onBuildingTouchEnded(touch->getLocation(), building);
+        }
+        else if (!_isBuildingMode && !_isMovingBuilding && building)
+        {
+            // 在正常状态下（不是建造也不是移动），打开升级UI
+            if (_onBuildingClicked)
+            {
+                _onBuildingClicked(building);
+            }
+        }
+    };
+
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, building);
+}
+
+// ==================== 建筑移动相关实现 ====================
+
+void BuildingManager::startMovingBuilding(BaseBuilding* building)
+{
+    /**
+     * 进入建筑移动模式
+     * 流程：
+     * 1. 清除原网格占用
+     * 2. 创建幽灵精灵显示预览
+     * 3. 显示提示信息
+     */
+    if (!building || !_gridMap || _isMovingBuilding)
+        return;
+
+    _isMovingBuilding = true;
+    _movingBuilding = building;
+    _buildingOriginalGridPos = building->getGridPosition();
+
+    // 清除原位置的网格占用
+    _gridMap->markArea(_buildingOriginalGridPos, building->getGridSize(), false);
+    _gridMap->showWholeGrid(true);
+
+    // 创建幽灵精灵（显示建筑预览）
+    _movingGhostSprite = Sprite::createWithTexture(building->getTexture());
+    
+    if (_movingGhostSprite)
+    {
+        _movingGhostSprite->setOpacity(150);
+        _movingGhostSprite->setAnchorPoint(building->getAnchorPoint());
+        _movingGhostSprite->setScale(building->getScale());
+        _movingGhostSprite->setPosition(building->getPosition());
+        _mapSprite->addChild(_movingGhostSprite, 2000);
+    }
+
+    // 隐藏原建筑
+    building->setVisible(false);
+
+    showHint("拖动调整建筑位置，松开鼠标后确认");
+}
+
+void BuildingManager::cancelMovingBuilding()
+{
+    /**
+     * 取消建筑移动
+     * 恢复原位置和网格占用
+     */
+    if (!_isMovingBuilding || !_movingBuilding)
+        return;
+
+    // 恢复原位置的网格占用
+    if (_gridMap)
+    {
+        _gridMap->markArea(_buildingOriginalGridPos, _movingBuilding->getGridSize(), true);
+        _gridMap->showWholeGrid(false);
+        _gridMap->hideBuildingBase();
+    }
+
+    // 显示原建筑
+    _movingBuilding->setVisible(true);
+
+    // 移除幽灵精灵
+    if (_movingGhostSprite)
+    {
+        _movingGhostSprite->removeFromParent();
+        _movingGhostSprite = nullptr;
+    }
+
+    _isMovingBuilding = false;
+    _movingBuilding = nullptr;
+    _buildingOriginalGridPos = Vec2::ZERO;
+
+    showHint("已取消移动");
+}
+
+void BuildingManager::onBuildingTouchMoved(const cocos2d::Vec2& touchPos)
+{
+    /**
+     * 处理建筑移动时的触摸移动事件
+     */
+    if (!_isMovingBuilding || !_movingBuilding || !_movingGhostSprite || !_gridMap)
+        return;
+
+    // 获取新的网格位置
+    Vec2 rawGridPos = _gridMap->getGridPosition(touchPos);
+    
+    // 计算中心对齐的网格位置
+    int offsetX = static_cast<int>((_movingBuilding->getGridSize().width - 1.0f) / 2.0f);
+    int offsetY = static_cast<int>((_movingBuilding->getGridSize().height - 1.0f) / 2.0f);
+    Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+    Vec2 centerAlignedGridPos = rawGridPos - offset;
+
+    // 检查新位置是否可用（原位置除外）
+    bool canPlace = false;
+    if (_gridMap->checkArea(centerAlignedGridPos, _movingBuilding->getGridSize()))
+    {
+        // 如果新位置与原位置相同，则可以放置
+        if (centerAlignedGridPos == _buildingOriginalGridPos)
+        {
+            canPlace = true;
+        }
+        else
+        {
+            // 检查新位置是否为空（不被占用）
+            canPlace = _gridMap->checkArea(centerAlignedGridPos, _movingBuilding->getGridSize());
+        }
+    }
+
+    // 更新幽灵精灵位置
+    Vec2 buildingPos = calculateBuildingPositionForMoving(centerAlignedGridPos);
+    _movingGhostSprite->setPosition(buildingPos);
+    _movingGhostSprite->setColor(canPlace ? Color3B::WHITE : Color3B(255, 100, 100));
+
+    // 更新网格显示
+    _gridMap->updateBuildingBase(centerAlignedGridPos, _movingBuilding->getGridSize(), canPlace);
+}
+
+void BuildingManager::onBuildingTouchEnded(const cocos2d::Vec2& touchPos, BaseBuilding* building)
+{
+    /**
+     * 处理建筑移动时的触摸结束事件
+     * 通过参数传递 building 指针而不是依赖全局 _movingBuilding，防止空指针异常
+     */
+    if (!_isMovingBuilding || !building || !_gridMap || _movingBuilding != building)
+        return;
+
+    // 获取最终的网格位置
+    Vec2 rawGridPos = _gridMap->getGridPosition(touchPos);
+    int offsetX = static_cast<int>((building->getGridSize().width - 1.0f) / 2.0f);
+    int offsetY = static_cast<int>((building->getGridSize().height - 1.0f) / 2.0f);
+    Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
+    Vec2 newGridPos = rawGridPos - offset;
+
+    // 检查位置是否有效
+    bool canPlace = _gridMap->checkArea(newGridPos, building->getGridSize());
+
+    if (canPlace)
+    {
+        // 位置有效，确认移动
+        // 先更新建筑的网格位置
+        building->setGridPosition(newGridPos);
+        
+        // 更新建筑的世界位置
+        Vec2 newPos = calculateBuildingPositionForMoving(newGridPos);
+        building->setPosition(newPos);
+        
+        // 更新 Z-Order
+        building->setLocalZOrder(10000 - static_cast<int>(newPos.y));
+
+        // 标记新位置为被占用
+        _gridMap->markArea(newGridPos, building->getGridSize(), true);
+
+        showHint(StringUtils::format("%s 已移动到新位置", building->getDisplayName().c_str()));
+
+        // 触发回调
+        if (_onBuildingMoved)
+        {
+            _onBuildingMoved(building, newGridPos);
+        }
+
+        // 最后清理移动模式状态
+        confirmBuildingMove();
+    }
+    else
+    {
+        // 位置无效，取消移动
+        cancelMovingBuilding();
+        showHint("无法在该位置放置建筑，已恢复原位置");
+    }
+}
+
+void BuildingManager::confirmBuildingMove()
+{
+    /**
+     * 确认建筑移动完成
+     * 清理移动模式状态
+     */
+    if (!_isMovingBuilding || !_movingBuilding)
+        return;
+
+    // 显示建筑
+    _movingBuilding->setVisible(true);
+
+    // 移除幽灵精灵
+    if (_movingGhostSprite)
+    {
+        _movingGhostSprite->removeFromParent();
+        _movingGhostSprite = nullptr;
+    }
+
+    // 隐藏网格
+    if (_gridMap)
+    {
+        _gridMap->showWholeGrid(false);
+        _gridMap->hideBuildingBase();
+    }
+
+    _isMovingBuilding = false;
+    _movingBuilding = nullptr;
+}
+
+cocos2d::Vec2 BuildingManager::calculateBuildingPositionForMoving(const cocos2d::Vec2& gridPos) const
+{
+    /**
+     * 计算移动建筑时的世界位置
+     * 基于当前被移动的建筑的网格大小
+     */
+    if (!_gridMap || !_movingBuilding)
+        return Vec2::ZERO;
+
+    Vec2 posStart = _gridMap->getPositionFromGrid(gridPos);
+    Vec2 posEnd = _gridMap->getPositionFromGrid(
+        gridPos + Vec2(_movingBuilding->getGridSize().width - 1, _movingBuilding->getGridSize().height - 1));
+    Vec2 centerPos = (posStart + posEnd) / 2.0f;
+    return centerPos;
+}

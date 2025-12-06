@@ -1,22 +1,48 @@
-BasedOnStyle: Google
-IndentWidth: 4
-TabWidth: 4
-UseTab: Never
+---
+Language:        Cpp
+BasedOnStyle:    LLVM
+Standard:        c++17
+
+# --- 缩进设置 ---
+IndentWidth:     4
+TabWidth:        4
+UseTab:          Never
+# 访问修饰符 (public/private) 向左偏移，使其看起来更有层级感
 AccessModifierOffset: -4
-AllowShortIfStatementsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Empty
+# 命名空间内部不缩进NamespaceIndentation: None
+
+# --- 行宽设置 ---
+ColumnLimit:     120
+
+# --- 大括号换行设置 ---
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterClass: true
+  AfterClass:      true
   AfterControlStatement: true
-  AfterEnum: true
-  AfterFunction: true
-  AfterNamespace: false
-  AfterStruct: true
-  AfterUnion: true
-  BeforeCatch: true
-  BeforeElse: true
-ColumnLimit: 120
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true 
+  AfterStruct:     true
+  AfterUnion:      true
+  BeforeCatch:     true
+  BeforeElse:      true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+
+# --- 指针与引用对齐 ---
 PointerAlignment: Left
-SpaceInEmptyParentheses: false
-SpacesInParentheses: false
+
+# 自动排序头文件
+SortIncludes:    true
+
+# 自动在 namespace 结束的大括号后添加注释 // namespace MyGame
+FixNamespaceComments: true
+
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+
+# 对齐连续的赋值语句
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+
+MaxEmptyLinesToKeep: 1

@@ -1,157 +1,52 @@
-﻿//2453619 薛毓哲
-
-
-
-#ifndef RESOURCE_MANAGER_H_
-
-#define RESOURCE_MANAGER_H_
-
-
-
+﻿// 2453619 薛毓哲
+/****************************************************************
+ * Project Name:  Clash_of_Clans
+ * File Name:     ResourceManager.h
+ * File Function: 资源管理器
+ ****************************************************************/
+#pragma once
 #include "cocos2d.h"
-
 #include <functional>
-
 #include <map>
-
-
-
-// 定义资源类型，使用 enum class (C++11)
-
-enum class ResourceType {
-
-    kGold,      // 金币
-
-    kElixir,    // 圣水
-
-    kGem,       // 宝石(就是充钱买的那个，将来肯定不设计充钱功能，如果这块要做就直接点击即送就行）
-
-    kBuilder    // 建筑工(空闲工人数)
-
+#include <string>
+// 使用非作用域枚举，确保可在 switch-case 中作为常量使用
+// 唯一定义位置，其他头文件通过 #include "ResourceManager.h" 引用
+enum ResourceType
+{
+    kGold = 0,
+    kElixir = 1,
+    kGem = 2,
+    kBuilder = 3
 };
-
-
-
-class ResourceManager {
-
+class ResourceManager
+{
 public:
-
-    // 获取单例实例
-
+    // 单例访问方法（双命名，兼容现有调用）
     static ResourceManager* GetInstance();
-
-
-
-    // 初始化
-
-    bool Init();
-
-
-
-    // --- 核心操作 ---
-
-
-
-    /**
-
-     * 增加资源
-
-     * @param type 资源类型
-
-     * @param amount 增加的数量
-
-     * @return 实际增加的数量 (因为可能会达到存储上限)
-
-     */
-
-    int AddResource(ResourceType type, int amount);
-
-
-
-    /**
-
-     * 消耗资源
-
-     * @param type 资源类型
-
-     * @param amount 消耗的数量
-
-     * @return 如果成功扣除返回 true，余额不足返回 false
-
-     */
-
-    bool ConsumeResource(ResourceType type, int amount);
-
-
-
-    // 检查资源是否足够
-
-    bool HasEnough(ResourceType type, int amount) const;
-
-
-
-    // 获取当前资源数量
-
+    static ResourceManager& getInstance();
+    // 初始化资源
+    void Init();
+    // 资源读方法
     int GetResourceCount(ResourceType type) const;
-
-
-
-    // 获取资源上限 (例如金库容量)
-
     int GetResourceCapacity(ResourceType type) const;
-
-
-
-    // 设置资源上限 (当建造新的存储建筑时调用)
-
+    // 资源写方法
+    void SetResourceCount(ResourceType type, int amount);
     void SetResourceCapacity(ResourceType type, int capacity);
-
-
-
-    // --- 事件监听系统 (观察者模式) ---
-
-    // 当资源变化时，UI需要知道。我们使用回调函数。
-
-    using ResourceChangeCallback = std::function<void(ResourceType, int)>;
-
-    void SetOnResourceChangeCallback(ResourceChangeCallback callback);
-
-
+    // 资源增加/消耗与校验（大写命名）
+    int AddResource(ResourceType type, int amount);
+    bool HasEnough(ResourceType type, int amount) const;
+    bool ConsumeResource(ResourceType type, int amount);
+    // 资源增加/消耗与校验（小写命名，兼容 BaseBuilding 调用）
+    int addResource(ResourceType type, int amount) { return AddResource(type, amount); }
+    bool hasEnough(ResourceType type, int amount) const { return HasEnough(type, amount); }
+    bool consume(ResourceType type, int amount) { return ConsumeResource(type, amount); }
+    // 设置资源变化回调
+    void SetOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback);
 
 private:
-
-    // 私有构造函数，确保单例
-
     ResourceManager();
-
-
-
-    // 禁止拷贝和赋值
-
-    ResourceManager(const ResourceManager&) = delete;
-
-    ResourceManager& operator=(const ResourceManager&) = delete;
-
-
-
-    // 存储当前资源数量
-
-    std::map<ResourceType, int> resources_;
-
-
-
-    // 存储资源上限
-
-    std::map<ResourceType, int> capacities_;
-
-
-
-    // 资源变化的回调函数
-
-    ResourceChangeCallback on_resource_change_;
-
+    static ResourceManager* _instance;
+    std::map<ResourceType, int> _resources;
+    std::map<ResourceType, int> _capacities;
+    std::function<void(ResourceType, int)> _onChangeCallback;
 };
-
-
-
-#endif // RESOURCE_MANAGER_H_

@@ -1,0 +1,1295 @@
+﻿/**
+ * @file DraggableMapScene.cpp
+ * @brief 主场景实现
+ *
+ * 职责划分：
+ * 【初始化】 - setupMap, setupUI, setupTouchListener 等
+ *   初始化场景所需的所有UI、管理器和事件监听器
+ *
+ * 【输入处理】 - onTouchBegan, onTouchMoved, onTouchEnded
+ *   接收用户输入，转发给相应的管理器或处理器
+ *   优先级：升级UI > 建筑建造 > 英雄操作 > 地图操作
+ *
+ * 【建造流程】 - showConfirmButtons, hideConfirmButtons, onConfirmBuilding
+ *   用户放置建筑后的确认流程，由 BuildingManager 触发回调启动
+ *
+ * 【菜单操作】 - toggleBuildingSelection, onBuildingItemClicked 等
+ *   处理UI按钮点击和列表交互
+ *
+ * 【地图操作】 - moveMap, zoomMap, switchMap
+ *   处理地图的平移、缩放、切换，维护边界检查
+ *
+ * 【建筑交互】 - onBuildingClicked, hideUpgradeUI
+ *   用户点击建筑时呼出升级UI，统一处理所有建筑类型
+ *
+ * 【网络】 - connectToServer, setupNetworkCallbacks
+ *   服务器连接和消息回调处理
+ */
+
+#include "DraggableMapScene.h"
+#include "BuildingUpgradeUI.h"
+#include "AccountManager.h"
+#include "BattleScene.h"
+#include "BuildingManager.h"
+#include "cocos2d.h"
+#include "ResourceBuilding.h"
+#include "ResourceManager.h"
+#include "SocketClient.h"
+#include "TownHallBuilding.h"
+#include "ui/CocosGUI.h"
+
+USING_NS_CC;
+using namespace ui;
+
+Scene* DraggableMapScene::createScene()
+{
+    return DraggableMapScene::create();
+}
+
+bool DraggableMapScene::init()
+{
+    if (!Scene::init())
+    {
+        return false;
+    }
+
+    _visibleSize = Director::getInstance()->getVisibleSize();
+    _currentScale = 1.3f;
+    _minScale = 0.7f;
+    _maxScale = 2.5f;
+
+    _mapNames = {"map/Map1.png", "map/Map2.png", "map/Map3.png"};
+    _currentMapName = "map/Map1.png";
+    _mapSprite = nullptr;
+    _gridMap = nullptr;
+    _lastTouchPos = Vec2::ZERO;
+
+    // UI 相关初始化
+    _buildButton = nullptr;
+    _mapButton = nullptr;
+    _buildingListUI = nullptr;
+    _mapList = nullptr;
+    _isBuildingListVisible = false;
+    _isMapListVisible = false;
+
+    _confirmButton = nullptr;
+    _cancelButton = nullptr;
+
+    _heroManager = nullptr;
+
+    // 初始化大本营系统
+    _currentUpgradeUI = nullptr;
+    _resourceUI = nullptr;
+
+    // ==================== 初始化建筑管理器 ====================
+    _buildingManager = BuildingManager::create();
+    this->addChild(_buildingManager);
+
+    initBuildingData();
+
+    // 地图配置
+    _mapConfigs.clear();
+    _mapConfigs["map/Map1.png"] = {1.3f, Vec2(1406.0f, 2107.2f), 55.6f};
+    _mapConfigs["map/Map2.png"] = {1.3f, Vec2(1402.0f, 2097.2f), 56.1f};
+    _mapConfigs["map/Map3.png"] = {1.3f, Vec2(1403.0f, 2075.2f), 54.9f};
+
+    _heroManager = HeroManager::create();
+    this->addChild(_heroManager);
+
+    setupMap();
+    setupUI();
+    setupTouchListener();
+
+    // ESC键取消建造模式
+    auto keyboardListener = EventListenerKeyboard::create();
+    keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode keyCode, Event* event) {
+        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE)
+        {
+            if (_buildingManager && _buildingManager->isInBuildingMode())
+            {
+                _buildingManager->cancelPlacing();
+                hideConfirmButtons();
+            }
+        }
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+
+    setupMouseListener();
+
+    connectToServer();
+    setupNetworkCallbacks();
+
+    // 添加每帧更新以处理网络回调
+    scheduleUpdate();
+
+    return true;
+}
+
+void DraggableMapScene::update(float dt)
+{
+    // 处理网络回调
+    SocketClient::getInstance().processCallbacks();
+
+    // BuildingManager 会自动调用所有建筑的 tick 方法（已在 BuildingManager::update 中实现）
+}
+
+void DraggableMapScene::setupResourceDisplay()
+{
+    _resourceUI = ResourceDisplayUI::create();
+    if (_resourceUI)
+    {
+        _resourceUI->setPositionAtTopLeft();
+        this->addChild(_resourceUI, 100);
+
+        // 初始更新显示
+        _resourceUI->updateDisplay();
+
+        // 注册资源变化回调，确保UI实时更新
+        ResourceManager::GetInstance()->SetOnResourceChangeCallback([this](ResourceType type, int amount) {
+            if (_resourceUI)
+            {
+                _resourceUI->updateDisplay();
+            }
+        });
+
+        CCLOG("Resource UI positioned at top left");
+    }
+    else
+    {
+        CCLOG("ERROR: Failed to create ResourceDisplayUI!");
+    }
+}
+
+void DraggableMapScene::initBuildingData()
+{
+    _buildingList.clear();
+    // 大本营（免费）
+    _buildingList.push_back(
+        BuildingData("大本营", "BaseCamp/town-hall-1.png", Size(5, 5), 0.6f, 0, 0, ResourceType::kGold));
+    // 防御建筑（消耗金币）
+    _buildingList.push_back(BuildingData("箭塔", "Tower.png", Size(3, 3), 0.8f, 1000, 60, ResourceType::kGold));
+    _buildingList.push_back(BuildingData("炮塔", "Cannon.png", Size(2, 2), 1.0f, 500, 30, ResourceType::kGold));
+    // 军事建筑（消耗圣水）
+    _buildingList.push_back(BuildingData("兵营", "Barracks.png", Size(4, 4), 0.6f, 1500, 120, ResourceType::kElixir));
+    // 资源建筑（消耗金币）
+    _buildingList.push_back(BuildingData("金矿", "GoldMine.png", Size(3, 3), 0.8f, 800, 45, ResourceType::kGold));
+    _buildingList.push_back(
+        BuildingData("圣水收集器", "ElixirCollector.png", Size(3, 3), 0.8f, 750, 40, ResourceType::kGold));
+}
+
+void DraggableMapScene::setupMap()
+{
+    _mapSprite = Sprite::create(_currentMapName);
+    if (_mapSprite)
+    {
+        auto mapSize = _mapSprite->getContentSize();
+        _mapSprite->setPosition(_visibleSize.width / 2, _visibleSize.height / 2);
+        this->addChild(_mapSprite, 0);
+
+        float tile = 55.6f;
+        Vec2 startPixel = Vec2::ZERO;
+        float mapScale = _currentScale;
+        auto it = _mapConfigs.find(_currentMapName);
+        if (it != _mapConfigs.end())
+        {
+            tile = it->second.tileSize;
+            startPixel = it->second.startPixel;
+            mapScale = it->second.scale;
+        }
+
+        _currentScale = mapScale;
+        _mapSprite->setScale(_currentScale);
+
+        _gridMap = GridMap::create(mapSize, tile);
+        _mapSprite->addChild(_gridMap, 999);
+
+        if (_gridMap && startPixel != Vec2::ZERO)
+        {
+            _gridMap->setStartPixel(startPixel);
+            _gridStartDefault = startPixel;
+        }
+        else if (_gridMap)
+        {
+            _gridStartDefault = _gridMap->getStartPixel();
+        }
+
+        // 设置建筑管理器：绑定地图引用 + 三个关键回调
+        if (_buildingManager)
+        {
+            _buildingManager->setup(_mapSprite, _gridMap);
+
+            // 【回调1】建筑放置成功 - 当建筑成功放置时触发
+            _buildingManager->setOnBuildingPlaced([this](BaseBuilding* building) { 
+                this->onBuildingPlaced(building); 
+            });
+
+            // 【回调2】提示信息 - 建造相关的提示文本
+            _buildingManager->setOnHint([this](const std::string& hint) { 
+                this->showBuildingHint(hint); 
+            });
+
+            // 【回调3】建筑点击 - 用户左键点击建筑时触发，用于呼出升级UI
+            _buildingManager->setOnBuildingClicked([this](BaseBuilding* building) { 
+                this->onBuildingClicked(building); 
+            });
+        }
+
+        updateBoundary();
+        createSampleMapElements();
+    }
+    else
+    {
+        CCLOG("Error: Failed to load map image %s", _currentMapName.c_str());
+        auto errorLabel = Label::createWithSystemFont("Failed to load " + _currentMapName, "Arial", 32);
+        errorLabel->setPosition(_visibleSize.width / 2, _visibleSize.height / 2);
+        errorLabel->setTextColor(Color4B::RED);
+        this->addChild(errorLabel);
+    }
+
+    auto background = LayerColor::create(Color4B(50, 50, 50, 255));
+    this->addChild(background, -1);
+}
+
+void DraggableMapScene::setupUI()
+{
+    // 先创建资源显示
+    setupResourceDisplay();
+
+    float resourceXPos = 30;
+    float buildButtonY = _visibleSize.height - 230;
+
+    // ==================== Build按钮 ====================
+    _buildButton = Button::create();
+    _buildButton->setTitleText("Build");
+    _buildButton->setTitleFontSize(24);
+    _buildButton->setContentSize(Size(100, 50));
+    _buildButton->setPosition(Vec2(resourceXPos + 70, buildButtonY));
+    _buildButton->addClickEventListener([this](Ref* sender) {
+        // 使用管理器判断是否在建造模式
+        if (_buildingManager && _buildingManager->isInBuildingMode())
+        {
+            _buildingManager->cancelPlacing();
+            hideConfirmButtons();
+        }
+        else
+        {
+            this->toggleBuildingSelection();
+        }
+    });
+    this->addChild(_buildButton, 10);
+
+    // ==================== Grid Dev按钮 ====================
+    auto toggleDebugBtn = Button::create();
+    toggleDebugBtn->setTitleText("Grid Dev");
+    toggleDebugBtn->setTitleFontSize(20);
+    toggleDebugBtn->setTitleColor(Color3B::MAGENTA);
+    toggleDebugBtn->setContentSize(Size(100, 40));
+    toggleDebugBtn->setPosition(Vec2(resourceXPos + 70, buildButtonY - 60));
+    this->addChild(toggleDebugBtn, 10);
+
+    // ==================== 当前地图名称 ====================
+    auto mapNameLabel = Label::createWithSystemFont("Current: " + _currentMapName, "Arial", 20);
+    mapNameLabel->setPosition(Vec2(_visibleSize.width / 2.0f, _visibleSize.height - 30));
+    mapNameLabel->setTextColor(Color4B(0, 255, 255, 255));
+    mapNameLabel->setName("mapNameLabel");
+    this->addChild(mapNameLabel, 10);
+
+    // ==================== Map按钮 ====================
+    _mapButton = Button::create();
+    _mapButton->setTitleText("Map");
+    _mapButton->setTitleFontSize(24);
+    _mapButton->setContentSize(Size(120, 60));
+    _mapButton->setPosition(Vec2(_visibleSize.width - 80, _visibleSize.height - 80));
+    _mapButton->addClickEventListener(CC_CALLBACK_1(DraggableMapScene::onMapButtonClicked, this));
+    this->addChild(_mapButton, 10);
+
+    // ==================== 战斗按钮 ====================
+    _battleButton = Button::create();
+    _battleButton->setTitleText("Attack!");
+    _battleButton->setTitleFontSize(24);
+    _battleButton->setPosition(Vec2(100, 100));
+    _battleButton->addClickEventListener(CC_CALLBACK_1(DraggableMapScene::onBattleButtonClicked, this));
+    this->addChild(_battleButton, 20);
+
+    // ==================== 部落按钮 ====================
+    _clanButton = Button::create();
+    _clanButton->setTitleText("Clan");
+    _clanButton->setTitleFontSize(24);
+    _clanButton->setPosition(Vec2(_visibleSize.width - 50, 100));
+    _clanButton->addClickEventListener(CC_CALLBACK_1(DraggableMapScene::onClanButtonClicked, this));
+    this->addChild(_clanButton, 20);
+
+    // ==================== 英雄UI ====================
+    _heroManager->setupHeroUI(this, _visibleSize);
+
+    // ==================== 初始化其他UI ====================
+    createBuildingSelection();
+    createMapList();
+
+    // ==================== 操作指南 ====================
+    auto tipLabel = Label::createWithSystemFont(
+        "Drag: Move Map  Scroll: Zoom  Buttons: Switch Map/Hero/Build\nClick Hero to Select, Click Ground to Move",
+        "Arial", 14);
+    tipLabel->setPosition(Vec2(_visibleSize.width / 2.0f, 40.0f));
+    tipLabel->setTextColor(Color4B::YELLOW);
+    tipLabel->setAlignment(TextHAlignment::CENTER);
+    this->addChild(tipLabel, 10);
+
+    // ==================== 调试层 ====================
+    auto debugLayer = Node::create();
+    debugLayer->setPosition(Vec2::ZERO);
+    debugLayer->setVisible(false);
+    this->addChild(debugLayer, 30);
+
+    Vec2 uiBase = Vec2(500.0f, 400.0f);
+    float btnSize = 40.0f;
+
+    auto makeArrowBtn = [this, debugLayer, btnSize](const std::string& title, const Vec2& pos,
+                                                    const std::function<void()>& cb) {
+        auto btn = ui::Button::create();
+        btn->setTitleText(title);
+        btn->setTitleFontSize(18);
+        btn->setContentSize(Size(btnSize, btnSize));
+        btn->setScale9Enabled(true);
+        btn->setPosition(pos);
+        btn->addClickEventListener([cb](Ref* sender) { cb(); });
+        debugLayer->addChild(btn);
+    };
+
+    makeArrowBtn("←", uiBase + Vec2(-50, 0), [this]() {
+        if (!_gridMap)
+            return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(-1.0f, 0.0f);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+    });
+
+    makeArrowBtn("→", uiBase + Vec2(50, 0), [this]() {
+        if (!_gridMap)
+            return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(1.0f, 0.0f);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+    });
+
+    makeArrowBtn("↑", uiBase + Vec2(0, 50), [this]() {
+        if (!_gridMap)
+            return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(0.0f, 1.0f);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+    });
+
+    makeArrowBtn("↓", uiBase + Vec2(0, -50), [this]() {
+        if (!_gridMap)
+            return;
+        Vec2 p = _gridMap->getStartPixel();
+        p += Vec2(0.0f, -1.0f);
+        _gridMap->setStartPixel(p);
+        _gridMap->showWholeGrid(true);
+    });
+
+    makeArrowBtn("Reset", uiBase + Vec2(0, -110), [this]() {
+        if (!_gridMap)
+            return;
+        _gridMap->setStartPixel(_gridStartDefault);
+        _gridMap->showWholeGrid(true);
+    });
+
+    toggleDebugBtn->addClickEventListener([debugLayer, this](Ref* sender) {
+        bool isVisible = debugLayer->isVisible();
+        debugLayer->setVisible(!isVisible);
+        if (_gridMap)
+        {
+            _gridMap->showWholeGrid(!isVisible);
+        }
+        CCLOG("Debug Mode: %s", !isVisible ? "ON" : "OFF");
+    });
+
+    CCLOG("UI setup complete");
+}
+
+void DraggableMapScene::toggleBuildingSelection()
+{
+    _isBuildingListVisible = !_isBuildingListVisible;
+    _buildingListUI->setVisible(_isBuildingListVisible);
+
+    if (_isBuildingListVisible)
+    {
+        if (_isMapListVisible)
+        {
+            toggleMapList();
+        }
+        if (_heroManager->isHeroListVisible())
+        {
+            _heroManager->hideHeroList();
+        }
+    }
+}
+
+void DraggableMapScene::createBuildingSelection()
+{
+    /**
+     * 创建建筑选择列表UI
+     * 显示所有可建造的建筑，点击后进入建造模式
+     */
+    _buildingListUI = ListView::create();
+    _buildingListUI->setContentSize(Size(300, 200));
+    _buildingListUI->setPosition(Vec2(160, _visibleSize.height - 250));
+    _buildingListUI->setBackGroundColor(Color3B(60, 60, 80));
+    _buildingListUI->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
+    _buildingListUI->setOpacity(220);
+    _buildingListUI->setVisible(false);
+    _buildingListUI->setScrollBarEnabled(true);
+    _buildingListUI->setBounceEnabled(true);
+
+    for (const auto& building : _buildingList)
+    {
+        auto item = Layout::create();
+        item->setContentSize(Size(280, 60));
+        item->setTouchEnabled(true);
+
+        auto buildingSprite = Sprite::create(building.imageFile);
+        if (buildingSprite)
+        {
+            buildingSprite->setScale(0.3f);
+            buildingSprite->setPosition(Vec2(40, 30));
+            buildingSprite->setName("sprite");
+            item->addChild(buildingSprite);
+        }
+
+        auto nameLabel = Label::createWithSystemFont(building.name, "Arial", 16);
+        nameLabel->setPosition(Vec2(120, 40));
+        nameLabel->setTextColor(Color4B::YELLOW);
+        nameLabel->setName("name");
+        item->addChild(nameLabel);
+
+        std::string sizeText =
+            StringUtils::format("%dx%d", (int)building.gridSize.width, (int)building.gridSize.height);
+        auto sizeLabel = Label::createWithSystemFont(sizeText, "Arial", 14);
+        sizeLabel->setPosition(Vec2(120, 20));
+        sizeLabel->setTextColor(Color4B::GREEN);
+        item->addChild(sizeLabel);
+
+        std::string costText = StringUtils::format("Cost: %d", (int)building.cost);
+        auto costLabel = Label::createWithSystemFont(costText, "Arial", 12);
+        costLabel->setPosition(Vec2(220, 40));
+        costLabel->setTextColor(Color4B::WHITE);
+        item->addChild(costLabel);
+
+        auto itemBg = LayerColor::create(Color4B(40, 40, 60, 255));
+        itemBg->setContentSize(Size(280, 60));
+        itemBg->setPosition(Vec2::ZERO);
+        item->addChild(itemBg, -1);
+
+        item->addClickEventListener([this, building](Ref* sender) { this->onBuildingItemClicked(sender, building); });
+
+        _buildingListUI->pushBackCustomItem(item);
+    }
+
+    this->addChild(_buildingListUI, 20);
+}
+
+void DraggableMapScene::onBuildingItemClicked(cocos2d::Ref* sender, const BuildingData& building)
+{
+    /**
+     * 建筑列表项被点击
+     * 流程：
+     * 1. 委托给 BuildingManager 进入建造模式
+     * 2. 隐藏建筑列表
+     */
+    CCLOG("Selected building: %s, Size: %.0fx%.0f", building.name.c_str(), building.gridSize.width,
+          building.gridSize.height);
+
+    if (_buildingManager)
+    {
+        _buildingManager->startPlacing(building);
+    }
+
+    toggleBuildingSelection();
+}
+
+void DraggableMapScene::createMapList()
+{
+    _mapList = ListView::create();
+    _mapList->setContentSize(Size(150, 200));
+    _mapList->setPosition(Vec2(_visibleSize.width - 160, _visibleSize.height - 240));
+    _mapList->setBackGroundColor(Color3B(80, 80, 80));
+    _mapList->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
+    _mapList->setOpacity(200);
+    _mapList->setVisible(false);
+    _mapList->setScrollBarEnabled(true);
+
+    for (const auto& mapName : _mapNames)
+    {
+        auto item = Layout::create();
+        item->setContentSize(Size(140, 40));
+        item->setTouchEnabled(true);
+
+        auto label = Label::createWithSystemFont(mapName, "Arial", 16);
+        label->setPosition(Vec2(70, 20));
+        label->setTextColor(Color4B::WHITE);
+        label->setName("label");
+        item->addChild(label);
+
+        item->addClickEventListener([this, mapName](Ref* sender) { this->onMapItemClicked(sender); });
+
+        _mapList->pushBackCustomItem(item);
+    }
+
+    this->addChild(_mapList, 20);
+}
+
+void DraggableMapScene::onMapButtonClicked(cocos2d::Ref* sender)
+{
+    toggleMapList();
+}
+
+void DraggableMapScene::toggleMapList()
+{
+    _isMapListVisible = !_isMapListVisible;
+    _mapList->setVisible(_isMapListVisible);
+
+    if (_isMapListVisible && _heroManager->isHeroListVisible())
+    {
+        _heroManager->hideHeroList();
+    }
+}
+
+void DraggableMapScene::onMapItemClicked(cocos2d::Ref* sender)
+{
+    auto item = static_cast<Layout*>(sender);
+    auto label = static_cast<Label*>(item->getChildByName("label"));
+    std::string selectedMapName = label->getString();
+
+    CCLOG("Selected map: %s", selectedMapName.c_str());
+
+    switchMap(selectedMapName);
+    toggleMapList();
+}
+
+void DraggableMapScene::switchMap(const std::string& mapName)
+{
+    /**
+     * 切换游戏地图
+     * 流程：
+     * 1. 检查是否真的需要切换
+     * 2. 清理当前状态（建造模式、升级UI）
+     * 3. 保存当前地图元素状态
+     * 4. 卸载旧地图
+     * 5. 加载新地图并重新初始化
+     * 6. 恢复地图元素状态
+     * 7. 通知其他管理器地图已切换
+     */
+    if (mapName == _currentMapName)
+        return;
+
+    // 清理当前状态
+    if (_buildingManager)
+    {
+        _buildingManager->endPlacing();
+        hideConfirmButtons();
+    }
+
+    cleanupUpgradeUI();
+    saveMapElementsState();
+
+    // 卸载旧地图
+    if (_mapSprite)
+    {
+        _mapSprite->removeAllChildren();
+        this->removeChild(_mapSprite);
+        _mapSprite = nullptr;
+        _gridMap = nullptr;
+    }
+
+    // 加载新地图
+    _currentMapName = mapName;
+    _mapSprite = Sprite::create(_currentMapName);
+
+    if (_mapSprite)
+    {
+        _mapSprite->setPosition(_visibleSize.width / 2, _visibleSize.height / 2);
+
+        float tile = 55.6f;
+        Vec2 startPixel = Vec2::ZERO;
+        float mapScale = _currentScale;
+        auto it = _mapConfigs.find(_currentMapName);
+        if (it != _mapConfigs.end())
+        {
+            tile = it->second.tileSize;
+            startPixel = it->second.startPixel;
+            mapScale = it->second.scale;
+        }
+
+        _currentScale = mapScale;
+        _mapSprite->setScale(_currentScale);
+        this->addChild(_mapSprite, 0);
+
+        auto mapSize = _mapSprite->getContentSize();
+        _gridMap = GridMap::create(mapSize, tile);
+        _mapSprite->addChild(_gridMap, 999);
+
+        if (_gridMap && startPixel != Vec2::ZERO)
+        {
+            _gridMap->setStartPixel(startPixel);
+            _gridStartDefault = startPixel;
+        }
+        else if (_gridMap)
+        {
+            _gridStartDefault = _gridMap->getStartPixel();
+        }
+
+        // 更新建筑管理器引用（注意：回调已在 setupMap 中设置，无需重复设置）
+        if (_buildingManager)
+        {
+            _buildingManager->setup(_mapSprite, _gridMap);
+        }
+
+        updateBoundary();
+        restoreMapElementsState();
+
+        _heroManager->onMapSwitched(_mapSprite);
+        _heroManager->updateHeroesScale(_currentScale);
+
+        auto mapNameLabel = static_cast<Label*>(this->getChildByName("mapNameLabel"));
+        if (mapNameLabel)
+        {
+            mapNameLabel->setString("Current: " + _currentMapName);
+        }
+
+        CCLOG("Map switched successfully to %s", mapName.c_str());
+    }
+    else
+    {
+        CCLOG("Error: Failed to load new map %s", mapName.c_str());
+    }
+}
+
+void DraggableMapScene::saveMapElementsState()
+{
+    for (auto& element : _mapElements)
+    {
+        if (element.node)
+        {
+            element.localPosition = element.node->getPosition();
+            element.node->retain();
+        }
+    }
+}
+
+void DraggableMapScene::restoreMapElementsState()
+{
+    for (auto& element : _mapElements)
+    {
+        if (element.node && element.node->getParent() == nullptr)
+        {
+            _mapSprite->addChild(element.node, 1);
+            element.node->setPosition(element.localPosition);
+        }
+        element.node->release();
+    }
+}
+
+void DraggableMapScene::createSampleMapElements()
+{
+    _mapElements.clear();
+
+    if (!_mapSprite)
+        return;
+
+    auto createMarker = [this](const Vec2& worldPosition, const Color4B& color, const std::string& text) {
+        Vec2 localPos = _mapSprite->convertToNodeSpace(worldPosition);
+
+        auto marker = DrawNode::create();
+        marker->drawDot(Vec2::ZERO, 10, Color4F(color));
+        marker->setPosition(localPos);
+        _mapSprite->addChild(marker, 1);
+
+        auto label = Label::createWithSystemFont(text, "Arial", 16);
+        label->setPosition(localPos + Vec2(0, 20));
+        label->setTextColor(Color4B::WHITE);
+        _mapSprite->addChild(label, 1);
+
+        MapElement markerElement = {marker, localPos};
+        MapElement labelElement = {label, localPos + Vec2(0, 20)};
+        _mapElements.push_back(markerElement);
+        _mapElements.push_back(labelElement);
+    };
+
+    CCLOG("Created %zd map elements", _mapElements.size());
+}
+
+void DraggableMapScene::updateMapElementsPosition()
+{
+    if (!_mapSprite)
+        return;
+
+    for (auto& element : _mapElements)
+    {
+        if (element.node && element.node->getParent() == _mapSprite)
+        {
+            element.node->setPosition(element.localPosition);
+        }
+    }
+}
+
+// ==================== 辅助方法 ====================
+
+void DraggableMapScene::showBuildingHint(const std::string& hint)
+{
+    /**
+     * 显示建筑相关提示信息
+     * 会自动替换旧的提示（只显示最新的）
+     * 调用者：BuildingManager 和场景内部各处
+     */
+    auto oldHint = this->getChildByName("buildingHint");
+    if (oldHint)
+    {
+        oldHint->removeFromParent();
+    }
+
+    auto hintLabel = Label::createWithSystemFont(hint, "Arial", 18);
+    hintLabel->setPosition(Vec2(_visibleSize.width / 2, 100));
+    hintLabel->setTextColor(Color4B::YELLOW);
+    hintLabel->setName("buildingHint");
+    this->addChild(hintLabel, 30);
+}
+
+void DraggableMapScene::ensureMapInBoundary()
+{
+    /**
+     * 确保地图始终在可见范围内
+     * 防止地图被拖拽到完全看不见的位置
+     */
+    if (!_mapSprite)
+        return;
+
+    cocos2d::Vec2 currentPos = _mapSprite->getPosition();
+    cocos2d::Vec2 newPos = currentPos;
+
+    if (currentPos.x < _mapBoundary.getMinX())
+        newPos.x = _mapBoundary.getMinX();
+    else if (currentPos.x > _mapBoundary.getMaxX())
+        newPos.x = _mapBoundary.getMaxX();
+
+    if (currentPos.y < _mapBoundary.getMinY())
+        newPos.y = _mapBoundary.getMinY();
+    else if (currentPos.y > _mapBoundary.getMaxY())
+        newPos.y = _mapBoundary.getMaxY();
+
+    if (newPos != currentPos)
+    {
+        _mapSprite->setPosition(newPos);
+    }
+}
+
+void DraggableMapScene::updateBoundary()
+{
+    /**
+     * 更新地图边界
+     * 在缩放或加载新地图时调用
+     * 用于 ensureMapInBoundary 的边界检查
+     */
+    if (!_mapSprite)
+        return;
+
+    auto mapSize = _mapSprite->getContentSize() * _currentScale;
+
+    float minX = _visibleSize.width - mapSize.width / 2;
+    float maxX = mapSize.width / 2;
+    float minY = _visibleSize.height - mapSize.height / 2;
+    float maxY = mapSize.height / 2;
+
+    if (mapSize.width <= _visibleSize.width)
+    {
+        minX = maxX = _visibleSize.width / 2;
+    }
+    if (mapSize.height <= _visibleSize.height)
+    {
+        minY = maxY = _visibleSize.height / 2;
+    }
+
+    _mapBoundary = Rect(minX, minY, maxX - minX, maxY - minY);
+}
+
+// ==================== 触摸事件处理（转发给管理器） ====================
+
+bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
+{
+    _lastTouchPos = touch->getLocation();
+
+    // 【优先级1】升级UI - 如果正在显示升级界面，该界面优先处理触摸
+    if (_currentUpgradeUI && _currentUpgradeUI->isVisible())
+    {
+        Vec2 localPos = _currentUpgradeUI->convertTouchToNodeSpace(touch);
+        Rect bbox = _currentUpgradeUI->getBoundingBox();
+        bbox.origin = Vec2::ZERO;
+
+        if (bbox.containsPoint(localPos))
+        {
+            CCLOG("Touch on upgrade UI, let UI handle it");
+            return true;  // UI 内部处理
+        }
+        else
+        {
+            CCLOG("Touch outside upgrade UI, hiding it");
+            hideUpgradeUI();  // 点击界面外则隐藏
+            return false;
+        }
+    }
+
+    // 【优先级2】建筑建造 - 建造模式下的建筑放置拖拽
+    if (_buildingManager && _buildingManager->isInBuildingMode())
+    {
+        if (!_buildingManager->isDraggingBuilding() && !_buildingManager->isWaitingConfirm())
+        {
+            _buildingManager->onTouchBegan(_lastTouchPos);
+            return true;
+        }
+    }
+
+    // 【优先级3】英雄操作 - 英雄移动、选择
+    if (!_buildingManager || !_buildingManager->isInBuildingMode())
+    {
+        if (!_heroManager->getSelectedHeroName().empty())
+        {
+            _heroManager->handleHeroTouch(_lastTouchPos, _mapSprite, true);
+            return true;
+        }
+
+        _heroManager->handleHeroTouch(_lastTouchPos, _mapSprite, false);
+        for (auto& hero : _heroManager->getPlacedHeroes())
+        {
+            if (hero && hero->containsTouch(_lastTouchPos, _mapSprite))
+            {
+                break;
+            }
+        }
+    }
+
+    // 【优先级4】地图操作 - 地图平移在 onTouchMoved 中处理
+    return true;
+}
+
+void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
+{
+    /**
+     * 触摸移动处理
+     * 优先级：
+     * 1. 如果在建造模式且正在拖拽建筑，转发给 BuildingManager
+     * 2. 否则，进行地图平移
+     */
+    Vec2 currentTouchPos = touch->getLocation();
+
+    if (_buildingManager && _buildingManager->isInBuildingMode() && _buildingManager->isDraggingBuilding())
+    {
+        _buildingManager->onTouchMoved(currentTouchPos);
+        return;
+    }
+
+    Vec2 delta = currentTouchPos - _lastTouchPos;
+    moveMap(delta);
+    _lastTouchPos = currentTouchPos;
+}
+
+void DraggableMapScene::onTouchEnded(Touch* touch, Event* event)
+{
+    /**
+     * 触摸结束处理
+     * 如果在建造模式，转发给 BuildingManager
+     * 建筑放置完成后，显示确认按钮
+     */
+    Vec2 currentTouchPos = touch->getLocation();
+
+    if (_buildingManager && _buildingManager->isInBuildingMode() && _buildingManager->isDraggingBuilding())
+    {
+        _buildingManager->onTouchEnded(currentTouchPos);
+
+        if (_buildingManager->isWaitingConfirm())
+        {
+            Vec2 worldPos = _buildingManager->getPendingBuildingWorldPos();
+            showConfirmButtons(worldPos);
+        }
+        return;
+    }
+}
+
+void DraggableMapScene::onTouchCancelled(cocos2d::Touch* touch, cocos2d::Event* event)
+{
+    // 触摸被中断，作为 onTouchEnded 处理
+    this->onTouchEnded(touch, event);
+}
+
+void DraggableMapScene::moveMap(const cocos2d::Vec2& delta)
+{
+    /**
+     * 地图平移
+     * 在 onTouchMoved 中被调用
+     */
+    if (!_mapSprite)
+        return;
+
+    _mapSprite->setPosition(_mapSprite->getPosition() + delta);
+    ensureMapInBoundary();
+}
+
+void DraggableMapScene::zoomMap(float scaleFactor, const cocos2d::Vec2& pivotPoint)
+{
+    /**
+     * 地图缩放处理
+     * 鼠标滚轮触发，维持缩放中心在鼠标位置
+     */
+    if (!_mapSprite)
+        return;
+
+    float newScale = _currentScale * scaleFactor;
+    newScale = MAX(_minScale, MIN(_maxScale, newScale));
+
+    if (newScale == _currentScale)
+        return;
+
+    if (pivotPoint != Vec2::ZERO)
+    {
+        Vec2 localPos = _mapSprite->convertToNodeSpace(pivotPoint);
+        Vec2 worldPosBefore = _mapSprite->convertToWorldSpace(localPos);
+        _mapSprite->setScale(newScale);
+        Vec2 worldPosAfter = _mapSprite->convertToWorldSpace(localPos);
+        Vec2 positionDelta = worldPosBefore - worldPosAfter;
+        _mapSprite->setPosition(_mapSprite->getPosition() + positionDelta);
+    }
+    else
+    {
+        _mapSprite->setScale(newScale);
+    }
+
+    _currentScale = newScale;
+    updateBoundary();
+    updateMapElementsPosition();
+    _heroManager->updateHeroesScale(_currentScale);
+    ensureMapInBoundary();
+}
+
+// ==================== 建造确认UI ====================
+
+void DraggableMapScene::showConfirmButtons(const cocos2d::Vec2& buildingWorldPos)
+{
+    /**
+     * 显示建筑放置确认按钮
+     * 由 BuildingManager::onTouchEnded 触发
+     * 用户可点击 ✓ 确认或 ✗ 取消
+     */
+    hideConfirmButtons();
+
+    float buttonSize = 45.0f;
+    float offsetX = 60.0f;
+    float offsetY = 80.0f;
+
+    // ✓ 确认按钮（绿色）
+    _confirmButton = ui::Button::create();
+    _confirmButton->setTitleText("✓");
+    _confirmButton->setTitleFontSize(30);
+    _confirmButton->setTitleColor(Color3B::WHITE);
+    _confirmButton->setContentSize(Size(buttonSize, buttonSize));
+    _confirmButton->setPosition(Vec2(buildingWorldPos.x + offsetX, buildingWorldPos.y + offsetY));
+
+    auto confirmBg = LayerColor::create(Color4B(0, 200, 0, 200), buttonSize, buttonSize);
+    confirmBg->setPosition(Vec2(-buttonSize / 2, -buttonSize / 2));
+    _confirmButton->addChild(confirmBg, -1);
+
+    _confirmButton->addClickEventListener([this](Ref* sender) { this->onConfirmBuilding(); });
+    this->addChild(_confirmButton, 10000);
+
+    // ✗ 取消按钮（红色）
+    _cancelButton = ui::Button::create();
+    _cancelButton->setTitleText("✗");
+    _cancelButton->setTitleFontSize(30);
+    _cancelButton->setTitleColor(Color3B::WHITE);
+    _cancelButton->setContentSize(Size(buttonSize, buttonSize));
+    _cancelButton->setPosition(Vec2(buildingWorldPos.x - offsetX, buildingWorldPos.y + offsetY));
+
+    auto cancelBg = LayerColor::create(Color4B(200, 0, 0, 200), buttonSize, buttonSize);
+    cancelBg->setPosition(Vec2(-buttonSize / 2, -buttonSize / 2));
+    _cancelButton->addChild(cancelBg, -1);
+
+    _cancelButton->addClickEventListener([this](Ref* sender) { this->onCancelBuilding(); });
+    this->addChild(_cancelButton, 10000);
+
+    // 弹出动画
+    auto scaleIn = ScaleTo::create(0.2f, 1.0f);
+    _confirmButton->setScale(0.0f);
+    _confirmButton->runAction(EaseBackOut::create(scaleIn->clone()));
+    _cancelButton->setScale(0.0f);
+    _cancelButton->runAction(EaseBackOut::create(scaleIn->clone()));
+}
+
+void DraggableMapScene::hideConfirmButtons()
+{
+    /**
+     * 隐藏建筑放置确认按钮
+     * 在以下情况调用：
+     * - 确认或取消建造时
+     * - 建筑建造完成时
+     * - 建造流程被中断时
+     */
+    if (_confirmButton)
+    {
+        _confirmButton->removeFromParent();
+        _confirmButton = nullptr;
+    }
+
+    if (_cancelButton)
+    {
+        _cancelButton->removeFromParent();
+        _cancelButton = nullptr;
+    }
+}
+
+void DraggableMapScene::onConfirmBuilding()
+{
+    // 确认放置建筑 - 委托给 BuildingManager 处理具体逻辑
+    if (_buildingManager)
+    {
+        _buildingManager->confirmBuilding();
+    }
+    hideConfirmButtons();
+}
+
+void DraggableMapScene::onCancelBuilding()
+{
+    // 取消放置建筑 - 委托给 BuildingManager 处理具体逻辑
+    if (_buildingManager)
+    {
+        _buildingManager->cancelBuilding();
+    }
+    hideConfirmButtons();
+    showBuildingHint("已取消建造，点击地图重新选择位置");
+}
+
+// ==================== 建筑交互 ====================
+
+void DraggableMapScene::onBuildingPlaced(BaseBuilding* building)
+{
+    if (!building)
+        return;
+
+    CCLOG("Building placed callback: %s", building->getDisplayName().c_str());
+    // 建筑点击监听器已由 BuildingManager 统一处理，无需在此添加
+    hideConfirmButtons();
+}
+
+void DraggableMapScene::onBuildingClicked(BaseBuilding* building)
+{
+    /**
+     * 用户左键点击建筑触发的方法
+     * 流程：
+     * 1. 隐藏旧的升级界面（如果有）
+     * 2. 创建新的通用升级UI
+     * 3. 设置升级回调和关闭回调
+     * 4. 显示UI
+     * 
+     * 说明：所有建筑类型（大本营、金矿、圣水收集器等）都使用通用的 BuildingUpgradeUI
+     */
+    if (!building)
+        return;
+    CCLOG("Building clicked: %s", building->getDisplayName().c_str());
+    
+    hideUpgradeUI();
+    
+    auto upgradeUI = BuildingUpgradeUI::create(building);
+    if (upgradeUI)
+    {
+        upgradeUI->setPositionNearBuilding(building);
+        
+        // 升级成功/失败的回调
+        upgradeUI->setUpgradeCallback([this, building](bool success, int newLevel) {
+            if (success)
+            {
+                showBuildingHint(
+                    StringUtils::format("%s 升级到 %d 级！", building->getDisplayName().c_str(), newLevel));
+            }
+            else
+            {
+                showBuildingHint("资源不足，无法升级！");
+            }
+        });
+
+        // UI 自行关闭时的回调，清除成员指针
+        upgradeUI->setCloseCallback([this]() {
+            this->_currentUpgradeUI = nullptr;
+        });
+
+        this->addChild(upgradeUI, 1000);
+        upgradeUI->show();
+        _currentUpgradeUI = upgradeUI;
+    }
+}
+
+void DraggableMapScene::hideUpgradeUI()
+{
+    /**
+     * 统一的升级UI隐藏方法
+     * 兼容 BuildingUpgradeUI 和旧的 TownHallUpgradeUI（如果有）
+     */
+    if (!_currentUpgradeUI)
+        return;
+
+    auto upgradeUI = dynamic_cast<BuildingUpgradeUI*>(_currentUpgradeUI);
+    if (upgradeUI)
+    {
+        upgradeUI->hide();
+    }
+    else
+    {
+        auto townHallUI = dynamic_cast<TownHallUpgradeUI*>(_currentUpgradeUI);
+        if (townHallUI)
+        {
+            townHallUI->hide();
+        }
+        else
+        {
+            _currentUpgradeUI->removeFromParent();
+        }
+    }
+    _currentUpgradeUI = nullptr;
+}
+
+void DraggableMapScene::closeUpgradeUI()
+{
+    // 外部调用的公开方法，作为 hideUpgradeUI 的别名
+    hideUpgradeUI();
+}
+
+void DraggableMapScene::cleanupUpgradeUI()
+{
+    /**
+     * 场景销毁或切换地图时调用
+     * 确保升级UI被完全清理
+     */
+    if (_currentUpgradeUI)
+    {
+        if (_currentUpgradeUI->getParent() == this)
+        {
+            _currentUpgradeUI->removeFromParent();
+        }
+        _currentUpgradeUI = nullptr;
+    }
+}
+
+// ==================== 网络相关 ====================
+
+void DraggableMapScene::connectToServer()
+{
+    auto& client = SocketClient::getInstance();
+
+    if (!client.isConnected())
+    {
+        bool connected = client.connect("127.0.0.1", 8888);
+
+        if (connected)
+        {
+            auto account = AccountManager::getInstance().getCurrentAccount();
+            if (account)
+            {
+                client.login(account->userId, account->username, 1000);
+            }
+        }
+    }
+}
+
+void DraggableMapScene::setupNetworkCallbacks()
+{
+    auto& client = SocketClient::getInstance();
+
+    client.setOnLoginResult([](bool success, const std::string& msg) {
+        if (success)
+        {
+            cocos2d::log("Login successful!");
+        }
+        else
+        {
+            cocos2d::log("Login failed: %s", msg.c_str());
+        }
+    });
+
+    client.setOnDisconnected([]() { cocos2d::log("Disconnected from server!"); });
+}
+
+void DraggableMapScene::setupTouchListener()
+{
+    auto touchListener = EventListenerTouchOneByOne::create();
+    touchListener->setSwallowTouches(true);
+
+    touchListener->onTouchBegan = CC_CALLBACK_2(DraggableMapScene::onTouchBegan, this);
+    touchListener->onTouchMoved = CC_CALLBACK_2(DraggableMapScene::onTouchMoved, this);
+    touchListener->onTouchEnded = CC_CALLBACK_2(DraggableMapScene::onTouchEnded, this);
+    touchListener->onTouchCancelled = CC_CALLBACK_2(DraggableMapScene::onTouchCancelled, this);
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
+}
+
+void DraggableMapScene::setupMouseListener()
+{
+    auto mouseListener = EventListenerMouse::create();
+
+    mouseListener->onMouseScroll = [this](Event* event) {
+        if (!_mapSprite)
+            return;
+
+        EventMouse* mouseEvent = dynamic_cast<EventMouse*>(event);
+        if (mouseEvent)
+        {
+            float scrollY = mouseEvent->getScrollY();
+
+            float zoomFactor = 1.0f;
+            if (scrollY < 0)
+            {
+                zoomFactor = 1.1f;
+            }
+            else if (scrollY > 0)
+            {
+                zoomFactor = 0.9f;
+            }
+            else
+            {
+                return;
+            }
+
+            Vec2 mousePos = Vec2(mouseEvent->getCursorX(), mouseEvent->getCursorY());
+            zoomMap(zoomFactor, mousePos);
+            CCLOG("Mouse scroll: %.1f, Scale: %.2f", scrollY, _currentScale);
+        }
+    };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
+}
+
+void DraggableMapScene::onBattleButtonClicked(Ref* sender)
+{
+    if (!SocketClient::getInstance().isConnected())
+    {
+        auto label = Label::createWithSystemFont("未连接到服务器!", "Arial", 24);
+        label->setPosition(_visibleSize / 2);
+        label->setTextColor(Color4B::RED);
+        this->addChild(label, 100);
+
+        label->runAction(Sequence::create(DelayTime::create(2.0f), RemoveSelf::create(), nullptr));
+        return;
+    }
+
+    auto scene = BattleScene::createScene();
+    Director::getInstance()->pushScene(TransitionFade::create(0.3f, scene));
+}
+
+void DraggableMapScene::onClanButtonClicked(Ref* sender)
+{
+    cocos2d::log("Clan button clicked");
+}
+
+DraggableMapScene::~DraggableMapScene()
+{
+    cleanupUpgradeUI();
+}

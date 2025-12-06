@@ -21,83 +21,66 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-
 #include "AppDelegate.h"
-
 #include "AccountSelectScene.h"
 #include "DraggableMapScene.h"
 #include "HelloWorldScene.h"
 #include "Managers/AccountManager.h"
-#include "Managers/ResourceManager.h"  // 新增：包含资源管理器头文件
-
+#include "Managers/ResourceManager.h" // 新增：包含资源管理器头文件
 // #define USE_AUDIO_ENGINE 1
-
 #if USE_AUDIO_ENGINE
 #include "audio/include/AudioEngine.h"
 using namespace cocos2d::experimental;
 #endif
-
 USING_NS_CC;
-
 static cocos2d::Size designResolutionSize = cocos2d::Size(2180, 1480);
 static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
 static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
-
 AppDelegate::AppDelegate() {}
-
 AppDelegate::~AppDelegate()
 {
 #if USE_AUDIO_ENGINE
     AudioEngine::end();
 #endif
 }
-
 // if you want a different context, modify the value of glContextAttrs
 // it will affect all platforms
 void AppDelegate::initGLContextAttrs()
 {
     // set OpenGL context attributes: red,green,blue,alpha,depth,stencil,multisamplesCount
     GLContextAttrs glContextAttrs = {8, 8, 8, 8, 24, 8, 0};
-
     GLView::setGLContextAttrs(glContextAttrs);
 }
-
 // if you want to use the package manager to install more packages,
 // don't modify or remove this function
 static int register_all_packages()
 {
-    return 0;  // flag for packages manager
+    return 0; // flag for packages manager
 }
-
 bool AppDelegate::applicationDidFinishLaunching()
 {
     // 1. 获取导演
     auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
-
     if (!glview)
     {
         // 使用 createWithRect 而不是 create
         // 参数4 (true) = 允许调整窗口大小 (Resizable)
-        glview = GLViewImpl::createWithRect("My Clash Game",         // 标题
-                                            Rect(0, 0, 2560, 1440),  // 初始位置和大小(2K)
-                                            1.0f,                    // 缩放系数
-                                            true                     // 设为 true 表示可以用鼠标拉伸窗口！
+        glview = GLViewImpl::createWithRect("My Clash Game",        // 标题
+                                            Rect(0, 0, 2560, 1440), // 初始位置和大小(2K)
+                                            1.0f,                   // 缩放系数
+                                            true                    // 设为 true 表示可以用鼠标拉伸窗口！
         );
         director->setOpenGLView(glview);
     }
-
     // 2. 开启调试数据显示 (FPS等)
     director->setDisplayStats(true);
-
     // 3. 设置帧率
     director->setAnimationInterval(1.0f / 60);
-
     // 4. 不要用 NO_BORDER，因为你现在允许乱拉窗口了，NO_BORDER 会切掉你的 UI
     // 推荐用 FIXED_HEIGHT：高度固定，宽度视野变大 (适合 COC 类游戏)
     glview->setDesignResolutionSize(1280, 720, ResolutionPolicy::FIXED_HEIGHT);
-
 #if 0
     if (frameSize.height > mediumResolutionSize.height)
     {        
@@ -116,45 +99,31 @@ bool AppDelegate::applicationDidFinishLaunching()
     // 新增：初始化资源管理器并设置初始资源
     CCLOG("Initializing Resource Manager...");
     auto resourceManager = ResourceManager::GetInstance();
-    if (resourceManager->Init())
-    {
-        CCLOG("Resource Manager initialized successfully");
-
-        // 设置初始资源（游戏开始送2000金币，1000圣水）
-        resourceManager->AddResource(ResourceType::kGold, 2000);
-        resourceManager->AddResource(ResourceType::kElixir, 1000);
-
-        CCLOG("Initial resources set: Gold=2000, Elixir=1000");
-    }
-    else
-    {
-        CCLOG("ERROR: Failed to initialize Resource Manager");
-    }
+    resourceManager->Init();
+    CCLOG("Resource Manager initialized successfully");
+    // 设置初始资源（游戏开始送2000金币，1000圣水）
+    resourceManager->AddResource(ResourceType::kGold, 2000);
+    resourceManager->AddResource(ResourceType::kElixir, 1000);
+    CCLOG("Initial resources set: Gold=2000, Elixir=1000");
     // Initialize account system (load from storage)
     AccountManager::getInstance().initialize();
-
     // Always go to account selection first
     Scene* scene = AccountSelectScene::createScene();
     director->runWithScene(scene);
-
     return true;
 }
-
 // This function will be called when the app is inactive. Note, when receiving a phone call it is invoked.
 void AppDelegate::applicationDidEnterBackground()
 {
     Director::getInstance()->stopAnimation();
-
 #if USE_AUDIO_ENGINE
     AudioEngine::pauseAll();
 #endif
 }
-
 // this function will be called when the app is active again
 void AppDelegate::applicationWillEnterForeground()
 {
     Director::getInstance()->startAnimation();
-
 #if USE_AUDIO_ENGINE
     AudioEngine::resumeAll();
 #endif

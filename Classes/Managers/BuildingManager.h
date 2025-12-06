@@ -1,0 +1,214 @@
+﻿/**
+
+ * @file BuildingManager.h
+
+ * @brief 建筑管理器 - 管理所有建筑的创建、放置、升级和更新
+
+ *
+
+ * 管理层(Manager Layer)：负责管理所有建筑的集合、碰撞检测（网格占用）、建造逻辑、升级逻辑。
+
+ * 场景层不应该直接操作建筑，而是通过此管理器进行操作。
+
+ */
+#ifndef BUILDING_MANAGER_H_
+#define BUILDING_MANAGER_H_
+#include "BuildingData.h"
+#include "Buildings/BaseBuilding.h"
+#include "cocos2d.h"
+#include "GridMap.h"
+#include <functional>
+#include <vector>
+/**
+
+ * @class BuildingManager
+
+ * @brief 建筑管理器，负责建筑的创建、放置和生命周期管理
+
+ */
+class BuildingManager : public cocos2d::Node
+{
+public:
+    CREATE_FUNC(BuildingManager);
+    virtual bool init() override;
+    // ==================== 初始化 ====================
+    /**
+
+     * @brief 设置地图和网格引用
+
+     * @param mapSprite 地图精灵节点
+
+     * @param gridMap 网格地图对象
+
+     */
+    void setup(cocos2d::Sprite* mapSprite, GridMap* gridMap);
+    // ==================== 建造模式 ====================
+    /**
+
+     * @brief 进入建造模式
+
+     * @param buildingData 要建造的建筑数据
+
+     */
+    void startPlacing(const BuildingData& buildingData);
+    /** @brief 退出建造模式 */
+    void cancelPlacing();
+    /** @brief 是否处于建造模式 */
+    bool isInBuildingMode() const { return _isBuildingMode; }
+    /** @brief 是否正在拖拽建筑 */
+    bool isDraggingBuilding() const { return _isDraggingBuilding; }
+    /** @brief 是否在等待确认 */
+    bool isWaitingConfirm() const { return _isWaitingConfirm; }
+    // ==================== 触摸处理（由场景转发） ====================
+    /**
+
+     * @brief 处理触摸开始事件
+
+     * @param touchPos 世界坐标系中的触摸位置
+
+     * @return 是否处理了此触摸
+
+     */
+    bool onTouchBegan(const cocos2d::Vec2& touchPos);
+    /**
+
+     * @brief 处理触摸移动事件
+
+     * @param touchPos 世界坐标系中的触摸位置
+
+     */
+    void onTouchMoved(const cocos2d::Vec2& touchPos);
+    /**
+
+     * @brief 处理触摸结束事件
+
+     * @param touchPos 世界坐标系中的触摸位置
+
+     */
+    void onTouchEnded(const cocos2d::Vec2& touchPos);
+    // ==================== 确认/取消建造 ====================
+    /** @brief 确认放置建筑 */
+    void confirmBuilding();
+    /** @brief 取消放置建筑 */
+    void cancelBuilding();
+    /** @brief 获取待确认建筑的世界坐标位置 */
+    cocos2d::Vec2 getPendingBuildingWorldPos() const;
+    /** @brief 结束建造模式并清理状态 */
+    void endPlacing();
+    // ==================== 建筑管理 ====================
+    /**
+
+     * @brief 每帧更新，调用所有建筑的 tick 方法
+
+     * @param dt 距上一帧的时间间隔（秒）
+
+     */
+    void update(float dt) override;
+    /** @brief 获取所有已放置的建筑 */
+    const cocos2d::Vector<BaseBuilding*>& getBuildings() const { return _buildings; }
+    /**
+
+     * @brief 通过触摸位置查找建筑
+
+     * @param touchPos 世界坐标系中的触摸位置
+
+     * @return 触摸到的建筑，如果没有则返回 nullptr
+
+     */
+    BaseBuilding* getBuildingAtPosition(const cocos2d::Vec2& touchPos);
+    // ==================== 回调设置 ====================
+    using BuildingPlacedCallback = std::function<void(BaseBuilding*)>;
+    using HintCallback = std::function<void(const std::string&)>;
+    using BuildingClickedCallback = std::function<void(BaseBuilding*)>;
+    using BuildingMovedCallback = std::function<void(BaseBuilding*, const cocos2d::Vec2&)>;
+    
+    /** @brief 设置建筑放置成功的回调 */
+    void setOnBuildingPlaced(const BuildingPlacedCallback& callback) { _onBuildingPlaced = callback; }
+    /** @brief 设置显示提示信息的回调 */
+    void setOnHint(const HintCallback& callback) { _onHint = callback; }
+    /** @brief 设置建筑被左键点击的回调 */
+    void setOnBuildingClicked(const BuildingClickedCallback& callback) { _onBuildingClicked = callback; }
+    /** @brief 设置建筑移动完成的回调 */
+    void setOnBuildingMoved(const BuildingMovedCallback& callback) { _onBuildingMoved = callback; }
+    
+    // ==================== 建筑移动相关 ====================
+    /**
+     * @brief 进入建筑移动模式
+     * @param building 要移动的建筑
+     */
+    void startMovingBuilding(BaseBuilding* building);
+    /** @brief 退出建筑移动模式 */
+    void cancelMovingBuilding();
+    /** @brief 确认建筑新位置 */
+    void confirmBuildingMove();
+    /** @brief 是否正在移动建筑 */
+    bool isMovingBuilding() const { return _isMovingBuilding; }
+    
+    // ==================== 内部方法 ====================
+    /**
+     * @brief 在指定网格位置放置建筑
+     * @param gridPos 网格坐标
+     */
+    void placeBuilding(const cocos2d::Vec2& gridPos);
+    /**
+     * @brief 计算建筑在地图上的实际位置
+     * @param gridPos 网格坐标
+     * @return 地图节点坐标系下的实际位置
+     */
+    cocos2d::Vec2 calculateBuildingPosition(const cocos2d::Vec2& gridPos) const;
+    /**
+     * @brief 计算移动建筑时的位置
+     * @param gridPos 网格坐标
+     * @return 实际位置
+     */
+    cocos2d::Vec2 calculateBuildingPositionForMoving(const cocos2d::Vec2& gridPos) const;
+    /**
+     * @brief 处理建筑触摸移动
+     * @param touchPos 触摸位置
+     */
+    void onBuildingTouchMoved(const cocos2d::Vec2& touchPos);
+    /**
+     * @brief 处理建筑触摸结束
+     * @param touchPos 触摸位置
+     * @param building 被触摸的建筑指针
+     */
+    void onBuildingTouchEnded(const cocos2d::Vec2& touchPos, BaseBuilding* building);
+    /**
+     * @brief 创建建筑实体
+     * @param buildingData 建筑数据
+     * @return 创建的建筑实体
+     */
+    BaseBuilding* createBuildingEntity(const BuildingData& buildingData);
+    /** @brief 显示提示信息 */
+    void showHint(const std::string& hint);
+    /**
+     * @brief 为建筑添加点击监听器
+     * @param building 要添加监听器的建筑
+     */
+    void setupBuildingClickListener(BaseBuilding* building);
+
+    // ==================== 成员变量 ====================
+    cocos2d::Sprite* _mapSprite = nullptr; // 地图精灵引用
+    GridMap* _gridMap = nullptr;           // 网格地图引用
+    // 建造模式状态
+    bool _isBuildingMode = false;            // 是否在建造模式
+    bool _isDraggingBuilding = false;        // 是否正在拖拽
+    bool _isWaitingConfirm = false;          // 是否等待确认
+    bool _isMovingBuilding = false;          // 是否正在移动建筑
+    cocos2d::Sprite* _ghostSprite = nullptr; // 建筑预览精灵
+    BuildingData _selectedBuilding;          // 当前选中的建筑数据
+    cocos2d::Vec2 _pendingGridPos;           // 待确认的网格位置
+    // 已放置的建筑列表
+    cocos2d::Vector<BaseBuilding*> _buildings;
+    // 回调函数
+    BuildingPlacedCallback _onBuildingPlaced = nullptr;
+    HintCallback _onHint = nullptr;
+    BuildingClickedCallback _onBuildingClicked = nullptr;
+    BuildingMovedCallback _onBuildingMoved = nullptr;
+    
+    // ==================== 建筑移动状态 ====================
+    BaseBuilding* _movingBuilding = nullptr;           // 当前移动的建筑
+    cocos2d::Vec2 _buildingOriginalGridPos;            // 建筑原始网格位置
+    cocos2d::Sprite* _movingGhostSprite = nullptr;     // 移动时的幽灵精灵
+};
+#endif // BUILDING_MANAGER_H_#endif // BUILDING_MANAGER_H_
