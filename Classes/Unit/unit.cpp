@@ -1,176 +1,413 @@
-// 2453619 Ѧع��
+﻿#include "unit.h"
 
-#include "unit.h"
+USING_NS_CC; // 使用 Cocos2d 命名空间，免去每次写 cocos2d::
 
-USING_NS_CC;
-
+// --------------------------------------------------------------------------
+// 标准的 Cocos2d-x "create" 模式实现
+// 作用：new 一个对象 -> init 初始化 -> autorelease 加入自动内存管理池
+// --------------------------------------------------------------------------
 Unit* Unit::create(UnitType type)
 {
     Unit* unit = new (std::nothrow) Unit();
     if (unit && unit->init(type))
     {
-        unit->autorelease();
+        unit->autorelease(); // 关键：交出所有权，防止忘记 delete 导致内存泄漏
         return unit;
     }
-    CC_SAFE_DELETE(unit);
+    CC_SAFE_DELETE(unit); // 如果初始化失败，安全删除
     return nullptr;
 }
 
+// --------------------------------------------------------------------------
+// 初始化函数：相当于构造函数的实际逻辑
+// --------------------------------------------------------------------------
 bool Unit::init(UnitType type)
 {
-    if (!Node::init())
+    if (!Node::init()) // 必须先初始化父类
         return false;
 
-    // 1. �������� (·��������)
+    // 1. 根据类型加载资源 (比如加载野蛮人的 plist 文件)
     LoadConfig(type);
 
-    // 2. ���� Sprite
-    // ʹ�� plist �д��ڵ�ͼƬ����������ȷ������͸����
-    sprite_ = Sprite::createWithSpriteFrameName("barbarian25.0.png");
-
-    if (sprite_ == nullptr)
+    // 2. 创建初始 Sprite (精灵) - 根据类型选择不同的初始帧
+    // 注意：必须确保 plist 已经被加载，且图片名正确，否则这里会崩溃或显示为空
+    std::string initialFrame;
+    if (type == UnitType::kBarbarian)
     {
-        // ��������ӡ�ˣ�˵�� LoadConfig ���·�����ǲ���
-        cocos2d::log("Error: �Ҳ���ͼƬ֡������ LoadConfig ���·���Ƿ���ȷ");
-        sprite_ = Sprite::create();  // ������
+        initialFrame = "barbarian25.0.png";  // 野蛮人待机帧
     }
+    else if (type == UnitType::kArcher)
+    {
+        initialFrame = "archer27.0.png";  // 弓箭手待机帧（右方向中间帧）
+    }
+    else
+    {
+        CCLOG("ERROR: Unknown unit type!");
+        return false;
+    }
+
+    sprite_ = Sprite::createWithSpriteFrameName(initialFrame);
+
+
 
     if (sprite_)
     {
-        // ���ؼ��޸�������ֻ����һ�� addChild
-        this->addChild(sprite_);
 
-        // Ĭ�ϲ���һ������������ֹ�հ�
-        PlayAnimation(UnitAction::Idle, UnitDirection::Right);
+        this->addChild(sprite_); // 把精灵作为子节点添加到 Unit 节点上
 
-        // �ŵ׶���
-        sprite_->setAnchorPoint(Vec2(0.5, 0));
+        // 3. 设置初始状态：待机，朝右
+        PlayAnimation(UnitAction::kIdle, UnitDirection::kRight);
+
+        // 4. 设置锚点在脚底 (0.5, 0.0)
+        // 这样设置坐标 (x, y) 时，(x, y) 就在人物的脚下，方便对齐地图格子
+        sprite_->setAnchorPoint(Vec2(0.5f, 0.0f));
     }
+    else
+    {
+        cocos2d::log("Error: Failed to create sprite. Check plist path.");
+    }
+
+    // 5. 【关键】开启 update 调度
+    // 这行代码告诉引擎：“请每一帧调用一次我的 update(float dt) 函数”
+    this->scheduleUpdate();
 
     return true;
 }
 
-// =========================================================
-// ����������
-// =========================================================
+// --------------------------------------------------------------------------
+// 析构函数：清理手动管理的内存
+// --------------------------------------------------------------------------
+Unit::~Unit()
+{
+    // 因为在 AddAnim 里我们对其调用了 retain() (引用计数+1)
+    // 所以这里必须调用 release() (引用计数-1)，否则这些动画对象永远不会从内存删除
+    for (auto& pair : anim_cache_)
+    {
+        pair.second->release();
+    }
+    anim_cache_.clear();
+}
+
+// --------------------------------------------------------------------------
+// 加载配置：这是“硬编码”数据的地方，定义了每个动作对应哪几张图
+// --------------------------------------------------------------------------
 void Unit::LoadConfig(UnitType type)
 {
-    if (type == UnitType::Barbarian)
+    if (type == UnitType::kBarbarian)
     {
-        // ���ؼ��޸���·������Ϊ units/barbarian/barbarian.plist
-        // ע���Сд���������ļ�����ȫһ��
+        // 加载图集信息到缓存
         SpriteFrameCache::getInstance()->addSpriteFramesWithFile("units/barbarian/barbarian.plist");
 
-        // 2. �����������
-        // ��ʽ��AddAnim("�ڲ�����", ��ʼ��, ������, �ٶ�);
+        // ========== 跑步动画 ==========
+        AddAnim("barbarian", "run_down_right", 1, 8, 0.1f);   // 1~8 downright run
+        AddAnim("barbarian", "run_right", 9, 16, 0.1f);       // 9~16 right run
+        AddAnim("barbarian", "run_up_right", 17, 24, 0.1f);   // 17~24 upright run
 
-        // --- �ܲ� ---
-        AddAnim("run_down_right", 1, 8, 0.1f);
-        AddAnim("run_right", 9, 16, 0.1f);
-        AddAnim("run_up_right", 17, 24, 0.1f);
+        // ========== 待机动画 ==========
+        AddAnim("barbarian", "idle_down_right", 25, 25, 1.0f); // 25 downright stand
+        AddAnim("barbarian", "idle_right", 26, 26, 1.0f);      // 26 right stand
+        AddAnim("barbarian", "idle_up_right", 27, 27, 1.0f);   // 27 upright stand
 
-        // --- վ�� ---
-        AddAnim("idle_down_right", 25, 25, 1.0f);
-        AddAnim("idle_right", 26, 26, 1.0f);
-        AddAnim("idle_up_right", 27, 27, 1.0f);
+        // ========== 攻击动画 1 ==========
+        AddAnim("barbarian", "attack_down_right", 31, 38, 0.1f); // 31~38 downright attack 1
+        AddAnim("barbarian", "attack_right", 39, 46, 0.1f);      // 39~46 right attack 1
+        AddAnim("barbarian", "attack_up_right", 47, 54, 0.1f);   // 47~54 upright attack 1
 
-        // --- ���� ---
-        AddAnim("attack_down_right", 31, 38, 0.1f);
-        AddAnim("attack_right", 39, 46, 0.1f);
-        AddAnim("attack_up_right", 47, 54, 0.1f);
+        // ========== 攻击动画 2 ==========
+        AddAnim("barbarian", "attack2_down_right", 55, 65, 0.09f); // 55~65 downright attack 2
+        AddAnim("barbarian", "attack2_right", 66, 76, 0.09f);      // 66~76 right attack 2
+        AddAnim("barbarian", "attack2_up_right", 77, 87, 0.09f);   // 77~87 upright attack 2
+
+        // ========== 死亡动画 ==========
+        // 注意：死亡动画不区分方向，只有光环和墓碑两帧
+        AddAnim("barbarian", "death", 175, 176, 0.5f); // 175 死亡光环, 176 墓碑
     }
-    else if (type == UnitType::Archer)
+    else if (type == UnitType::kArcher)
     {
-        // �Ժ���������ֵ� plist ������
+        // 加载弓箭手图集
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile("units/archer/archer.plist");
+
+        // ========== 跑步动画 ==========
+        AddAnim("archer", "run_down_right", 1, 8, 0.1f);   // 1~8 downright run
+        AddAnim("archer", "run_right", 9, 16, 0.1f);        // 9~16 right run
+        AddAnim("archer", "run_up_right", 17, 24, 0.1f);    // 17~24 upright run
+
+        // ========== 待机动画 ==========
+        AddAnim("archer", "idle_down_right", 25, 26, 0.5f); // 25,26 downright stand
+        AddAnim("archer", "idle_right", 27, 29, 0.3f);      // 27,28,29 right stand
+        AddAnim("archer", "idle_up_right", 30, 31, 0.5f);   // 30,31 upright stand
+
+        // ========== 攻击动画（完整射箭流程）==========
+        // downright: 32~34(拿箭) + 41~44(射箭) - 跳过35-40
+        // 注意：这里为了动画连贯，我们分两段加载
+        AddAnim("archer", "attack_down_right", 32, 44, 0.08f);
+        // right: 35~37(拿箭) + 45~48(射箭) - 跳过38-44
+        AddAnim("archer", "attack_right", 35, 48, 0.08f);
+        // upright: 38~40(拿箭) + 49~52(射箭)
+        AddAnim("archer", "attack_up_right", 38, 52, 0.08f);
+
+        // ========== 死亡动画 ==========
+        AddAnim("archer", "death", 53, 54, 0.5f); // 53 死亡光环, 54 墓碑
     }
 }
 
-void Unit::AddAnim(const std::string& key, int start, int end, float delay)
+// --------------------------------------------------------------------------
+// 辅助函数：创建 Animation 对象并缓存
+// --------------------------------------------------------------------------
+void Unit::AddAnim(const std::string& unitName, const std::string& key, int start, int end, float delay)
 {
     Vector<SpriteFrame*> frames;
+    // 循环获取每一帧图片
     for (int i = start; i <= end; ++i)
     {
-        // ƴ���ļ��� barbarianX.0.png
-        // ע�⣺��� plist ���� barbarian_01.png ���ָ�ʽ������Ҫ��Ӧ�޸�
-        std::string name = StringUtils::format("barbarian%d.0.png", i);
-        auto frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(name);
+        // 拼接文件名，例如 "barbarian1.0.png"
+        std::string name  = StringUtils::format("%s%d.0.png", unitName.c_str(), i);
+        auto  frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(name);
         if (frame)
             frames.pushBack(frame);
+        else
+        {
+            // 输出警告，帮助你排查具体缺哪张图
+            CCLOG("WARN: SpriteFrame not found: %s", name.c_str());
+        }
     }
+
+    // 如果找到了帧，就创建动画对象
     if (!frames.empty())
     {
         auto anim = Animation::createWithSpriteFrames(frames, delay);
-        anim->retain();  // ��ֹ���ͷ�
+
+        // 【重要】retain() 防止动画被自动释放
+        // Cocos 的对象默认是自动释放的，如果我们要存到 map 里长期使用，必须手动 retain
+        anim->retain();
+
         anim_cache_[key] = anim;
+    }
+    else
+    {
+        CCLOG("ERROR: No frames found for animation key: %s. Check your .plist file!", key.c_str());
     }
 }
 
-// =========================================================
-// �����߼������� 8 ���� -> 3 �زĵķ�ת
-// =========================================================
+// --------------------------------------------------------------------------
+// 核心动画控制：根据动作和方向选择动画，并处理翻转
+// --------------------------------------------------------------------------
 void Unit::PlayAnimation(UnitAction action, UnitDirection dir)
 {
     std::string anim_key = "";
-    bool flip_x = false;
+    bool        flip_x   = false; // 是否需要水平翻转图片
 
-    // 1. �򵥵ķ���ӳ���
-    // ֻ�� Right, UpRight, DownRight ����ģ��������ǽ��õ�
+    // 资源复用逻辑：
+    // 美术只画了右半边的图 (右、右上、右下)
+    // 左半边的动作通过“水平翻转”右半边的图来实现
     switch (dir)
     {
-        case UnitDirection::Right:
-            anim_key = "right";
-            flip_x = false;
-            break;
-        case UnitDirection::UpRight:
-            anim_key = "up_right";
-            flip_x = false;
-            break;
-        case UnitDirection::DownRight:
-            anim_key = "down_right";
-            flip_x = false;
-            break;
+    case UnitDirection::kRight:
+        anim_key = "right";
+        flip_x   = false;
+        break;
+    case UnitDirection::kUpRight:
+        anim_key = "up_right";
+        flip_x   = false;
+        break;
+    case UnitDirection::kDownRight:
+        anim_key = "down_right";
+        flip_x   = false;
+        break;
 
-        // ���ȫ�Ƿ�ת
-        case UnitDirection::Left:
-            anim_key = "right";
-            flip_x = true;
-            break;
-        case UnitDirection::UpLeft:
-            anim_key = "up_right";
-            flip_x = true;
-            break;
-        case UnitDirection::DownLeft:
-            anim_key = "down_right";
-            flip_x = true;
-            break;
+    // 左侧方向：使用对应的右侧动画，但是开启翻转 (flip_x = true)
+    case UnitDirection::kLeft:
+        anim_key = "right";
+        flip_x   = true;
+        break;
+    case UnitDirection::kUpLeft:
+        anim_key = "up_right";
+        flip_x   = true;
+        break;
+    case UnitDirection::kDownLeft:
+        anim_key = "down_right";
+        flip_x   = true;
+        break;
 
-        // ������ʱ����
-        case UnitDirection::Up:
-            anim_key = "up_right";
-            flip_x = false;
-            break;
-        case UnitDirection::Down:
-            anim_key = "down_right";
-            flip_x = false;
-            break;
+    // 纯上/下：这里偷懒借用了右上/右下
+    case UnitDirection::kUp:
+        anim_key = "up_right";
+        flip_x   = false;
+        break;
+    case UnitDirection::kDown:
+        anim_key = "down_right";
+        flip_x   = false;
+        break;
     }
 
-    // 2. ƴ�Ӷ���ǰ׺
+    // 拼接最终的 Key，例如 "run_" + "up_right" = "run_up_right"
     std::string prefix = "";
-    if (action == UnitAction::Run)
+    if (action == UnitAction::kRun)
         prefix = "run_";
-    if (action == UnitAction::Idle)
+    else if (action == UnitAction::kIdle)
         prefix = "idle_";
-    if (action == UnitAction::Attack)
+    else if (action == UnitAction::kAttack)
         prefix = "attack_";
+    else if (action == UnitAction::kAttack2)
+        prefix = "attack2_";
+    else if (action == UnitAction::kDeath)
+    {
+        // 死亡动画不区分方向，直接使用 "death"
+        std::string final_key = "death";
+        if (sprite_ && anim_cache_.count(final_key))
+        {
+            sprite_->stopAllActions();
+            sprite_->setFlippedX(false); // 死亡不翻转
+            // 死亡动画只播放一次，不循环
+            sprite_->runAction(Animate::create(anim_cache_[final_key]));
+        }
+        return;
+    }
 
     std::string final_key = prefix + anim_key;
 
-    // 3. ����
-    if (anim_cache_.count(final_key))
+    // 只有当动画存在且 Sprite 有效时才播放
+    if (sprite_ && anim_cache_.count(final_key))
     {
-        sprite_->stopAllActions();
-        sprite_->setFlippedX(flip_x);
+        sprite_->stopAllActions();    // 停止当前动作
+        sprite_->setFlippedX(flip_x); // 设置翻转
+        // 运行新动作：RepeatForever 表示无限循环播放
         sprite_->runAction(RepeatForever::create(Animate::create(anim_cache_[final_key])));
     }
+}
+
+// --------------------------------------------------------------------------
+// 移动指令：设置目标点，计算速度向量
+// --------------------------------------------------------------------------
+void Unit::MoveTo(const Vec2& target_pos)
+{
+    // 如果已经死亡，不能移动
+    if (is_dead_)
+        return;
+
+    target_pos_ = target_pos;
+
+    Vec2 current_pos = this->getPosition();
+    Vec2 diff        = target_pos_ - current_pos; // 向量：从当前点指向目标点
+
+    // 如果距离太近 (< 1像素)，视为已到达，不移动
+    if (diff.getLength() < 1.0f)
+        return;
+
+    // 1. 计算方向并播放跑步动画
+    current_dir_ = CalculateDirection(diff);
+    PlayAnimation(UnitAction::kRun, current_dir_);
+
+    // 2. 计算每帧速度向量
+    // normalize() 将向量长度变为1 (单位向量)，保留方向
+    // 然后乘以 speed，得到实际每秒移动的像素偏移量
+    move_velocity_ = diff.getNormalized() * move_speed_;
+
+    // 3. 标记状态为“正在移动”，update 函数会开始工作
+    is_moving_ = true;
+}
+
+// --------------------------------------------------------------------------
+// 帧循环：每一帧都会被引擎调用 (例如 60FPS 则每秒调用 60 次)
+// dt (Delta Time): 距离上一帧过去的时间 (秒)，例如 0.016s
+// --------------------------------------------------------------------------
+void Unit::update(float dt)
+{
+    if (!is_moving_)
+        return; // 如果没在移动，直接跳过
+
+    Vec2  current_pos = this->getPosition();
+    float distance    = current_pos.distance(target_pos_); // 离终点还有多远
+    float step        = move_speed_ * dt;                  // 这一帧能走多远 (速度 * 时间)
+
+    // 如果 这一帧能走的距离 >= 剩余距离，说明到了
+    if (step >= distance)
+    {
+        this->setPosition(target_pos_);                 // 直接修正到终点 (防止跑过头)
+        is_moving_ = false;                             // 停止移动标记
+        PlayAnimation(UnitAction::kIdle, current_dir_); // 播放待机动画
+    }
+    else
+    {
+        // 还没到，按照速度向量移动一步
+        // 新位置 = 旧位置 + (速度向量 * 时间间隔)
+        this->setPosition(current_pos + move_velocity_ * dt);
+    }
+}
+
+// --------------------------------------------------------------------------
+// 数学辅助：将向量角度映射到 8 个方向枚举
+// --------------------------------------------------------------------------
+UnitDirection Unit::CalculateDirection(const Vec2& diff)
+{
+    // 获取向量的角度 (弧度转角度)，范围 -180 到 180
+    float angle = CC_RADIANS_TO_DEGREES(diff.getAngle());
+
+    // 根据角度区间判断方向
+    // 0度是正右方
+    if (angle >= -22.5f && angle < 22.5f)
+        return UnitDirection::kRight;
+    if (angle >= 22.5f && angle < 67.5f)
+        return UnitDirection::kUpRight;
+    if (angle >= 67.5f && angle < 112.5f)
+        return UnitDirection::kUp;
+    if (angle >= 112.5f && angle < 157.5f)
+        return UnitDirection::kUpLeft;
+    // 157.5 ~ 180 和 -180 ~ -157.5 都是左边
+    if (angle >= 157.5f || angle < -157.5f)
+        return UnitDirection::kLeft;
+    if (angle >= -157.5f && angle < -112.5f)
+        return UnitDirection::kDownLeft;
+    if (angle >= -112.5f && angle < -67.5f)
+        return UnitDirection::kDown;
+
+    return UnitDirection::kDownRight;
+}
+
+// --------------------------------------------------------------------------
+// 播放攻击动画
+// --------------------------------------------------------------------------
+void Unit::Attack(bool useSecondAttack)
+{
+    // 如果已经死亡，不能攻击
+    if (is_dead_)
+        return;
+
+    // 停止移动
+    is_moving_ = false;
+
+    // 播放攻击动画（根据参数选择第一套或第二套）
+    UnitAction attackAction = useSecondAttack ? UnitAction::kAttack2 : UnitAction::kAttack;
+    PlayAnimation(attackAction, current_dir_);
+
+    CCLOG("Unit attacking with %s", useSecondAttack ? "Attack2" : "Attack1");
+}
+
+// --------------------------------------------------------------------------
+// 播放死亡动画并标记为已死亡
+// --------------------------------------------------------------------------
+void Unit::Die()
+{
+    // 如果已经死亡，不重复播放
+    if (is_dead_)
+        return;
+
+    // 标记为已死亡
+    is_dead_ = true;
+
+    // 停止移动
+    is_moving_ = false;
+
+    // 播放死亡动画（死亡动画不区分方向）
+    PlayAnimation(UnitAction::kDeath, current_dir_);
+
+    CCLOG("Unit died!");
+
+    // 可选：3秒后移除单位
+    auto removeAction = Sequence::create(
+        DelayTime::create(3.0f),
+        RemoveSelf::create(),
+        nullptr
+    );
+    this->runAction(removeAction);
 }

@@ -76,7 +76,7 @@ bool DraggableMapScene::init()
     _confirmButton = nullptr;
     _cancelButton = nullptr;
 
-    //_heroManager = nullptr;
+    _heroManager = nullptr;
 
     // 初始化大本营系统
     _currentUpgradeUI = nullptr;
@@ -413,21 +413,6 @@ void DraggableMapScene::setupUI()
     CCLOG("UI setup complete");
     CCLOG("UI setup complete. Build button at (%.1f, %.1f)", resourceXPos + 70, buildButtonY);
 
-
-    // ===========================================
-    // 【临时测试】在屏幕中间放一个野蛮人
-    // ===========================================
-    auto testUnit = Unit::create(UnitType::Barbarian);
-
-    // 放在屏幕正中间
-    testUnit->setPosition(Vec2(_visibleSize.width / 2, _visibleSize.height / 2));
-
-    // 让他播放“向右下待机”的动作
-    testUnit->PlayAnimation(UnitAction::Idle, UnitDirection::DownRight);
-
-    // 加到场景里 (Z轴设为 1000，确保它盖在地图和建筑上面，不会被遮住)
-    this->addChild(testUnit, 1000);
-    // ===========================================
 
 
 }
@@ -991,7 +976,10 @@ void DraggableMapScene::zoomMap(float scaleFactor, const cocos2d::Vec2& pivotPoi
     _currentScale = newScale;
     updateBoundary();
     updateMapElementsPosition();
-    _heroManager->updateHeroesScale(_currentScale);
+    if (_heroManager)
+    {
+        _heroManager->updateHeroesScale(_currentScale);
+    }
     ensureMapInBoundary();
 }
 
