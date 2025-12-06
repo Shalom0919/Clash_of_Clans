@@ -28,7 +28,7 @@ bool GridMap::init(const Size& mapSize, float tileSize)
     this->addChild(_baseNode, 2);
 
     // 长边与短边相同
-    _gridWidth = (int)round(mapSize.width / tileSize) - 1;
+    _gridWidth = static_cast<int>(round(mapSize.width / tileSize)) - 1;
     _gridHeight = _gridWidth;
 
     _collisionMap.resize(_gridWidth, std::vector<bool>(_gridHeight, false));
@@ -63,8 +63,8 @@ Vec2 GridMap::getGridPosition(Vec2 worldPosition)
     float x = (dy / halfH + dx / halfW) / 2.0f;
     float y = (dy / halfH - dx / halfW) / 2.0f;
 
-    int gridX = (int)round(x);
-    int gridY = (int)round(y);
+    int gridX = static_cast<int>(round(x));
+    int gridY = static_cast<int>(round(y));
 
     gridX = MAX(0, MIN(_gridWidth - 1, gridX));
     gridY = MAX(0, MIN(_gridHeight - 1, gridY));
@@ -83,7 +83,7 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
     int bigGridStep = 3;
     if (currentBuildingSize.width > 0 && currentBuildingSize.height > 0)
     {
-        bigGridStep = (int)currentBuildingSize.width;
+        bigGridStep = static_cast<int>(currentBuildingSize.width);
     }
 
     // 定义网格颜色：小网格填充、小网格边线、大网格边线
@@ -103,7 +103,7 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
     {
         for (int y = 0; y < maxY; y++)
         {
-            Vec2 center = getPositionFromGrid(Vec2(x, y));
+            Vec2 center = getPositionFromGrid(Vec2(static_cast<float>(x), static_cast<float>(y)));
 
             // 计算菱形的四个顶点：上、右、下、左
             Vec2 p[4];
@@ -131,10 +131,10 @@ void GridMap::showWholeGrid(bool visible, const cocos2d::Size& currentBuildingSi
                 continue;
 
             // 获取大网格区域的四个角对应的网格中心点
-            Vec2 topGridCenter = getPositionFromGrid(Vec2(x, y));
-            Vec2 rightGridCenter = getPositionFromGrid(Vec2(x + currentW - 1, y));
-            Vec2 bottomGridCenter = getPositionFromGrid(Vec2(x + currentW - 1, y + currentH - 1));
-            Vec2 leftGridCenter = getPositionFromGrid(Vec2(x, y + currentH - 1));
+            Vec2 topGridCenter = getPositionFromGrid(Vec2(static_cast<float>(x), static_cast<float>(y)));
+            Vec2 rightGridCenter = getPositionFromGrid(Vec2(static_cast<float>(x + currentW - 1), static_cast<float>(y)));
+            Vec2 bottomGridCenter = getPositionFromGrid(Vec2(static_cast<float>(x + currentW - 1), static_cast<float>(y + currentH - 1)));
+            Vec2 leftGridCenter = getPositionFromGrid(Vec2(static_cast<float>(x), static_cast<float>(y + currentH - 1)));
 
             // 连接四个角的外边缘顶点，形成大网格边框
             Vec2 p[4];
@@ -170,11 +170,11 @@ void GridMap::updateBuildingBase(Vec2 gridPos, Size size, bool isValid)
     }
 
     // 循环绘制建筑底下的每一个网格，只显示建筑脚下的网格
-    for (int i = 0; i < size.width; i++)
+    for (int i = 0; i < static_cast<int>(size.width); i++)
     {
-        for (int j = 0; j < size.height; j++)
+        for (int j = 0; j < static_cast<int>(size.height); j++)
         {
-            Vec2 currentGridPos = gridPos + Vec2(i, j);
+            Vec2 currentGridPos = gridPos + Vec2(static_cast<float>(i), static_cast<float>(j));
             Vec2 center = getPositionFromGrid(currentGridPos);
 
             Vec2 p[4];
@@ -196,10 +196,10 @@ void GridMap::hideBuildingBase()
 
 bool GridMap::checkArea(Vec2 startGridPos, Size size)
 {
-    int startX = (int)startGridPos.x;
-    int startY = (int)startGridPos.y;
-    int w = (int)size.width;
-    int h = (int)size.height;
+    int startX = static_cast<int>(startGridPos.x);
+    int startY = static_cast<int>(startGridPos.y);
+    int w = static_cast<int>(size.width);
+    int h = static_cast<int>(size.height);
 
     if (startX < 0 || startY < 0 || startX + w > _gridWidth || startY + h > _gridHeight)
     {
@@ -221,10 +221,10 @@ bool GridMap::checkArea(Vec2 startGridPos, Size size)
 
 void GridMap::markArea(Vec2 startGridPos, Size size, bool occupied)
 {
-    int startX = (int)startGridPos.x;
-    int startY = (int)startGridPos.y;
-    int w = (int)size.width;
-    int h = (int)size.height;
+    int startX = static_cast<int>(startGridPos.x);
+    int startY = static_cast<int>(startGridPos.y);
+    int w = static_cast<int>(size.width);
+    int h = static_cast<int>(size.height);
 
     if (startX < 0 || startY < 0 || startX + w > _gridWidth || startY + h > _gridHeight)
         return;

@@ -1,56 +1,77 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\AppDelegate.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\App\AppDelegate.cpp">
+      <Filter>Source Files\Classes\App</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HelloWorldScene.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\AccountSelectScene.cpp">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\DraggableMapScene.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\BattleScene.cpp">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Building.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\DraggableMapScene.cpp">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap.cpp">
-      <Filter>Source Files\Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceManager.cpp">
-      <Filter>Source Files\Classes\Managers</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\HelloWorldScene.cpp">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.cpp">
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.cpp">
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HeroManager.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MapConfigManager.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HeroManager.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Hero.cpp">
-      <Filter>Source Files\Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\MapConfigManager.cpp">
-      <Filter>Source Files\Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\AccountSelectScene.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceManager.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\SocketClient.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\BattleScene.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\TownHallSystem.cpp">
-      <Filter>Source Files\Classes</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\TownHallSystem.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Models\Hero.cpp">
+      <Filter>Source Files\Classes\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap\GridMap.cpp">
+      <Filter>Source Files\Classes\GridMap</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\ArmyBuilding.cpp">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BaseBuilding.cpp">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingUpgradeUI.cpp">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\DefenseBuilding.cpp">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\ResourceBuilding.cpp">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\StorageBuilding.cpp">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\TownHallBuilding.cpp">
+      <Filter>Source Files\Classes\Buildings</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\main.cpp">
       <Filter>Source Files\proj.win32</Filter>
@@ -60,59 +81,83 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\AppDelegate.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\App\AppDelegate.h">
+      <Filter>Source Files\Classes\App</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HelloWorldScene.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\AccountSelectScene.h">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\DraggableMapScene.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\BattleScene.h">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Building.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\DraggableMapScene.h">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap.h">
-      <Filter>Source Files\Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceManager.h">
-      <Filter>Source Files\Classes\Managers</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\HelloWorldScene.h">
+      <Filter>Source Files\Classes\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.h">
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.h">
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HeroManager.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MapConfigManager.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\HeroManager.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.h">
+      <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Hero.h">
-      <Filter>Source Files\Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\BuildingData.h">
-      <Filter>Source Files\Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\MapConfigManager.h">
-      <Filter>Source Files\Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\AccountSelectScene.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceManager.h">
+      <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\SocketClient.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\BattleScene.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.h">
+      <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\TownHallSystem.h">
-      <Filter>Source Files\Classes</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\TownHallSystem.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Models\Hero.h">
+      <Filter>Source Files\Classes\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Models\Pathfinder.h">
+      <Filter>Source Files\Classes\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap\GridMap.h">
+      <Filter>Source Files\Classes\GridMap</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\ArmyBuilding.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BaseBuilding.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingData.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingUpgradeUI.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\DefenseBuilding.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\ResourceBuilding.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\StorageBuilding.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\TownHallBuilding.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\main.h">
       <Filter>Source Files\proj.win32</Filter>
@@ -655,8 +700,23 @@
     <Filter Include="Source Files\Classes">
       <UniqueIdentifier>{A8C19D8A-95D1-344B-A2AE-B262538A467C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Classes\App">
+      <UniqueIdentifier>{FD50E419-BC70-3658-B82B-927B73FA7FB3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Classes\Buildings">
+      <UniqueIdentifier>{38D499E3-71A8-3EB6-B2E3-AAD36C6DD7E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Classes\GridMap">
+      <UniqueIdentifier>{45269F18-F3CF-3558-9873-896372222157}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Classes\Managers">
       <UniqueIdentifier>{97E3A242-2344-3A4F-8F13-211DAA837378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Classes\Models">
+      <UniqueIdentifier>{5BDD5D3B-40E5-39DD-B7D5-70569532FB40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Classes\Scenes">
+      <UniqueIdentifier>{9E6AEE65-5BBF-330A-A3A0-AFE682CA5AB5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\proj.win32">
       <UniqueIdentifier>{6BCB26C0-9DE8-33A8-9481-00FF4B2F3692}</UniqueIdentifier>
