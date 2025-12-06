@@ -44,14 +44,14 @@ file(GLOB_RECURSE MANAGERS_HDR   "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Managers/*
 file(GLOB_RECURSE MODELS_SRC     "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Models/*.cpp")
 file(GLOB_RECURSE MODELS_HDR     "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Models/*.h")
 
-file(GLOB_RECURSE GRIDMAP_SRC    "${CMAKE_CURRENT_SOURCE_DIR}/Classes/GRIDMAP/*.cpp")
-file(GLOB_RECURSE GRIDMAP_HDR    "${CMAKE_CURRENT_SOURCE_DIR}/Classes/GRIDMAP/*.h")
-
-file(GLOB_RECURSE SYSTEMS_SRC    "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Systems/*.cpp")
-file(GLOB_RECURSE SYSTEMS_HDR    "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Systems/*.h")
+file(GLOB_RECURSE GRIDMAP_SRC    "${CMAKE_CURRENT_SOURCE_DIR}/Classes/GridMap/*.cpp")
+file(GLOB_RECURSE GRIDMAP_HDR    "${CMAKE_CURRENT_SOURCE_DIR}/Classes/GridMap/*.h")
 
 file(GLOB_RECURSE BUILDINGS_SRC  "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Buildings/*.cpp")
 file(GLOB_RECURSE BUILDINGS_HDR  "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Buildings/*.h")
+
+file(GLOB_RECURSE UNIT_SRC       "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Unit/*.cpp")
+file(GLOB_RECURSE UNIT_HDR       "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Unit/*.h")
 
 list(APPEND GAME_SOURCE
     ${APP_SRC}
@@ -60,6 +60,7 @@ list(APPEND GAME_SOURCE
     ${MODELS_SRC}
     ${GRIDMAP_SRC}
     ${BUILDINGS_SRC}
+    ${UNIT_SRC}
 )
 list(APPEND GAME_HEADER
     ${APP_HDR}
@@ -68,6 +69,7 @@ list(APPEND GAME_HEADER
     ${MODELS_HDR}
     ${GRIDMAP_HDR}
     ${BUILDINGS_HDR}
+    ${UNIT_HDR}
 )
 
 # ---- 平台特定 ----
@@ -124,6 +126,7 @@ target_include_directories(${APP_NAME}
     PRIVATE Classes/Managers
     PRIVATE Classes/Models
     PRIVATE Classes/Scenes
+    PRIVATE Classes/Unit
     PRIVATE ${COCOS2DX_ROOT_PATH}/cocos/audio/include/
 )
 
