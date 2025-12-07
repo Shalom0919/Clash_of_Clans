@@ -27,13 +27,15 @@ void ResourceManager::Init()
     _capacities[kGold] = 3000;
     _capacities[kElixir] = 3000;
     _capacities[kGem] = 9999999;
-    _capacities[kBuilder] = 5; // 总上限5个
+    _capacities[kBuilder] = 0; // 初始没有建筑工人小屋，工人上限为0
+    _capacities[kTroopPopulation] = 0; // 初始没有军营，人口上限为0
 
     // 初始资源
     _resources[kGold] = 3000;
     _resources[kElixir] = 3000;
     _resources[kGem] = 1000;
-    _resources[kBuilder] = 2; // 初始2个工人
+    _resources[kBuilder] = 0; // 初始没有工人
+    _resources[kTroopPopulation] = 0; // 初始没有小兵
 }
 // 新增：增加容量的方法 (供 BuildingManager 在建造完成后调用)
 void ResourceManager::AddCapacity(ResourceType type, int amount)
@@ -80,10 +82,12 @@ void ResourceManager::SetResourceCapacity(ResourceType type, int capacity)
     if (current > capacity)
     {
         _resources[type] = capacity;
-        if (_onChangeCallback)
-        {
-            _onChangeCallback(type, _resources[type]);
-        }
+    }
+    
+    // 容量改变时也触发回调，让HUDLayer更新显示
+    if (_onChangeCallback)
+    {
+        _onChangeCallback(type, current > capacity ? capacity : current);
     }
 }
 int ResourceManager::AddResource(ResourceType type, int amount)
@@ -126,4 +130,23 @@ bool ResourceManager::ConsumeResource(ResourceType type, int amount)
 void ResourceManager::SetOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback)
 {
     _onChangeCallback = callback;
+}
+
+// 人口系统实现
+bool ResourceManager::HasTroopSpace(int count) const
+{
+    if (count <= 0) return true;
+    int current = GetCurrentTroopCount();
+    int capacity = GetMaxTroopCapacity();
+    return (current + count) <= capacity;
+}
+
+bool ResourceManager::AddTroops(int count)
+{
+    if (count <= 0) return false;
+    if (!HasTroopSpace(count)) return false;
+    
+    int current = GetCurrentTroopCount();
+    SetResourceCount(kTroopPopulation, current + count);
+    return true;
 }

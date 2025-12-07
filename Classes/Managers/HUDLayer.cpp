@@ -1,9 +1,9 @@
-#include "HUDLayer.h"
+ï»¿#include "HUDLayer.h"
 /****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     WallBuilding.cpp
- * File Function:  È«ÐÂ¶¥²¿×ÊÔ´À¸
- * Author:        ÁõÏà³É
+ * File Function:  å…¨æ–°é¡¶éƒ¨èµ„æºæ 
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/06
  * License:       MIT License
  ****************************************************************/
@@ -22,22 +22,24 @@ HUDLayer* HUDLayer::create() {
 bool HUDLayer::init() {
     if (!Layer::init()) return false;
 
-    // ´´½¨×ÊÔ´À¸±³¾° (¿ÉÑ¡)
+    // åˆ›å»ºèµ„æºæ èƒŒæ™¯ (å¯é€‰)
     // auto bg = LayerColor::create(Color4B(0,0,0,50), Director::getInstance()->getVisibleSize().width, 60);
     // bg->setPosition(0, Director::getInstance()->getVisibleSize().height - 60);
     // this->addChild(bg);
 
-    // ´ÓÓÒÏò×óÅÅÁÐ£º±¦Ê¯ -> Ê¥Ë® -> ½ð±Ò -> (×î×ó²à¿ÉÒÔ·Å¹¤ÈË)
+    // ä»Žå³å‘å·¦æŽ’åˆ—ï¼šå®çŸ³ -> åœ£æ°´ -> é‡‘å¸ -> (æœ€å·¦ä¾§å¯ä»¥æ”¾å·¥äºº)
     createResourceNode(ResourceType::kGem, "icon/Gem.png", 0);
     createResourceNode(ResourceType::kElixir, "icon/Elixir.png", 1);
     createResourceNode(ResourceType::kGold, "icon/Gold.png", 2);
-    // ================= ÐÂÔö£ºÏÔÊ¾½¨Öþ¹¤ÈË =================
-    // ÇëÈ·±£ Resources/icon/Builder.png ´æÔÚ
-    // ÕâÀïµÄ '3' ÊÇÅÅÐòË÷Òý£¬»áÅÅÔÚ½ð±ÒµÄ×ó±ß
+    // ================= æ–°å¢žï¼šæ˜¾ç¤ºå»ºç­‘å·¥äºº =================
+    // è¯·ç¡®ä¿ Resources/icon/Builder.png å­˜åœ¨
+    // è¿™é‡Œçš„ '3' æ˜¯æŽ’åºç´¢å¼•ï¼Œä¼šæŽ’åœ¨é‡‘å¸çš„å·¦è¾¹
     createResourceNode(ResourceType::kBuilder, "icon/Builder.png", 3);
+    // ================= æ–°å¢žï¼šæ˜¾ç¤ºäººå£ =================
+    createResourceNode(ResourceType::kTroopPopulation, "units/barbarian_select_button_active.png", 4);
     // ====================================================
 
-    // ×¢²á×ÊÔ´±ä»¯¼àÌý
+    // æ³¨å†Œèµ„æºå˜åŒ–ç›‘å¬
     ResourceManager::getInstance().SetOnResourceChangeCallback([this](ResourceType type, int amount) {
         this->updateDisplay();
         });
@@ -47,38 +49,40 @@ bool HUDLayer::init() {
 }
 
 void HUDLayer::createResourceNode(ResourceType type, const std::string& iconFile, int orderIndex) {
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    float topY = visibleSize.height - 30;
-    float rightMargin = 20;
-    float itemWidth = 200; // Ã¿¸ö×ÊÔ´¿éµÄ¿í¶È
+auto visibleSize = Director::getInstance()->getVisibleSize();
+float topY = visibleSize.height - 30;
+float rightMargin = 20;
+float itemWidth = 200; // æ¯ä¸ªèµ„æºå—çš„å®½åº¦
 
-    // ÈÝÆ÷½Úµã
-    auto node = Node::create();
-    // ´ÓÓÒÍù×óÅÅ
-    float xPos = visibleSize.width - rightMargin - (orderIndex * itemWidth) - (itemWidth / 2);
-    node->setPosition(Vec2(xPos, topY));
-    this->addChild(node);
+// å®¹å™¨èŠ‚ç‚¹
+auto node = Node::create();
+// ä»Žå³å¾€å·¦æŽ’
+float xPos = visibleSize.width - rightMargin - (orderIndex * itemWidth) - (itemWidth / 2);
+node->setPosition(Vec2(xPos, topY));
+this->addChild(node);
 
-    // ×ÊÔ´Í¼±ê
-    auto icon = Sprite::create(iconFile);
-    if (icon) {
-        icon->setScale(0.8f); // ¸ù¾ÝËØ²Ä´óÐ¡µ÷Õû
-        icon->setPosition(Vec2(itemWidth / 2 - 20, 0));
-        node->addChild(icon, 1);
-    }
-    else {
-        // Èç¹ûÕÒ²»µ½Í¼Æ¬£¬ÓÃÉ«¿é´úÌæ²âÊÔ
-        auto box = LayerColor::create(Color4B::MAGENTA, 30, 30);
-        box->setPosition(Vec2(itemWidth / 2 - 20, -15));
-        node->addChild(box, 1);
-    }
+// èµ„æºå›¾æ ‡
+auto icon = Sprite::create(iconFile);
+if (icon) {
+    // å†›é˜Ÿäººå£å›¾æ ‡ï¼ˆé‡Žè›®äººï¼‰ç¼©å°åˆ°ä¸€åŠå¤§å°
+    float scale = (type == ResourceType::kTroopPopulation) ? 0.4f : 0.8f;
+    icon->setScale(scale);
+    icon->setPosition(Vec2(itemWidth / 2 - 20, 0));
+    node->addChild(icon, 1);
+}
+else {
+    // å¦‚æžœæ‰¾ä¸åˆ°å›¾ç‰‡ï¼Œç”¨è‰²å—ä»£æ›¿æµ‹è¯•
+    auto box = LayerColor::create(Color4B::MAGENTA, 30, 30);
+    box->setPosition(Vec2(itemWidth / 2 - 20, -15));
+    node->addChild(box, 1);
+}
 
-    // ½ø¶ÈÌõ±³¾°
+    // è¿›åº¦æ¡èƒŒæ™¯
     auto barBg = LayerColor::create(Color4B(0, 0, 0, 150), 140, 24);
     barBg->setPosition(Vec2(-80, -12));
     node->addChild(barBg, 0);
 
-    // ÎÄ×Ö Label: 1000/3000
+    // æ–‡å­— Label: 1000/3000
     auto label = Label::createWithSystemFont("0/0", "Arial", 16);
     label->setPosition(Vec2(-10, 0));
     label->setAnchorPoint(Vec2(0.5f, 0.5f));
@@ -98,14 +102,14 @@ void HUDLayer::updateDisplay() {
         int max = rm.GetResourceCapacity(type);
 
         if (type == ResourceType::kGem) {
-            // ±¦Ê¯Í¨³£²»ÏÔÊ¾ÉÏÏÞ£¬»òÕßÉÏÏÞºÜ´ó
+            // å®çŸ³é€šå¸¸ä¸æ˜¾ç¤ºä¸Šé™ï¼Œæˆ–è€…ä¸Šé™å¾ˆå¤§
             lbl->setString(std::to_string(current));
-            lbl->setTextColor(Color4B(0, 255, 0, 255)); // ÁÁÂÌÉ«
+            lbl->setTextColor(Color4B(0, 255, 0, 255)); // äº®ç»¿è‰²
         }
         else if (type == ResourceType::kBuilder) {
-            // ½¨Öþ¹¤ÈËÌØÊâÏÔÊ¾£º¿ÕÏÐ/×ÜÊý
-            lbl->setString(StringUtils::format("%d / %d", current, max));
-            // Èç¹û current > 0 ±íÊ¾ÓÐ¿ÕÏÐ¹¤ÈË£¬ÏÔÊ¾ÂÌÉ«£»·ñÔòÏÔÊ¾ºìÉ«
+            // å»ºç­‘å·¥äººç‰¹æ®Šæ˜¾ç¤ºï¼šç©ºé—²/æ€»æ•°
+            lbl->setString(StringUtils::format("å»ºç­‘å·¥äººï¼š%d / %d", current, max));
+            // å¦‚æžœ current > 0 è¡¨ç¤ºæœ‰ç©ºé—²å·¥äººï¼Œæ˜¾ç¤ºç»¿è‰²ï¼›å¦åˆ™æ˜¾ç¤ºçº¢è‰²
             if (current > 0) {
                 lbl->setTextColor(Color4B::GREEN);
             }
@@ -113,10 +117,21 @@ void HUDLayer::updateDisplay() {
                 lbl->setTextColor(Color4B::RED);
             }
         }
+        else if (type == ResourceType::kTroopPopulation) {
+            // äººå£ç‰¹æ®Šæ˜¾ç¤ºï¼šå½“å‰äººå£/äººå£ä¸Šé™
+            lbl->setString(StringUtils::format("å†›é˜Ÿäººå£: %d / %d", current, max));
+            // å¦‚æžœäººå£å·²æ»¡ï¼Œæ˜¾ç¤ºçº¢è‰²ï¼›å¦åˆ™æ˜¾ç¤ºç™½è‰²
+            if (current >= max) {
+                lbl->setTextColor(Color4B::RED);
+            }
+            else {
+                lbl->setTextColor(Color4B::WHITE);
+            }
+        }
         else {
             lbl->setString(StringUtils::format("%d / %d", current, max));
 
-            // Èç¹ûÂú²Ö£¬ÏÔÊ¾ºìÉ«£¬·ñÔò°×É«
+            // å¦‚æžœæ»¡ä»“ï¼Œæ˜¾ç¤ºçº¢è‰²ï¼Œå¦åˆ™ç™½è‰²
             if (current >= max) {
                 lbl->setTextColor(Color4B::RED);
             }

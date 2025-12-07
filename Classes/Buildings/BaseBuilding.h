@@ -15,7 +15,8 @@ enum class BuildingType
 {
     kTownHall,   // 大本营
     kResource,   // 资源建筑
-    kArmy,       // 军事建筑（兵营）
+    kArmy,       // 军事建筑（兵营 - 训练士兵）
+    kArmyCamp,   // 军营（存放士兵）
     kDefense,    // 防御建筑
     kWall,       // 城墙
     kDecoration, // 装饰

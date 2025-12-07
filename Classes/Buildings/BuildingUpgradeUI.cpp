@@ -3,12 +3,14 @@
  * File Name:     BuildingUpgradeUI.cpp
  * File Function: 通用建筑升级界面实现
  * Author:        赵崇治
- * Update Date:   2025/12/05
+ * Update Date:   2025/12/28
  * License:       MIT License
  ****************************************************************/
 
 #include "BuildingUpgradeUI.h"
 #include "ResourceManager.h"
+#include "ArmyBuilding.h"
+#include "Unit/TrainingUI.h"
 
 USING_NS_CC;
 using namespace ui;
@@ -40,9 +42,13 @@ bool BuildingUpgradeUI::init(BaseBuilding* building)
 
 void BuildingUpgradeUI::setupUI()
 {
+    // 检查是否为兵营，如果是则面板高度增加
+    bool isBarracks = (_building && _building->getBuildingType() == BuildingType::kArmy);
+    float panelHeight = isBarracks ? 270.0f : 220.0f;  // 兵营面板更高
+    
     // 背景面板
     _panel = Layout::create();
-    _panel->setContentSize(Size(280, 220));
+    _panel->setContentSize(Size(280, panelHeight));
     _panel->setBackGroundColorType(Layout::BackGroundColorType::SOLID);
     _panel->setBackGroundColor(Color3B(40, 40, 60));
     _panel->setBackGroundColorOpacity(230);
@@ -50,7 +56,6 @@ void BuildingUpgradeUI::setupUI()
     this->addChild(_panel);
 
     float panelWidth = _panel->getContentSize().width;
-    float panelHeight = _panel->getContentSize().height;
 
     // 标题
     _titleLabel = Label::createWithSystemFont("", "Microsoft YaHei", 20);
@@ -83,31 +88,80 @@ void BuildingUpgradeUI::setupUI()
     _timeLabel->setTextColor(Color4B(150, 200, 255, 255));
     _panel->addChild(_timeLabel);
 
-    // 升级按钮
-    _upgradeButton = Button::create();
-    _upgradeButton->setTitleText("升级");
-    _upgradeButton->setTitleFontSize(18);
-    _upgradeButton->setContentSize(Size(100, 40));
-    _upgradeButton->setPosition(Vec2(panelWidth / 2 - 60, 35));
-    _upgradeButton->addClickEventListener([this](Ref*) { onUpgradeClicked(); });
+    // ========== 按钮布局（根据是否为兵营调整）==========
+    if (isBarracks)
+    {
+        // 兵营：三个按钮（训练、升级、关闭）
+        
+        // 训练按钮（顶部）
+        _trainButton = Button::create();
+        _trainButton->setTitleText("🎖 训练士兵");
+        _trainButton->setTitleFontSize(18);
+        _trainButton->setContentSize(Size(200, 40));
+        _trainButton->setPosition(Vec2(panelWidth / 2, 85));
+        _trainButton->addClickEventListener([this](Ref*) { onTrainClicked(); });
+        
+        auto trainBg = LayerColor::create(Color4B(50, 100, 200, 200), 200, 40);
+        trainBg->setPosition(Vec2(-100, -20));
+        _trainButton->addChild(trainBg, -1);
+        _panel->addChild(_trainButton);
+        
+        // 升级按钮（左下）
+        _upgradeButton = Button::create();
+        _upgradeButton->setTitleText("升级");
+        _upgradeButton->setTitleFontSize(18);
+        _upgradeButton->setContentSize(Size(100, 40));
+        _upgradeButton->setPosition(Vec2(panelWidth / 2 - 60, 35));
+        _upgradeButton->addClickEventListener([this](Ref*) { onUpgradeClicked(); });
 
-    auto upgradeBg = LayerColor::create(Color4B(0, 150, 0, 200), 100, 40);
-    upgradeBg->setPosition(Vec2(-50, -20));
-    _upgradeButton->addChild(upgradeBg, -1);
-    _panel->addChild(_upgradeButton);
+        auto upgradeBg = LayerColor::create(Color4B(0, 150, 0, 200), 100, 40);
+        upgradeBg->setPosition(Vec2(-50, -20));
+        _upgradeButton->addChild(upgradeBg, -1);
+        _panel->addChild(_upgradeButton);
 
-    // 关闭按钮
-    _closeButton = Button::create();
-    _closeButton->setTitleText("关闭");
-    _closeButton->setTitleFontSize(18);
-    _closeButton->setContentSize(Size(100, 40));
-    _closeButton->setPosition(Vec2(panelWidth / 2 + 60, 35));
-    _closeButton->addClickEventListener([this](Ref*) { onCloseClicked(); });
+        // 关闭按钮（右下）
+        _closeButton = Button::create();
+        _closeButton->setTitleText("关闭");
+        _closeButton->setTitleFontSize(18);
+        _closeButton->setContentSize(Size(100, 40));
+        _closeButton->setPosition(Vec2(panelWidth / 2 + 60, 35));
+        _closeButton->addClickEventListener([this](Ref*) { onCloseClicked(); });
 
-    auto closeBg = LayerColor::create(Color4B(150, 0, 0, 200), 100, 40);
-    closeBg->setPosition(Vec2(-50, -20));
-    _closeButton->addChild(closeBg, -1);
-    _panel->addChild(_closeButton);
+        auto closeBg = LayerColor::create(Color4B(150, 0, 0, 200), 100, 40);
+        closeBg->setPosition(Vec2(-50, -20));
+        _closeButton->addChild(closeBg, -1);
+        _panel->addChild(_closeButton);
+    }
+    else
+    {
+        // 普通建筑：两个按钮（升级、关闭）
+        
+        // 升级按钮
+        _upgradeButton = Button::create();
+        _upgradeButton->setTitleText("升级");
+        _upgradeButton->setTitleFontSize(18);
+        _upgradeButton->setContentSize(Size(100, 40));
+        _upgradeButton->setPosition(Vec2(panelWidth / 2 - 60, 35));
+        _upgradeButton->addClickEventListener([this](Ref*) { onUpgradeClicked(); });
+
+        auto upgradeBg = LayerColor::create(Color4B(0, 150, 0, 200), 100, 40);
+        upgradeBg->setPosition(Vec2(-50, -20));
+        _upgradeButton->addChild(upgradeBg, -1);
+        _panel->addChild(_upgradeButton);
+
+        // 关闭按钮
+        _closeButton = Button::create();
+        _closeButton->setTitleText("关闭");
+        _closeButton->setTitleFontSize(18);
+        _closeButton->setContentSize(Size(100, 40));
+        _closeButton->setPosition(Vec2(panelWidth / 2 + 60, 35));
+        _closeButton->addClickEventListener([this](Ref*) { onCloseClicked(); });
+
+        auto closeBg = LayerColor::create(Color4B(150, 0, 0, 200), 100, 40);
+        closeBg->setPosition(Vec2(-50, -20));
+        _closeButton->addChild(closeBg, -1);
+        _panel->addChild(_closeButton);
+    }
 }
 
 void BuildingUpgradeUI::updateUI()
@@ -196,6 +250,38 @@ void BuildingUpgradeUI::onUpgradeClicked()
 void BuildingUpgradeUI::onCloseClicked()
 {
     if (_closeCallback) _closeCallback(); // 通知拥有者先清理引用
+    hide();
+}
+
+void BuildingUpgradeUI::onTrainClicked()
+{
+    // 检查是否为兵营建筑
+    if (!_building || _building->getBuildingType() != BuildingType::kArmy)
+        return;
+    
+    // 转换为兵营类型
+    auto barracks = dynamic_cast<ArmyBuilding*>(_building);
+    if (!barracks)
+        return;
+    
+    CCLOG("打开训练UI：%s", barracks->getDisplayName().c_str());
+    
+    // 先关闭当前升级UI
+    if (_closeCallback) _closeCallback();
+    
+    // 创建训练UI
+    auto trainingUI = TrainingUI::create(barracks);
+    if (trainingUI)
+    {
+        // 获取场景根节点
+        auto scene = Director::getInstance()->getRunningScene();
+        if (scene)
+        {
+            scene->addChild(trainingUI, 2000);  // 高层级显示
+        }
+    }
+    
+    // 隐藏升级UI
     hide();
 }
 

@@ -26,6 +26,28 @@ bool Unit::init(UnitType type)
     if (!Node::init()) // 必须先初始化父类
         return false;
 
+    // ==================== 步骤1：保存兵种类型 ====================
+    type_ = type;
+
+    // ==================== 步骤2：根据兵种设置差异化移动速度 ====================
+    switch (type)
+    {
+    case UnitType::kGoblin:
+        move_speed_ = 150.0f;  // 哥布林：快速，血少但机动性强
+        break;
+    case UnitType::kGiant:
+        move_speed_ = 60.0f;   // 巨人：慢速，血厚但移动慢
+        break;
+    case UnitType::kWallBreaker:
+        move_speed_ = 120.0f;  // 炸弹人：较快，需要冲向目标
+        break;
+    case UnitType::kBarbarian:
+    case UnitType::kArcher:
+    default:
+        move_speed_ = 100.0f;  // 野蛮人/弓箭手：标准速度
+        break;
+    }
+
     // 1. 根据类型加载资源 (比如加载野蛮人的 plist 文件)
     LoadConfig(type);
 
@@ -39,6 +61,18 @@ bool Unit::init(UnitType type)
     else if (type == UnitType::kArcher)
     {
         initialFrame = "archer27.0.png";  // 弓箭手待机帧（右方向中间帧）
+    }
+    else if (type == UnitType::kGiant)
+    {
+        initialFrame = "giant38.0.png";  // 巨人待机帧（右方向）
+    }
+    else if (type == UnitType::kGoblin)
+    {
+        initialFrame = "goblin26.0.png";  // 哥布林待机帧（右方向）
+    }
+    else if (type == UnitType::kWallBreaker)
+    {
+        initialFrame = "wall_breaker21.0.png";  // 炸弹人待机帧（右方向）
     }
     else
     {
@@ -148,6 +182,76 @@ void Unit::LoadConfig(UnitType type)
 
         // ========== 死亡动画 ==========
         AddAnim("archer", "death", 53, 54, 0.5f); // 53 死亡光环, 54 墓碑
+    }
+    else if (type == UnitType::kGiant)
+    {
+        // 加载巨人图集
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile("units/giant/giant.plist");
+
+        // ========== 跑步动画（12帧/方向，慢速）==========
+        AddAnim("giant", "run_down_right", 49, 56, 0.12f);  // 49~56 downright run (8帧，注意素材是反的)
+        AddAnim("giant", "run_right", 41, 48, 0.12f);       // 41~48 right run (8帧)
+        AddAnim("giant", "run_up_right", 33, 40, 0.12f);    // 33~40 upright run (8帧)
+
+        // ========== 待机动画（有小动作）==========
+        AddAnim("giant", "idle_down_right", 37, 37, 1.0f);  // 37 downright stand main
+        AddAnim("giant", "idle_right", 38, 38, 1.0f);       // 38 right stand main
+        AddAnim("giant", "idle_up_right", 39, 39, 1.0f);    // 39 upright stand main
+
+        // ========== 攻击动画 1 ==========
+        AddAnim("giant", "attack_down_right", 46, 54, 0.11f); // 46~54 downright attack 1 (9帧)
+        AddAnim("giant", "attack_right", 55, 63, 0.11f);      // 55~63 right attack 1 (9帧)
+        AddAnim("giant", "attack_up_right", 64, 71, 0.11f);   // 64~71 upright attack 1 (8帧)
+
+        // ========== 攻击动画 2 ==========
+        AddAnim("giant", "attack2_down_right", 72, 80, 0.11f); // 72~80 downright attack 2 (9帧)
+        AddAnim("giant", "attack2_right", 81, 89, 0.11f);      // 81~89 right attack 2 (9帧)
+        AddAnim("giant", "attack2_up_right", 90, 97, 0.11f);   // 90~97 upright attack 2 (8帧)
+
+        // ========== 死亡动画 ==========
+        AddAnim("giant", "death", 99, 100, 0.5f); // 99 死亡光环, 100 墓碑
+    }
+    else if (type == UnitType::kGoblin)
+    {
+        // 加载哥布林图集
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile("units/goblin/goblin.plist");
+
+        // ========== 跑步动画 ==========
+        AddAnim("goblin", "run_down_right", 1, 8, 0.09f);   // 1~8 downright run (快速)
+        AddAnim("goblin", "run_right", 9, 16, 0.09f);       // 9~16 right run
+        AddAnim("goblin", "run_up_right", 17, 24, 0.09f);   // 17~24 upright run
+
+        // ========== 待机动画 ==========
+        AddAnim("goblin", "idle_down_right", 25, 25, 1.0f); // 25 downright stand
+        AddAnim("goblin", "idle_right", 26, 26, 1.0f);      // 26 right stand
+        AddAnim("goblin", "idle_up_right", 27, 27, 1.0f);   // 27 upright stand
+
+        // ========== 攻击动画（只有一套，快速攻击）==========
+        AddAnim("goblin", "attack_down_right", 28, 31, 0.08f); // 28~31 downright attack (4帧)
+        AddAnim("goblin", "attack_right", 32, 36, 0.08f);      // 32~36 right attack (5帧)
+        AddAnim("goblin", "attack_up_right", 37, 40, 0.08f);   // 37~40 upright attack (4帧)
+
+        // ========== 死亡动画 ==========
+        AddAnim("goblin", "death", 41, 42, 0.5f); // 41 死亡光环, 42 墓碑
+    }
+    else if (type == UnitType::kWallBreaker)
+    {
+        // 加载炸弹人图集
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile("units/wall_breaker/wall_breaker.plist");
+
+        // ========== 跑步动画（抱着炸弹跑）==========
+        AddAnim("wall_breaker", "run_down_right", 49, 56, 0.10f); // 49~56 downright run
+        AddAnim("wall_breaker", "run_right", 41, 48, 0.10f);      // 41~48 right run
+        AddAnim("wall_breaker", "run_up_right", 33, 40, 0.10f);   // 33~40 upright run
+
+        // ========== 待机动画 ==========
+        AddAnim("wall_breaker", "idle_down_right", 27, 27, 1.0f); // 27 downright stand
+        AddAnim("wall_breaker", "idle_right", 21, 21, 1.0f);      // 21 right stand
+        AddAnim("wall_breaker", "idle_up_right", 20, 20, 1.0f);   // 20 upright stand
+
+        // ========== 死亡动画（爆炸）==========
+        // 注意：炸弹人的死亡顺序特殊，先光环后墓碑
+        AddAnim("wall_breaker", "death", 2, 1, 0.5f); // 2 死亡光环, 1 墓碑
     }
 }
 

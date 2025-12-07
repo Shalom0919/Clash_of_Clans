@@ -12,6 +12,9 @@
 #include "ui/CocosGUI.h"
 #include "BaseBuilding.h"
 
+// 前向声明
+class ArmyBuilding;
+
 /**
  * @class BuildingUpgradeUI
  * @brief 通用建筑升级界面，适用于所有建筑类型
@@ -47,6 +50,7 @@ private:
     void updateUI();
     void onUpgradeClicked();
     void onCloseClicked();
+    void onTrainClicked();  // 新增：点击训练按钮
 
     std::string getResourceTypeName(ResourceType type) const;
     std::string formatTime(int seconds) const;
@@ -61,6 +65,7 @@ private:
     cocos2d::Label* _timeLabel = nullptr;
     cocos2d::ui::Button* _upgradeButton = nullptr;
     cocos2d::ui::Button* _closeButton = nullptr;
+    cocos2d::ui::Button* _trainButton = nullptr;  // 新增：训练按钮（仅兵营显示）
 
     UpgradeResultCallback _resultCallback = nullptr;
     CloseCallback _closeCallback = nullptr;

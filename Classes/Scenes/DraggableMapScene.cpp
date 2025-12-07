@@ -41,6 +41,8 @@
 #include "HUDLayer.h"
 #include "ShopLayer.h"
 #include "Managers/GameConfig.h"
+#include "Buildings/ArmyBuilding.h"
+
 USING_NS_CC;
 using namespace ui;
 
@@ -1209,6 +1211,55 @@ void DraggableMapScene::onBuildingPlaced(BaseBuilding* building)
         return;
 
     CCLOG("Building placed callback: %s", building->getDisplayName().c_str());
+    
+    // 检查是否为兵营建筑，如果是则设置训练完成回调
+    if (building->getBuildingType() == BuildingType::kArmy)
+    {
+        auto barracks = dynamic_cast<ArmyBuilding*>(building);
+        if (barracks)
+        {
+            // 设置训练完成回调：在兵营附近生成士兵
+            barracks->setOnTrainingComplete([this, barracks](Unit* unit) {
+                if (!unit)
+                    return;
+                
+                // 获取兵营在世界坐标系中的位置
+                Vec2 barracksWorldPos = barracks->getParent()->convertToWorldSpace(barracks->getPosition());
+                
+                // 在兵营右侧生成士兵
+                Vec2 spawnPos = barracksWorldPos;
+                spawnPos.x += barracks->getContentSize().width * barracks->getScale() + 20;
+                
+                // 将世界坐标转换为地图坐标
+                Vec2 spawnLocalPos = _mapSprite->convertToNodeSpace(spawnPos);
+                unit->setPosition(spawnLocalPos);
+                
+                // 添加到地图上
+                _mapSprite->addChild(unit, 100);
+                
+                // 播放待机动画
+                unit->PlayAnimation(UnitAction::kIdle, UnitDirection::kRight);
+                
+                // 获取兵种名称
+                std::string unitName;
+                switch (unit->GetType())
+                {
+                case UnitType::kBarbarian: unitName = "野蛮人"; break;
+                case UnitType::kArcher: unitName = "弓箭手"; break;
+                case UnitType::kGiant: unitName = "巨人"; break;
+                case UnitType::kGoblin: unitName = "哥布林"; break;
+                case UnitType::kWallBreaker: unitName = "炸弹人"; break;
+                default: unitName = "士兵"; break;
+                }
+                
+                CCLOG("🎉 %s 训练完成！已部署到战场", unitName.c_str());
+                showBuildingHint(unitName + " 已完成训练！");
+            });
+            
+            CCLOG("✅ 已为兵营设置训练完成回调");
+        }
+    }
+    
     // 建筑点击监听器已由 BuildingManager 统一处理，无需在此添加
     hideConfirmButtons();
 }

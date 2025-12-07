@@ -19,7 +19,7 @@ public:
     static ArmyCampBuilding* create(int level = 1);
     
     // ==================== BaseBuilding 接口实现 ====================
-    virtual BuildingType getBuildingType() const override { return BuildingType::kArmy; }
+    virtual BuildingType getBuildingType() const override { return BuildingType::kArmyCamp; }
     virtual std::string getDisplayName() const override;
     virtual int getMaxLevel() const override { return 13; }
     virtual int getUpgradeCost() const override;

@@ -13,9 +13,11 @@
 // 兵种类型：决定了单位的外观、血量、攻击力等
 enum class UnitType
 {
-    kBarbarian, // 野蛮人
-    kArcher,    // 弓箭手
-    // ... 以后其他兵种加这里
+    kBarbarian,   // 野蛮人
+    kArcher,      // 弓箭手
+    kGiant,       // 巨人
+    kGoblin,      // 哥布林
+    kWallBreaker  // 炸弹人/炸弹骷髅
 };
 
 // 动作类型：决定了单位当前应该播放什么动画
@@ -92,6 +94,22 @@ public:
     // action: 做什么 (跑/站/打/死), dir: 朝哪边
     void PlayAnimation(UnitAction action, UnitDirection dir);
 
+    // ---------------------------------------------------------
+    // 4. 属性查询接口 (外部可查询单位信息)
+    // ---------------------------------------------------------
+
+    /**
+     * @brief 获取单位的兵种类型
+     * @return 兵种枚举值
+     */
+    UnitType GetType() const { return type_; }
+
+    /**
+     * @brief 获取单位的移动速度
+     * @return 移动速度 (像素/秒)
+     */
+    float GetMoveSpeed() const { return move_speed_; }
+
 private:
     // ---------------------------------------------------------
     // 4. 内部数据成员
@@ -99,6 +117,10 @@ private:
 
     // 显示组件：屏幕上真正看到的那个“人”的图片
     cocos2d::Sprite* sprite_ = nullptr;
+
+    // 兵种类型：存储当前单位是什么兵种
+    UnitType type_;
+
 
     // 动画缓存池：防止每次播放都重新创建动画对象，提高性能
     // Key: 字符串 (如 "run_right"), Value: 动画对象指针

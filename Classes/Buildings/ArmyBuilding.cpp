@@ -146,11 +146,206 @@ std::string ArmyBuilding::getImageForLevel(int level) const
         return _customImagePath + std::to_string(level) + ".png";
     }
     
-    // 否则使用默认的兵营图片
-    if (level <= 3)
-        return "buildings/Barracks/Barracks1.png";
-    else if (level <= 6)
-        return "buildings/Barracks/Barracks2.png";
-    else
-        return "buildings/Barracks/Barracks3.png";
+    // 否则使用默认的兵营图片（支持1-18级）
+    if (level < 1 || level > 18)
+        level = 1;
+    
+    return "buildings/Barracks/Barracks" + std::to_string(level) + ".png";
+}
+
+// ==================== 训练系统实现 ====================
+
+bool ArmyBuilding::addTrainingTask(UnitType unitType)
+{
+    // 检查队列是否已满
+    if (getQueueLength() >= getTrainingCapacity())
+    {
+        CCLOG("训练队列已满！容量：%d", getTrainingCapacity());
+        return false;
+    }
+    
+    // 检查人口空间是否足够（每个小兵占1人口）
+    auto& resMgr = ResourceManager::getInstance();
+    if (!resMgr.HasTroopSpace(1))
+    {
+        CCLOG("人口已满！当前：%d/%d", 
+              resMgr.GetCurrentTroopCount(), 
+              resMgr.GetMaxTroopCapacity());
+        return false;
+    }
+    
+    // 获取训练费用和时间
+    int cost = getUnitTrainingCost(unitType);
+    float baseTime = getUnitBaseTrainingTime(unitType);
+    
+    // 应用训练速度加成
+    float actualTime = baseTime / (1.0f + getTrainingSpeedBonus());
+    
+    // 检查资源是否足够
+    if (!resMgr.consume(ResourceType::kElixir, cost))
+    {
+        CCLOG("圣水不足！需要 %d 圣水", cost);
+        return false;
+    }
+    
+    // 添加到训练队列
+    _trainingQueue.push(TrainingTask(unitType, actualTime, cost));
+    
+    // 获取兵种名称
+    std::string unitName;
+    switch (unitType)
+    {
+    case UnitType::kBarbarian: unitName = "野蛮人"; break;
+    case UnitType::kArcher: unitName = "弓箭手"; break;
+    case UnitType::kGiant: unitName = "巨人"; break;
+    case UnitType::kGoblin: unitName = "哥布林"; break;
+    case UnitType::kWallBreaker: unitName = "炸弹人"; break;
+    default: unitName = "未知兵种"; break;
+    }
+    
+    CCLOG("✅ 开始训练 %s，预计 %.1f 秒完成（队列：%d/%d）",
+          unitName.c_str(), actualTime, getQueueLength(), getTrainingCapacity());
+    
+    return true;
+}
+
+void ArmyBuilding::cancelCurrentTask()
+{
+    if (_trainingQueue.empty())
+        return;
+    
+    // 退还部分资源（50%）
+    auto& task = _trainingQueue.front();
+    int refund = task.cost / 2;
+    ResourceManager::getInstance().addResource(ResourceType::kElixir, refund);
+    
+    // 移除任务
+    _trainingQueue.pop();
+    
+    CCLOG("❌ 取消训练，退还 %d 圣水", refund);
+}
+
+void ArmyBuilding::clearTrainingQueue()
+{
+    // 退还所有资源的50%
+    int totalRefund = 0;
+    while (!_trainingQueue.empty())
+    {
+        totalRefund += _trainingQueue.front().cost / 2;
+        _trainingQueue.pop();
+    }
+    
+    if (totalRefund > 0)
+    {
+        ResourceManager::getInstance().addResource(ResourceType::kElixir, totalRefund);
+        CCLOG("❌ 清空训练队列，退还 %d 圣水", totalRefund);
+    }
+}
+
+float ArmyBuilding::getTrainingProgress() const
+{
+    if (_trainingQueue.empty())
+        return 0.0f;
+    
+    const auto& task = _trainingQueue.front();
+    return task.elapsedTime / task.trainingTime;
+}
+
+void ArmyBuilding::tick(float dt)
+{
+    BaseBuilding::tick(dt);
+    
+    // 如果队列为空，不处理
+    if (_trainingQueue.empty())
+        return;
+    
+    // 更新当前训练任务
+    auto& task = _trainingQueue.front();
+    task.elapsedTime += dt;
+    
+    // 检查是否完成
+    if (task.elapsedTime >= task.trainingTime)
+    {
+        completeCurrentTask();
+    }
+}
+
+void ArmyBuilding::completeCurrentTask()
+{
+    if (_trainingQueue.empty())
+        return;
+    
+    auto task = _trainingQueue.front();
+    _trainingQueue.pop();
+    
+    // 增加人口计数
+    ResourceManager::getInstance().AddTroops(1);
+    
+    // 创建训练好的单位
+    Unit* unit = Unit::create(task.unitType);
+    
+    // 获取兵种名称
+    std::string unitName;
+    switch (task.unitType)
+    {
+    case UnitType::kBarbarian: unitName = "野蛮人"; break;
+    case UnitType::kArcher: unitName = "弓箭手"; break;
+    case UnitType::kGiant: unitName = "巨人"; break;
+    case UnitType::kGoblin: unitName = "哥布林"; break;
+    case UnitType::kWallBreaker: unitName = "炸弹人"; break;
+    default: unitName = "未知兵种"; break;
+    }
+    
+    auto& resMgr = ResourceManager::getInstance();
+    CCLOG("🎉 训练完成：%s！（剩余队列：%d，人口：%d/%d）", 
+          unitName.c_str(), getQueueLength(),
+          resMgr.GetCurrentTroopCount(), resMgr.GetMaxTroopCapacity());
+    
+    // 触发回调
+    if (_onTrainingComplete && unit)
+    {
+        _onTrainingComplete(unit);
+    }
+}
+
+// ==================== 静态方法：获取兵种数据 ====================
+
+float ArmyBuilding::getUnitBaseTrainingTime(UnitType type)
+{
+    // 基础训练时间（秒）- 暂时设为0，即时训练
+    switch (type)
+    {
+    case UnitType::kBarbarian:
+        return 0.0f;  // 野蛮人：即时
+    case UnitType::kArcher:
+        return 0.0f;  // 弓箭手：即时
+    case UnitType::kGoblin:
+        return 0.0f;  // 哥布林：即时
+    case UnitType::kGiant:
+        return 0.0f;  // 巨人：即时
+    case UnitType::kWallBreaker:
+        return 0.0f;  // 炸弹人：即时
+    default:
+        return 0.0f;
+    }
+}
+
+int ArmyBuilding::getUnitTrainingCost(UnitType type)
+{
+    // 训练费用（圣水）
+    switch (type)
+    {
+    case UnitType::kBarbarian:
+        return 25;     // 野蛮人：25圣水
+    case UnitType::kArcher:
+        return 50;     // 弓箭手：50圣水
+    case UnitType::kGoblin:
+        return 40;     // 哥布林：40圣水
+    case UnitType::kGiant:
+        return 250;    // 巨人：250圣水
+    case UnitType::kWallBreaker:
+        return 600;    // 炸弹人：600圣水
+    default:
+        return 50;
+    }
 }

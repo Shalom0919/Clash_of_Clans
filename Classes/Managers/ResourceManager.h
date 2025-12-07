@@ -16,7 +16,8 @@ enum ResourceType
     kGold = 0,
     kElixir = 1,
     kGem = 2,
-    kBuilder = 3
+    kBuilder = 3,
+    kTroopPopulation = 4  // 小兵人口
 };
 class ResourceManager
 {
@@ -43,6 +44,12 @@ public:
     // 设置资源变化回调
     void SetOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback);
     void AddCapacity(ResourceType type, int amount);
+    
+    // 人口系统专用接口
+    int GetCurrentTroopCount() const { return GetResourceCount(kTroopPopulation); }
+    int GetMaxTroopCapacity() const { return GetResourceCapacity(kTroopPopulation); }
+    bool HasTroopSpace(int count) const;
+    bool AddTroops(int count);
 private:
     ResourceManager();
     static ResourceManager* _instance;

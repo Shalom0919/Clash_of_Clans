@@ -219,11 +219,8 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
         }
     }
 
-    // 如果是工人小屋，增加工人数量 (这里看作资源)
-    if (_selectedBuilding.name == "建筑工人小屋") {
-        ResourceManager::getInstance().AddCapacity(ResourceType::kBuilder, 1);
-        ResourceManager::getInstance().AddResource(ResourceType::kBuilder, 1);
-    }
+    // 注意：工人小屋的工人容量增加已由BuildersHutBuilding自己处理
+    
     showHint(StringUtils::format("%s 建造完成！", _selectedBuilding.name.c_str()));
     CCLOG("Building placed: %s at grid (%.0f, %.0f)", _selectedBuilding.name.c_str(), gridPos.x, gridPos.y);
     

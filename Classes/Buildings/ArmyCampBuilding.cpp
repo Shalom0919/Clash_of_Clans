@@ -35,6 +35,11 @@ bool ArmyCampBuilding::init(int level)
     this->setScale(0.8f);
     this->setName(getDisplayName());
     
+    // 初始化时增加人口容量
+    int housingSpace = getHousingSpace();
+    ResourceManager::getInstance().AddCapacity(kTroopPopulation, housingSpace);
+    CCLOG("ArmyCampBuilding created at level %d, added %d housing space", _level, housingSpace);
+    
     return true;
 }
 
@@ -142,5 +147,24 @@ int ArmyCampBuilding::getHousingSpace() const
 void ArmyCampBuilding::onLevelUp()
 {
     BaseBuilding::onLevelUp();
-    CCLOG("ArmyCampBuilding upgraded to level %d, Housing Space: %d", _level, getHousingSpace());
+    
+    // 增加人口容量
+    int housingSpace = getHousingSpace();
+    int prevHousingSpace = 0;
+    if (_level > 1)
+    {
+        // 获取上一级的容纳人口
+        static const int housingSpaceTable[] = {
+            0, 20, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85
+        };
+        prevHousingSpace = housingSpaceTable[_level - 1];
+    }
+    
+    int addedCapacity = housingSpace - prevHousingSpace;
+    if (addedCapacity > 0)
+    {
+        ResourceManager::getInstance().AddCapacity(kTroopPopulation, addedCapacity);
+        CCLOG("ArmyCampBuilding upgraded to level %d, Housing Space: %d (+%d)", 
+              _level, housingSpace, addedCapacity);
+    }
 }
