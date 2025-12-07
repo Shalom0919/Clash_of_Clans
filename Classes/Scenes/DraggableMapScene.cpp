@@ -646,10 +646,9 @@ void DraggableMapScene::switchMap(const std::string& mapName)
      * 1. 检查是否真的需要切换
      * 2. 清理当前状态（建造模式、升级UI）
      * 3. 保存当前地图元素状态
-     * 4. 卸载旧地图
-     * 5. 加载新地图并重新初始化
-     * 6. 恢复地图元素状态
-     * 7. 通知其他管理器地图已切换
+     * 4. 卸载旧地图（但保持建筑）
+     * 5. 加载新地图皮肤并重新初始化
+     * 6. 恢复地图元素状态和建筑
      */
     if (mapName == _currentMapName)
         return;
@@ -664,7 +663,26 @@ void DraggableMapScene::switchMap(const std::string& mapName)
     cleanupUpgradeUI();
     saveMapElementsState();
 
-    // 卸载旧地图
+    // 保存所有建筑到临时列表
+    cocos2d::Vector<BaseBuilding*> savedBuildings;
+    if (_buildingManager)
+    {
+        const auto& buildings = _buildingManager->getBuildings();
+        for (auto* building : buildings)
+        {
+            if (building)
+            {
+                // 从父节点移除建筑但不销毁
+                building->retain();
+                building->removeFromParent();
+                savedBuildings.pushBack(building);
+            }
+        }
+        // 清空BuildingManager中的建筑列表（但不销毁建筑本身）
+        _buildingManager->getBuildings().clear();
+    }
+
+    // 卸载旧地图皮肤（但保持网格和建筑）
     if (_mapSprite)
     {
         _mapSprite->removeAllChildren();
@@ -673,7 +691,7 @@ void DraggableMapScene::switchMap(const std::string& mapName)
         _gridMap = nullptr;
     }
 
-    // 加载新地图
+    // 加载新地图皮肤
     _currentMapName = mapName;
     _mapSprite = Sprite::create(_currentMapName);
 
@@ -710,7 +728,7 @@ void DraggableMapScene::switchMap(const std::string& mapName)
             _gridStartDefault = _gridMap->getStartPixel();
         }
 
-        // 更新建筑管理器引用（注意：回调已在 setupMap 中设置，无需重复设置）
+        // 更新建筑管理器引用
         if (_buildingManager)
         {
             _buildingManager->setup(_mapSprite, _gridMap);
@@ -719,8 +737,42 @@ void DraggableMapScene::switchMap(const std::string& mapName)
         updateBoundary();
         restoreMapElementsState();
 
-       // _heroManager->onMapSwitched(_mapSprite);
-       // _heroManager->updateHeroesScale(_currentScale);
+        // 恢复所有建筑到新地图上，保持原来的网格位置
+        if (_buildingManager && _gridMap)
+        {
+            for (auto* building : savedBuildings)
+            {
+                if (building)
+                {
+                    // 建筑已经有网格位置和大小，只需标记网格为占用
+                    cocos2d::Size gridSize = building->getGridSize();
+                    cocos2d::Vec2 gridPos = building->getGridPosition();
+                    
+                    // 标记网格被占用
+                    _gridMap->markArea(gridPos, gridSize, true);
+                    
+                    // 重新计算世界位置并添加到新地图
+                    Vec2 posStart = _gridMap->getPositionFromGrid(gridPos);
+                    Vec2 posEnd = _gridMap->getPositionFromGrid(
+                        gridPos + Vec2(gridSize.width - 1, gridSize.height - 1)
+                    );
+                    Vec2 centerPos = (posStart + posEnd) / 2.0f;
+                    building->setPosition(centerPos);
+                    
+                    // 更新 Z-Order
+                    building->setLocalZOrder(10000 - static_cast<int>(centerPos.y));
+                    
+                    // 添加到新地图
+                    _mapSprite->addChild(building);
+                    _buildingManager->getBuildings().pushBack(building);
+                    
+                    // 为建筑添加点击监听器
+                    _buildingManager->setupBuildingClickListener(building);
+                    
+                    building->release();
+                }
+            }
+        }
 
         auto mapNameLabel = static_cast<Label*>(this->getChildByName("mapNameLabel"));
         if (mapNameLabel)
@@ -728,11 +780,19 @@ void DraggableMapScene::switchMap(const std::string& mapName)
             mapNameLabel->setString("Current: " + _currentMapName);
         }
 
-        CCLOG("Map switched successfully to %s", mapName.c_str());
+        CCLOG("Map switched successfully to %s with %zu buildings preserved", mapName.c_str(), savedBuildings.size());
     }
     else
     {
         CCLOG("Error: Failed to load new map %s", mapName.c_str());
+        // 如果地图加载失败，还原建筑
+        if (_buildingManager)
+        {
+            for (auto* building : savedBuildings)
+            {
+                building->release();
+            }
+        }
     }
 }
 

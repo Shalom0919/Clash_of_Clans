@@ -106,6 +106,9 @@ public:
     void update(float dt) override;
     /** @brief 获取所有已放置的建筑 */
     const cocos2d::Vector<BaseBuilding*>& getBuildings() const { return _buildings; }
+    
+    /** @brief 获取所有已放置的建筑（非const版本，用于修改） */
+    cocos2d::Vector<BaseBuilding*>& getBuildings() { return _buildings; }
     /**
 
      * @brief 通过触摸位置查找建筑
