@@ -67,7 +67,7 @@ void TownHallUpgradeUI::setupUI()
         if (scene)
             scene->addChild(s_resourceUI, 1000);
         // lambda 不能捕获静态变量，直接在 lambda 内部访问静态变量即可
-        ResourceManager::GetInstance()->SetOnResourceChangeCallback([](ResourceType, int) {
+        ResourceManager::getInstance().setOnResourceChangeCallback([](ResourceType, int) {
             if (s_resourceUI)
                 s_resourceUI->updateDisplay();
         });
@@ -158,7 +158,7 @@ void ResourceDisplayUI::updateDisplay()
     auto& rm = ResourceManager::getInstance();
     for (auto& pair : _displays)
     {
-        int amount = rm.GetResourceCount(pair.first);
+        int amount = rm.getResourceCount(pair.first);
         pair.second.amount->setString(std::to_string(amount));
     }
 }

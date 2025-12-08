@@ -69,13 +69,17 @@ public:
     virtual std::string getUpgradeInfo() const { return ""; }
     /** @brief 获取当前等级的图片文件 */
     virtual std::string getImageFile() const { return ""; }
+    
     /**
-     * @brief 尝试升级建筑（扣除资源并启动升级倒计时）
+     * @brief 尝试升级建筑（❗️ 已弃用，请使用 BuildingUpgradeService::tryUpgrade()）
+     * @deprecated 请使用 BuildingUpgradeService::tryUpgrade() 代替
      * @return 是否升级成功
      */
     virtual bool upgrade();
+    
     /**
-     * @brief 检查是否可以升级（资源是否足够且未在升级中）
+     * @brief 检查是否可以升级（❗️ 已弃用，请使用 BuildingUpgradeService::canUpgrade()）
+     * @deprecated 请使用 BuildingUpgradeService::canUpgrade() 代替
      * @return 是否可以升级
      */
     virtual bool canUpgrade() const;

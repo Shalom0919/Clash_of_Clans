@@ -148,7 +148,7 @@ bool UpgradeManager::cancelUpgrade(BaseBuilding* building)
     
     // 退还部分资源（50%）
     int refund = it->cost / 2;
-    ResourceManager::getInstance().AddResource(building->getUpgradeCostType(), refund);
+    ResourceManager::getInstance().addResource(building->getUpgradeCostType(), refund);
     
     // 释放工人
     if (it->useBuilder)
@@ -216,7 +216,7 @@ UpgradeTask* UpgradeManager::getUpgradeTask(BaseBuilding* building) const
 int UpgradeManager::getAvailableBuilders() const
 {
     auto& resMgr = ResourceManager::getInstance();
-    int totalBuilders = resMgr.GetResourceCount(kBuilder);
+    int totalBuilders = resMgr.getResourceCount(kBuilder);
     int usedBuilders = 0;
     
     // 统计正在使用的工人数量

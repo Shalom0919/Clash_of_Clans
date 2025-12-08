@@ -40,7 +40,7 @@ bool HUDLayer::init() {
     // ====================================================
 
     // 注册资源变化监听
-    ResourceManager::getInstance().SetOnResourceChangeCallback([this](ResourceType type, int amount) {
+    ResourceManager::getInstance().setOnResourceChangeCallback([this](ResourceType type, int amount) {
         this->updateDisplay();
         });
 
@@ -98,8 +98,8 @@ void HUDLayer::updateDisplay() {
         ResourceType type = pair.first;
         Label* lbl = pair.second;
 
-        int current = rm.GetResourceCount(type);
-        int max = rm.GetResourceCapacity(type);
+        int current = rm.getResourceCount(type);
+        int max = rm.getResourceCapacity(type);
 
         if (type == ResourceType::kGem) {
             // 宝石通常不显示上限，或者上限很大

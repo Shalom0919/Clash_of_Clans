@@ -22,34 +22,34 @@ enum ResourceType
 class ResourceManager
 {
 public:
-    // 单例访问方法（双命名，兼容现有调用）
-    static ResourceManager* GetInstance();
+    // 单例访问方法
     static ResourceManager& getInstance();
+    
     // 初始化资源
-    void Init();
+    void init();
+    
     // 资源读方法
-    int GetResourceCount(ResourceType type) const;
-    int GetResourceCapacity(ResourceType type) const;
+    int getResourceCount(ResourceType type) const;
+    int getResourceCapacity(ResourceType type) const;
+    
     // 资源写方法
-    void SetResourceCount(ResourceType type, int amount);
-    void SetResourceCapacity(ResourceType type, int capacity);
-    // 资源增加/消耗与校验（大写命名）
-    int AddResource(ResourceType type, int amount);
-    bool HasEnough(ResourceType type, int amount) const;
-    bool ConsumeResource(ResourceType type, int amount);
-    // 资源增加/消耗与校验（小写命名，兼容 BaseBuilding 调用）
-    int addResource(ResourceType type, int amount) { return AddResource(type, amount); }
-    bool hasEnough(ResourceType type, int amount) const { return HasEnough(type, amount); }
-    bool consume(ResourceType type, int amount) { return ConsumeResource(type, amount); }
+    void setResourceCount(ResourceType type, int amount);
+    void setResourceCapacity(ResourceType type, int capacity);
+    
+    // 资源增加/消耗与校验
+    int addResource(ResourceType type, int amount);
+    bool hasEnough(ResourceType type, int amount) const;
+    bool consume(ResourceType type, int amount);
+    
     // 设置资源变化回调
-    void SetOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback);
-    void AddCapacity(ResourceType type, int amount);
+    void setOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback);
+    void addCapacity(ResourceType type, int amount);
     
     // 人口系统专用接口
-    int GetCurrentTroopCount() const { return GetResourceCount(kTroopPopulation); }
-    int GetMaxTroopCapacity() const { return GetResourceCapacity(kTroopPopulation); }
-    bool HasTroopSpace(int count) const;
-    bool AddTroops(int count);
+    int getCurrentTroopCount() const { return getResourceCount(kTroopPopulation); }
+    int getMaxTroopCapacity() const { return getResourceCapacity(kTroopPopulation); }
+    bool hasTroopSpace(int count) const;
+    bool addTroops(int count);
 private:
     ResourceManager();
     static ResourceManager* _instance;

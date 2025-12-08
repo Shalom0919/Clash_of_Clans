@@ -6,21 +6,19 @@
  ****************************************************************/
 #include "ResourceManager.h"
 ResourceManager* ResourceManager::_instance = nullptr;
-ResourceManager* ResourceManager::GetInstance()
+
+ResourceManager& ResourceManager::getInstance()
 {
     if (!_instance)
     {
         _instance = new ResourceManager();
-        _instance->Init();
+        _instance->init();
     }
-    return _instance;
-}
-ResourceManager& ResourceManager::getInstance()
-{
-    return *GetInstance();
+    return *_instance;
 }
 ResourceManager::ResourceManager() {}
-void ResourceManager::Init()
+
+void ResourceManager::init()
 {
     // 初始容量 (1级大本营基础容量)
     // 根据需求：金币3000，圣水3000，宝石无上限或很高，工人2个
@@ -38,25 +36,25 @@ void ResourceManager::Init()
     _resources[kTroopPopulation] = 0; // 初始没有小兵
 }
 // 新增：增加容量的方法 (供 BuildingManager 在建造完成后调用)
-void ResourceManager::AddCapacity(ResourceType type, int amount)
+void ResourceManager::addCapacity(ResourceType type, int amount)
 {
     if (amount <= 0) return;
-    int currentCap = GetResourceCapacity(type);
-    SetResourceCapacity(type, currentCap + amount);
+    int currentCap = getResourceCapacity(type);
+    setResourceCapacity(type, currentCap + amount);
 }
-int ResourceManager::GetResourceCount(ResourceType type) const
+int ResourceManager::getResourceCount(ResourceType type) const
 {
     auto it = _resources.find(type);
     return it != _resources.end() ? it->second : 0;
 }
-int ResourceManager::GetResourceCapacity(ResourceType type) const
+int ResourceManager::getResourceCapacity(ResourceType type) const
 {
     auto it = _capacities.find(type);
     return it != _capacities.end() ? it->second : 0;
 }
-void ResourceManager::SetResourceCount(ResourceType type, int amount)
+void ResourceManager::setResourceCount(ResourceType type, int amount)
 {
-    int capacity = GetResourceCapacity(type);
+    int capacity = getResourceCapacity(type);
     if (capacity > 0 && amount > capacity)
     {
         amount = capacity;
@@ -71,14 +69,14 @@ void ResourceManager::SetResourceCount(ResourceType type, int amount)
         _onChangeCallback(type, _resources[type]);
     }
 }
-void ResourceManager::SetResourceCapacity(ResourceType type, int capacity)
+void ResourceManager::setResourceCapacity(ResourceType type, int capacity)
 {
     if (capacity < 0)
     {
         capacity = 0;
     }
     _capacities[type] = capacity;
-    int current = GetResourceCount(type);
+    int current = getResourceCount(type);
     if (current > capacity)
     {
         _resources[type] = capacity;
@@ -90,63 +88,63 @@ void ResourceManager::SetResourceCapacity(ResourceType type, int capacity)
         _onChangeCallback(type, current > capacity ? capacity : current);
     }
 }
-int ResourceManager::AddResource(ResourceType type, int amount)
+int ResourceManager::addResource(ResourceType type, int amount)
 {
     if (amount <= 0)
     {
         return 0;
     }
-    int current = GetResourceCount(type);
-    int capacity = GetResourceCapacity(type);
+    int current = getResourceCount(type);
+    int capacity = getResourceCapacity(type);
     int actualAdded = amount;
     if (current + amount > capacity)
     {
         actualAdded = capacity - current;
     }
-    SetResourceCount(type, current + actualAdded);
+    setResourceCount(type, current + actualAdded);
     return actualAdded;
 }
-bool ResourceManager::HasEnough(ResourceType type, int amount) const
+bool ResourceManager::hasEnough(ResourceType type, int amount) const
 {
     if (amount <= 0)
     {
         return true;
     }
-    return GetResourceCount(type) >= amount;
+    return getResourceCount(type) >= amount;
 }
-bool ResourceManager::ConsumeResource(ResourceType type, int amount)
+bool ResourceManager::consume(ResourceType type, int amount)
 {
     if (amount <= 0)
     {
         return true;
     }
-    if (!HasEnough(type, amount))
+    if (!hasEnough(type, amount))
     {
         return false;
     }
-    SetResourceCount(type, GetResourceCount(type) - amount);
+    setResourceCount(type, getResourceCount(type) - amount);
     return true;
 }
-void ResourceManager::SetOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback)
+void ResourceManager::setOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback)
 {
     _onChangeCallback = callback;
 }
 
 // 人口系统实现
-bool ResourceManager::HasTroopSpace(int count) const
+bool ResourceManager::hasTroopSpace(int count) const
 {
     if (count <= 0) return true;
-    int current = GetCurrentTroopCount();
-    int capacity = GetMaxTroopCapacity();
+    int current = getCurrentTroopCount();
+    int capacity = getMaxTroopCapacity();
     return (current + count) <= capacity;
 }
 
-bool ResourceManager::AddTroops(int count)
+bool ResourceManager::addTroops(int count)
 {
     if (count <= 0) return false;
-    if (!HasTroopSpace(count)) return false;
+    if (!hasTroopSpace(count)) return false;
     
-    int current = GetCurrentTroopCount();
-    SetResourceCount(kTroopPopulation, current + count);
+    int current = getCurrentTroopCount();
+    setResourceCount(kTroopPopulation, current + count);
     return true;
 }

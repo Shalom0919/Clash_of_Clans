@@ -214,10 +214,10 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
         // 假设金币仓库增加金币上限，圣水仓库增加圣水上限
         // 这里通过名字简单判断，或者你在 BuildingConfigItem 里加一个 storageType 字段
         if (_selectedBuilding.name == "金币仓库") {
-            ResourceManager::getInstance().AddCapacity(ResourceType::kGold, cfgItem->capacityIncrease);
+            ResourceManager::getInstance().addCapacity(ResourceType::kGold, cfgItem->capacityIncrease);
         }
         else if (_selectedBuilding.name == "圣水仓库") {
-            ResourceManager::getInstance().AddCapacity(ResourceType::kElixir, cfgItem->capacityIncrease);
+            ResourceManager::getInstance().addCapacity(ResourceType::kElixir, cfgItem->capacityIncrease);
         }
     }
 

@@ -168,12 +168,12 @@ bool ArmyBuilding::addTrainingTask(UnitType unitType)
     auto& resMgr = ResourceManager::getInstance();
     int population = getUnitPopulation(unitType);  // ✅ 获取正确的人口数
     
-    if (!resMgr.HasTroopSpace(population))
+    if (!resMgr.hasTroopSpace(population))
     {
         CCLOG("人口不足！需要 %d 人口，当前：%d/%d", 
               population,
-              resMgr.GetCurrentTroopCount(), 
-              resMgr.GetMaxTroopCapacity());
+              resMgr.getCurrentTroopCount(), 
+              resMgr.getMaxTroopCapacity());
         return false;
     }
     
@@ -283,7 +283,7 @@ void ArmyBuilding::completeCurrentTask()
     
     // 🔧 修复：增加正确的人口计数
     int population = getUnitPopulation(task.unitType);  // ✅ 获取兵种人口
-    ResourceManager::getInstance().AddTroops(population);
+    ResourceManager::getInstance().addTroops(population);
     
     // 创建训练好的单位
     Unit* unit = Unit::create(task.unitType);
@@ -303,7 +303,7 @@ void ArmyBuilding::completeCurrentTask()
     auto& resMgr = ResourceManager::getInstance();
     CCLOG("🎉 训练完成：%s（占用 %d 人口）！（剩余队列：%d，人口：%d/%d）", 
           unitName.c_str(), population, getQueueLength(),
-          resMgr.GetCurrentTroopCount(), resMgr.GetMaxTroopCapacity());
+          resMgr.getCurrentTroopCount(), resMgr.getMaxTroopCapacity());
     
     // 触发回调
     if (_onTrainingComplete && unit)

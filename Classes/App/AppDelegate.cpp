@@ -98,12 +98,12 @@ bool AppDelegate::applicationDidFinishLaunching()
     register_all_packages();
     // 新增：初始化资源管理器并设置初始资源
     CCLOG("Initializing Resource Manager...");
-    auto resourceManager = ResourceManager::GetInstance();
-    resourceManager->Init();
+    auto resourceManager = &ResourceManager::getInstance();
+    resourceManager->init();
     CCLOG("Resource Manager initialized successfully");
     // 设置初始资源（游戏开始送2000金币，1000圣水）
-    resourceManager->AddResource(ResourceType::kGold, 2000);
-    resourceManager->AddResource(ResourceType::kElixir, 1000);
+    resourceManager->addResource(ResourceType::kGold, 2000);
+    resourceManager->addResource(ResourceType::kElixir, 1000);
     CCLOG("Initial resources set: Gold=2000, Elixir=1000");
     // Initialize account system (load from storage)
     AccountManager::getInstance().initialize();

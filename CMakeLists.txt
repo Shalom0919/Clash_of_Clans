@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.6)
 set(APP_NAME HelloCpp)
 project(${APP_NAME})
 
-# --- Ç¿ÖÆÊ¹ÓÃ UTF-8 ±àÂë ---
+# --- Ç¿  Ê¹   UTF-8      ---
 if(MSVC)
-    # /utf-8 Ïàµ±ÓÚÍ¬Ê±ÉèÖÃÔ´Âë×Ö·û¼¯ºÍÖ´ÐÐ×Ö·û¼¯Îª UTF-8
+    # /utf-8  àµ±  Í¬Ê±    Ô´   Ö·     Ö´   Ö·   Îª UTF-8
     add_compile_options(/utf-8)
     add_compile_options(/wd4819)
 endif()
@@ -31,7 +31,7 @@ if(APPLE OR WINDOWS)
     cocos_mark_multi_resources(common_res_files RES_TO "Resources" FOLDERS ${GAME_RES_FOLDER})
 endif()
 
-# ---- ¸ù¾Ý Classes Ä¿Â¼×éÖ¯×Ô¶¯ÊÕ¼¯ÎÄ¼þ ----
+# ----      Classes Ä¿Â¼  Ö¯ Ô¶  Õ¼  Ä¼  ----
 file(GLOB_RECURSE APP_SRC        "${CMAKE_CURRENT_SOURCE_DIR}/Classes/App/*.cpp")
 file(GLOB_RECURSE APP_HDR        "${CMAKE_CURRENT_SOURCE_DIR}/Classes/App/*.h")
 
@@ -53,6 +53,9 @@ file(GLOB_RECURSE BUILDINGS_HDR  "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Buildings/
 file(GLOB_RECURSE UNIT_SRC       "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Unit/*.cpp")
 file(GLOB_RECURSE UNIT_HDR       "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Unit/*.h")
 
+file(GLOB_RECURSE SERVICES_SRC   "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Services/*.cpp")
+file(GLOB_RECURSE SERVICES_HDR   "${CMAKE_CURRENT_SOURCE_DIR}/Classes/Services/*.h")
+
 list(APPEND GAME_SOURCE
     ${APP_SRC}
     ${SCENES_SRC}
@@ -61,6 +64,7 @@ list(APPEND GAME_SOURCE
     ${GRIDMAP_SRC}
     ${BUILDINGS_SRC}
     ${UNIT_SRC}
+    ${SERVICES_SRC}
 )
 list(APPEND GAME_HEADER
     ${APP_HDR}
@@ -70,9 +74,10 @@ list(APPEND GAME_HEADER
     ${GRIDMAP_HDR}
     ${BUILDINGS_HDR}
     ${UNIT_HDR}
+    ${SERVICES_HDR}
 )
 
-# ---- Æ½Ì¨ÌØ¶¨ ----
+# ---- Æ½Ì¨ Ø¶  ----
 if(ANDROID)
     set(APP_NAME MyGame)
     list(APPEND GAME_SOURCE proj.android/app/jni/hellocpp/main.cpp)
@@ -117,7 +122,7 @@ endif()
 
 target_link_libraries(${APP_NAME} cocos2d)
 
-# Í³Ò»°üº¬Â·¾¶
+# Í³Ò»    Â·  
 target_include_directories(${APP_NAME}
     PRIVATE Classes
     PRIVATE Classes/App
@@ -127,6 +132,7 @@ target_include_directories(${APP_NAME}
     PRIVATE Classes/Models
     PRIVATE Classes/Scenes
     PRIVATE Classes/Unit
+    PRIVATE Classes/Services
     PRIVATE ${COCOS2DX_ROOT_PATH}/cocos/audio/include/
 )
 

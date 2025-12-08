@@ -127,7 +127,7 @@ cocos2d::ui::Widget* ShopLayer::createShopItem(const BuildingData& data) {
 
     bool isUnlocked = (thLevel >= cfgItem->unlockTownHallLevel);
     bool isMaxed = (currentCount >= maxCount);
-    bool canAfford = ResourceManager::getInstance().HasEnough(data.costType, data.cost);
+    bool canAfford = ResourceManager::getInstance().hasEnough(data.costType, data.cost);
 
     // 1. ½¨ÖþÍ¼±ê
     auto icon = Sprite::create(data.imageFile);

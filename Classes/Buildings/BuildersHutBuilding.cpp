@@ -37,9 +37,9 @@ bool BuildersHutBuilding::init(int level)
     this->setName(getDisplayName());
     
     // 初始化时增加建筑工人容量（每个小屋增加1个工人上限）
-    ResourceManager::getInstance().AddCapacity(kBuilder, 1);
+    ResourceManager::getInstance().addCapacity(kBuilder, 1);
     // 同时增加1个可用工人
-    ResourceManager::getInstance().AddResource(kBuilder, 1);
+    ResourceManager::getInstance().addResource(kBuilder, 1);
     CCLOG("BuildersHutBuilding created at level %d, added 1 builder capacity", _level);
     
     return true;

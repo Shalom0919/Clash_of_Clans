@@ -155,8 +155,8 @@ void DraggableMapScene::setupResourceDisplay()
         // 初始更新显示
         _resourceUI->updateDisplay();
 
-        // 注册资源变化回调，确保UI实时更新
-        ResourceManager::GetInstance()->SetOnResourceChangeCallback([this](ResourceType type, int amount) {
+    // 注册资源变化回调，确保UI实时更新
+        ResourceManager::getInstance().setOnResourceChangeCallback([this](ResourceType type, int amount) {
             if (_resourceUI)
             {
                 _resourceUI->updateDisplay();

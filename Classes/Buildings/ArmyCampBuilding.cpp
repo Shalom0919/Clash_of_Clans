@@ -37,7 +37,7 @@ bool ArmyCampBuilding::init(int level)
     
     // 初始化时增加人口容量
     int housingSpace = getHousingSpace();
-    ResourceManager::getInstance().AddCapacity(kTroopPopulation, housingSpace);
+    ResourceManager::getInstance().addCapacity(kTroopPopulation, housingSpace);
     CCLOG("ArmyCampBuilding created at level %d, added %d housing space", _level, housingSpace);
     
     return true;
@@ -163,7 +163,7 @@ void ArmyCampBuilding::onLevelUp()
     int addedCapacity = housingSpace - prevHousingSpace;
     if (addedCapacity > 0)
     {
-        ResourceManager::getInstance().AddCapacity(kTroopPopulation, addedCapacity);
+        ResourceManager::getInstance().addCapacity(kTroopPopulation, addedCapacity);
         CCLOG("ArmyCampBuilding upgraded to level %d, Housing Space: %d (+%d)", 
               _level, housingSpace, addedCapacity);
     }

@@ -95,8 +95,8 @@ void TrainingUI::setupUI()
     auto& resMgr = ResourceManager::getInstance();
     auto popLabel = Label::createWithSystemFont(
         StringUtils::format("人口：%d/%d", 
-            resMgr.GetCurrentTroopCount(), 
-            resMgr.GetMaxTroopCapacity()),
+            resMgr.getCurrentTroopCount(), 
+            resMgr.getMaxTroopCapacity()),
         "Microsoft YaHei", 18);
     popLabel->setPosition(Vec2(panelWidth / 2, panelHeight - 60));
     popLabel->setTextColor(Color4B(200, 200, 255, 255));
@@ -187,7 +187,7 @@ void TrainingUI::createUnitCard(cocos2d::ui::ListView* scrollView, UnitType unit
     // 检查是否可以训练
     auto& resMgr = ResourceManager::getInstance();
     bool canAfford = resMgr.hasEnough(ResourceType::kElixir, cost);
-    bool hasSpace = resMgr.HasTroopSpace(housingSpace);
+    bool hasSpace = resMgr.hasTroopSpace(housingSpace);
     bool canTrain = canAfford && hasSpace;
 
     // 费用显示
@@ -292,8 +292,8 @@ void TrainingUI::updatePopulationDisplay()
     if (popLabel)
     {
         popLabel->setString(StringUtils::format("人口：%d/%d", 
-            resMgr.GetCurrentTroopCount(), 
-            resMgr.GetMaxTroopCapacity()));
+            resMgr.getCurrentTroopCount(), 
+            resMgr.getMaxTroopCapacity()));
     }
 }
 
