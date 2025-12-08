@@ -165,6 +165,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\ZERO_CHECK.vcxproj">
