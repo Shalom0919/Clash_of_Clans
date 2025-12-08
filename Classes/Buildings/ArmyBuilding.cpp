@@ -164,11 +164,14 @@ bool ArmyBuilding::addTrainingTask(UnitType unitType)
         return false;
     }
     
-    // 检查人口空间是否足够（每个小兵占1人口）
+    // 🔧 修复：检查人口空间（根据兵种类型）
     auto& resMgr = ResourceManager::getInstance();
-    if (!resMgr.HasTroopSpace(1))
+    int population = getUnitPopulation(unitType);  // ✅ 获取正确的人口数
+    
+    if (!resMgr.HasTroopSpace(population))
     {
-        CCLOG("人口已满！当前：%d/%d", 
+        CCLOG("人口不足！需要 %d 人口，当前：%d/%d", 
+              population,
               resMgr.GetCurrentTroopCount(), 
               resMgr.GetMaxTroopCapacity());
         return false;
@@ -278,8 +281,9 @@ void ArmyBuilding::completeCurrentTask()
     auto task = _trainingQueue.front();
     _trainingQueue.pop();
     
-    // 增加人口计数
-    ResourceManager::getInstance().AddTroops(1);
+    // 🔧 修复：增加正确的人口计数
+    int population = getUnitPopulation(task.unitType);  // ✅ 获取兵种人口
+    ResourceManager::getInstance().AddTroops(population);
     
     // 创建训练好的单位
     Unit* unit = Unit::create(task.unitType);
@@ -297,8 +301,8 @@ void ArmyBuilding::completeCurrentTask()
     }
     
     auto& resMgr = ResourceManager::getInstance();
-    CCLOG("🎉 训练完成：%s！（剩余队列：%d，人口：%d/%d）", 
-          unitName.c_str(), getQueueLength(),
+    CCLOG("🎉 训练完成：%s（占用 %d 人口）！（剩余队列：%d，人口：%d/%d）", 
+          unitName.c_str(), population, getQueueLength(),
           resMgr.GetCurrentTroopCount(), resMgr.GetMaxTroopCapacity());
     
     // 触发回调
@@ -312,21 +316,21 @@ void ArmyBuilding::completeCurrentTask()
 
 float ArmyBuilding::getUnitBaseTrainingTime(UnitType type)
 {
-    // 基础训练时间（秒）- 暂时设为0，即时训练
+    // 基础训练时间（秒）- 官方数据
     switch (type)
     {
     case UnitType::kBarbarian:
-        return 0.0f;  // 野蛮人：即时
+        return 20.0f;   // 野蛮人：20秒
     case UnitType::kArcher:
-        return 0.0f;  // 弓箭手：即时
+        return 25.0f;   // 弓箭手：25秒
     case UnitType::kGoblin:
-        return 0.0f;  // 哥布林：即时
+        return 30.0f;   // 哥布林：30秒
     case UnitType::kGiant:
-        return 0.0f;  // 巨人：即时
+        return 120.0f;  // 巨人：2分钟
     case UnitType::kWallBreaker:
-        return 0.0f;  // 炸弹人：即时
+        return 180.0f;  // 炸弹人：3分钟
     default:
-        return 0.0f;
+        return 20.0f;
     }
 }
 
@@ -347,5 +351,25 @@ int ArmyBuilding::getUnitTrainingCost(UnitType type)
         return 600;    // 炸弹人：600圣水
     default:
         return 50;
+    }
+}
+
+int ArmyBuilding::getUnitPopulation(UnitType type)
+{
+    // 兵种占用人口数
+    switch (type)
+    {
+    case UnitType::kBarbarian:
+        return 1;      // 野蛮人：1人口
+    case UnitType::kArcher:
+        return 1;      // 弓箭手：1人口
+    case UnitType::kGoblin:
+        return 1;      // 哥布林：1人口
+    case UnitType::kGiant:
+        return 5;      // 巨人：5人口 ✅ 修复
+    case UnitType::kWallBreaker:
+        return 2;      // 炸弹人：2人口
+    default:
+        return 1;
     }
 }

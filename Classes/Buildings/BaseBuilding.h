@@ -42,6 +42,20 @@ public:
     virtual int getMaxLevel() const = 0;
     /** @brief 是否已达到最高等级 */
     bool isMaxLevel() const { return _level >= getMaxLevel(); }
+    
+    // ==================== 生命值系统 ====================
+    /** @brief 获取当前生命值 */
+    int getHitpoints() const { return _currentHitpoints; }
+    /** @brief 获取最大生命值 */
+    int getMaxHitpoints() const { return _maxHitpoints; }
+    /** @brief 设置最大生命值（用于初始化和升级） */
+    void setMaxHitpoints(int hp) { _maxHitpoints = hp; _currentHitpoints = hp; }
+    /** @brief 受到伤害 */
+    void takeDamage(int damage);
+    /** @brief 修复建筑（恢复生命值） */
+    void repair(int amount);
+    /** @brief 是否已被摧毁 */
+    bool isDestroyed() const { return _currentHitpoints <= 0; }
     // ==================== 升级相关（统一接口） ====================
     /** @brief 获取升级所需费用 */
     virtual int getUpgradeCost() const = 0;
@@ -56,7 +70,7 @@ public:
     /** @brief 获取当前等级的图片文件 */
     virtual std::string getImageFile() const { return ""; }
     /**
-     * @brief 尝试升级建筑（扣除资源并升级）
+     * @brief 尝试升级建筑（扣除资源并启动升级倒计时）
      * @return 是否升级成功
      */
     virtual bool upgrade();
@@ -69,6 +83,21 @@ public:
     bool isUpgrading() const { return _isUpgrading; }
     /** @brief 设置升级状态 */
     void setUpgrading(bool upgrading) { _isUpgrading = upgrading; }
+    
+    /**
+     * @brief 升级完成时调用（由 UpgradeManager 调用）
+     */
+    void onUpgradeComplete();
+    
+    /**
+     * @brief 获取升级进度（0.0 ~ 1.0）
+     */
+    float getUpgradeProgress() const;
+    
+    /**
+     * @brief 获取升级剩余时间（秒）
+     */
+    float getUpgradeRemainingTime() const;
     // ==================== 升级回调 ====================
     using UpgradeCallback = std::function<void(bool success, int newLevel)>;
     /** @brief 设置升级回调 */
@@ -106,4 +135,8 @@ protected:
     cocos2d::Vec2 _gridPosition; // 网格位置
     cocos2d::Size _gridSize;     // 占用网格大小
     UpgradeCallback _upgradeCallback = nullptr;
+    
+    // 生命值系统
+    int _maxHitpoints = 100;     // 最大生命值
+    int _currentHitpoints = 100; // 当前生命值
 };

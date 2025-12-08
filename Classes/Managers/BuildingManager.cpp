@@ -10,6 +10,8 @@
 #include "TownHallBuilding.h"
 #include "WallBuilding.h"
 #include "GameConfig.h"
+#include "UpgradeTimerUI.h"  // 🆕 引入升级倒计时 UI
+#include <map>
 USING_NS_CC;
 bool BuildingManager::init()
 {
@@ -327,6 +329,35 @@ void BuildingManager::update(float dt)
         if (building)
         {
             building->tick(dt);
+            
+            // 🆕 自动管理升级倒计时 UI
+            if (building->isUpgrading())
+            {
+                // 检查是否已有升级 UI
+                auto* existingUI = building->getChildByName<UpgradeTimerUI*>("upgradeTimerUI");
+                if (!existingUI)
+                {
+                    // 创建并附加升级 UI
+                    auto* timerUI = UpgradeTimerUI::create(building);
+                    if (timerUI)
+                    {
+                        timerUI->setName("upgradeTimerUI");
+                        building->addChild(timerUI, 1000);
+                        timerUI->show();
+                        CCLOG("✅ 为 %s 添加升级倒计时 UI", building->getDisplayName().c_str());
+                    }
+                }
+            }
+            else
+            {
+                // 升级完成，移除 UI
+                auto* existingUI = building->getChildByName<UpgradeTimerUI*>("upgradeTimerUI");
+                if (existingUI)
+                {
+                    existingUI->removeFromParent();
+                    CCLOG("✅ 移除 %s 的升级倒计时 UI", building->getDisplayName().c_str());
+                }
+            }
         }
     }
 }

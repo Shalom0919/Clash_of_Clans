@@ -15,18 +15,31 @@ class TownHallConfig
 public:
     struct LevelData
     {
-        int level;
-        std::string imageFile;
-        int upgradeCost;
-        float upgradeTime;
-        std::string description;
+        int level;              // 等级
+        int hitpoints;          // 生命值
+        int upgradeCost;        // 升级费用（金币）
+        float upgradeTime;      // 升级时间（秒）
+        int experienceGained;   // 升级后获得的经验值
+        int maxBuildings;       // 最大建筑数量
+        int maxTraps;           // 最大陷阱数量
+        std::string imageFile;  // 图片路径
+        std::string description;// 描述
     };
+    
     static TownHallConfig* getInstance();
     const LevelData* getLevel(int level) const;
     const LevelData* getNextLevel(int currentLevel) const;
     int getMaxLevel() const { return static_cast<int>(_levels.size()); }
     bool canUpgrade(int currentLevel) const;
     int getUpgradeCost(int currentLevel) const;
+    
+    // ==================== 建筑限制系统（预留接口）====================
+    // TODO: 未来实现 - 检查某建筑在当前大本营等级下的最大等级
+    int getMaxBuildingLevel(int townHallLevel, const std::string& buildingName) const;
+    
+    // ==================== 建筑解锁系统（预留接口）====================
+    // TODO: 未来实现 - 检查某建筑是否在当前大本营等级下解锁
+    bool isBuildingUnlocked(int townHallLevel, const std::string& buildingName) const;
 
 private:
     TownHallConfig();
@@ -51,12 +64,13 @@ public:
     virtual std::string getUpgradeInfo() const override;
     virtual std::string getImageFile() const override;
     virtual bool canUpgrade() const override;
-    virtual bool upgrade() override;
+    // ❌ 移除：不再重写 upgrade()，使用 BaseBuilding 的统一升级流程
 
 protected:
-    virtual bool init(int level) override;
-    virtual void updateAppearance() override;
-    virtual std::string getImageForLevel(int level) const override;
+virtual bool init(int level) override;
+virtual void onLevelUp() override;  // ✅ 重写升级完成后的逻辑
+virtual void updateAppearance() override;
+virtual std::string getImageForLevel(int level) const override;
 
 private:
     TownHallBuilding() = default;

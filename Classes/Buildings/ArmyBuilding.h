@@ -107,6 +107,11 @@ public:
      * @brief 获取兵种训练费用
      */
     static int getUnitTrainingCost(UnitType type);
+    
+    /**
+     * @brief 获取兵种占用人口数
+     */
+    static int getUnitPopulation(UnitType type);
 
 protected:
     virtual void onLevelUp() override;

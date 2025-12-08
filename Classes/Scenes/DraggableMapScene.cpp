@@ -42,6 +42,7 @@
 #include "ShopLayer.h"
 #include "Managers/GameConfig.h"
 #include "Buildings/ArmyBuilding.h"
+#include "Managers/UpgradeManager.h"  
 
 USING_NS_CC;
 using namespace ui;
@@ -89,6 +90,11 @@ bool DraggableMapScene::init()
     // ==================== 初始化建筑管理器 ====================
     _buildingManager = BuildingManager::create();
     this->addChild(_buildingManager);
+    
+    // 初始化升级管理器
+    auto* upgradeMgr = UpgradeManager::getInstance();
+    this->addChild(upgradeMgr);
+    CCLOG("✅ UpgradeManager 已添加到场景");
 
     initBuildingData();
 
