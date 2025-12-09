@@ -38,10 +38,20 @@ bool DraggableMapScene::init()
         return false;
     }
     // 1. 获取单例
-    this->addChild(&BuildingCapacityManager::getInstance(), 0);
+    auto* capacityMgr = &BuildingCapacityManager::getInstance();
+    if (capacityMgr->getParent())
+    {
+        capacityMgr->removeFromParent();
+    }
+    this->addChild(capacityMgr, 0);
+
     ResourceCollectionManager* mgr = ResourceCollectionManager::getInstance();
 
     // 🔴 关键步骤：将单例 Node 添加到场景中（只需一次），这样它的触摸监听和 update 才会工作。
+    if (mgr->getParent())
+    {
+        mgr->removeFromParent();
+    }
     this->addChild(mgr, 0); // 较低 Z-order，确保不遮挡UI
     _visibleSize = Director::getInstance()->getVisibleSize();
     

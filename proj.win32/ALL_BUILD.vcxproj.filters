@@ -4,6 +4,5 @@
     <CustomBuild Include="C:\Users\Shalom\Documents\GitHub\coc\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
   </ItemGroup>
 </Project>
