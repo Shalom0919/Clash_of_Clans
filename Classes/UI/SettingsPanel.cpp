@@ -123,13 +123,17 @@ void SettingsPanel::setupFunctionButtons(float startY)
         return btn;
     };
     
-    _accountSwitchButton = createButton("👤 切换账号", startY);
+    // 地图切换按钮
+    _mapSwitchButton = createButton("🗺️ 切换地图", startY);
+    _mapSwitchButton->addClickEventListener([this](Ref*) { onMapSwitchClicked(); });
+    
+    _accountSwitchButton = createButton("👤 切换账号", startY - 70);
     _accountSwitchButton->addClickEventListener([this](Ref*) { onAccountSwitchClicked(); });
     
-    _logoutButton = createButton("🚪 退出游戏", startY - 70);
+    _logoutButton = createButton("🚪 退出游戏", startY - 140);
     _logoutButton->addClickEventListener([this](Ref*) { onLogoutClicked(); });
     
-    _fullResourceButton = createButton("💰 资源全满 (测试)", startY - 140);
+    _fullResourceButton = createButton("💰 资源全满 (测试)", startY - 210);
     _fullResourceButton->addClickEventListener([this](Ref*) { onFullResourceClicked(); });
 }
 
@@ -199,6 +203,136 @@ void SettingsPanel::onFullResourceClicked()
         RemoveSelf::create(),
         nullptr
     ));
+}
+
+void SettingsPanel::onMapSwitchClicked()
+{
+    showMapSelectionPanel();
+}
+
+void SettingsPanel::showMapSelectionPanel()
+{
+    auto& accMgr = AccountManager::getInstance();
+    const auto* currentAccount = accMgr.getCurrentAccount();
+    
+    if (!currentAccount)
+    {
+        CCLOG("No current account");
+        return;
+    }
+    
+    auto mapPanel = Layout::create();
+    mapPanel->setContentSize(Size(500, 350));
+    mapPanel->setBackGroundColorType(Layout::BackGroundColorType::SOLID);
+    mapPanel->setBackGroundColor(Color3B(30, 30, 40));
+    mapPanel->setBackGroundColorOpacity(255);
+    mapPanel->setPosition(Vec2(50, 150));
+    _panel->addChild(mapPanel, 100);
+    
+    auto titleLabel = Label::createWithSystemFont("选择地图", "Microsoft YaHei", 24);
+    titleLabel->setPosition(Vec2(250, 320));
+    mapPanel->addChild(titleLabel);
+    
+    auto closeBtn = Button::create();
+    closeBtn->setTitleText("X");
+    closeBtn->setTitleFontSize(24);
+    closeBtn->setPosition(Vec2(470, 320));
+    closeBtn->addClickEventListener([mapPanel](Ref*) {
+        mapPanel->removeFromParent();
+    });
+    mapPanel->addChild(closeBtn);
+    
+    // 地图选项
+    struct MapOption {
+        std::string name;
+        std::string path;
+        std::string description;
+    };
+    
+    std::vector<MapOption> maps = {
+        {"地图 1", "map/Map1.png", "夜世界"},
+        {"地图 2", "map/Map2.png", "雪地冰原"},
+        {"地图 3", "map/Map3.png", "嫩绿草原"}
+    };
+    
+    std::string currentMap = currentAccount->assignedMapName;
+    
+    float startY = 250.0f;
+    for (size_t i = 0; i < maps.size(); ++i)
+    {
+        const auto& mapOption = maps[i];
+        
+        auto itemLayout = Layout::create();
+        itemLayout->setContentSize(Size(460, 70));
+        itemLayout->setPosition(Vec2(20, startY - 70 - i * 80));
+        
+        bool isCurrent = (mapOption.path == currentMap);
+        Color3B bgColor = isCurrent ? Color3B(60, 100, 60) : Color3B(50, 50, 60);
+        auto bg = LayerColor::create(Color4B(bgColor.r, bgColor.g, bgColor.b, 255), 460, 70);
+        itemLayout->addChild(bg);
+        
+        std::string labelText = mapOption.name + " - " + mapOption.description;
+        if (isCurrent)
+        {
+            labelText += " (当前)";
+        }
+        
+        auto nameLabel = Label::createWithSystemFont(labelText, "Microsoft YaHei", 20);
+        nameLabel->setPosition(Vec2(230, 45));
+        itemLayout->addChild(nameLabel);
+        
+        auto descLabel = Label::createWithSystemFont(mapOption.path, "Arial", 14);
+        descLabel->setPosition(Vec2(230, 20));
+        descLabel->setTextColor(Color4B(200, 200, 200, 255));
+        itemLayout->addChild(descLabel);
+        
+        if (!isCurrent)
+        {
+            itemLayout->setTouchEnabled(true);
+            itemLayout->addClickEventListener([this, mapOption, mapPanel](Ref*) {
+                CCLOG("✅ Switching to map: %s", mapOption.path.c_str());
+                
+                auto& accMgr = AccountManager::getInstance();
+                const auto* account = accMgr.getCurrentAccount();
+                if (account)
+                {
+                    // 更新账号的地图设置
+                    AccountInfo updatedAccount = *account;
+                    updatedAccount.assignedMapName = mapOption.path;
+                    accMgr.upsertAccount(updatedAccount);
+                    
+                    // 关闭面板
+                    mapPanel->removeFromParent();
+                    
+                    // 显示提示
+                    auto hint = Label::createWithSystemFont(
+                        "地图已切换！请重新进入游戏生效", 
+                        "Microsoft YaHei", 
+                        24
+                    );
+                    hint->setPosition(Vec2(300, 50));
+                    hint->setTextColor(Color4B::GREEN);
+                    _panel->addChild(hint);
+                    
+                    hint->runAction(Sequence::create(
+                        FadeIn::create(0.2f),
+                        DelayTime::create(2.0f),
+                        FadeOut::create(0.3f),
+                        RemoveSelf::create(),
+                        nullptr
+                    ));
+                    
+                    // 触发场景重新加载（通过账号切换逻辑）
+                    if (_onMapChanged)
+                    {
+                        _onMapChanged(mapOption.path);
+                    }
+                }
+            });
+        }
+        
+        mapPanel->addChild(itemLayout);
+    }
 }
 
 void SettingsPanel::loadVolumeSettings()
@@ -295,20 +429,11 @@ void SettingsPanel::showAccountList()
             itemLayout->addClickEventListener([this, account, accountPanel](Ref*) {
                 CCLOG("✅ Preparing to switch to account: %s", account.username.c_str());
                 
-                // 关闭账号面板
+                // 关闭账号选择面板
                 accountPanel->removeFromParent();
                 
-                // 先触发回调，让场景保存当前状态并切换
-                // 传递目标账号的 userId
-                if (_onAccountSwitched)
-                {
-                    // 注意：这里需要修改回调签名来传递目标账号ID
-                    // 但为了不改动太多代码，我们在这里直接保存当前账号ID
-                    UserDefault::getInstance()->setStringForKey("switching_to_account", account.userId);
-                    UserDefault::getInstance()->flush();
-                    
-                    _onAccountSwitched();
-                }
+                // 显示密码验证对话框
+                showPasswordDialog(account.userId, account.username);
             });
         }
         
@@ -330,4 +455,124 @@ void SettingsPanel::hide()
         this->removeFromParent();
     });
     _panel->runAction(Sequence::create(scaleOut, callback, nullptr));
+}
+
+void SettingsPanel::showPasswordDialog(const std::string& userId, const std::string& username)
+{
+    // 创建半透明背景遮罩
+    auto mask = LayerColor::create(Color4B(0, 0, 0, 180));
+    mask->setContentSize(_visibleSize);
+    mask->setName("PasswordDialogMask");
+    this->addChild(mask, 200);
+    
+    // 对话框背景
+    auto dialogBg = LayerColor::create(Color4B(50, 50, 60, 255), 400, 250);
+    dialogBg->setPosition(Vec2(_visibleSize.width / 2 - 200, _visibleSize.height / 2 - 125));
+    mask->addChild(dialogBg);
+    
+    // 对话框标题
+    std::string titleText = StringUtils::format("切换到账号: %s", username.c_str());
+    auto title = Label::createWithSystemFont(titleText, "Microsoft YaHei", 24);
+    title->setPosition(Vec2(200, 210));
+    dialogBg->addChild(title);
+    
+    auto subtitle = Label::createWithSystemFont("请输入密码", "Microsoft YaHei", 20);
+    subtitle->setPosition(Vec2(200, 180));
+    subtitle->setTextColor(Color4B(200, 200, 200, 255));
+    dialogBg->addChild(subtitle);
+    
+    // 密码输入框
+    auto passwordInput = TextField::create("密码", "Arial", 24);
+    passwordInput->setMaxLength(20);
+    passwordInput->setMaxLengthEnabled(true);
+    passwordInput->setPasswordEnabled(true);  // 密码模式
+    passwordInput->setPasswordStyleText("*");
+    passwordInput->setPosition(Vec2(200, 130));
+    passwordInput->setContentSize(Size(300, 40));
+    passwordInput->setTextColor(Color4B::WHITE);
+    passwordInput->setPlaceHolderColor(Color4B::GRAY);
+    passwordInput->setName("passwordInput");
+    dialogBg->addChild(passwordInput);
+    
+    // 错误提示标签（初始隐藏）
+    auto errorTip = Label::createWithSystemFont("", "Microsoft YaHei", 18);
+    errorTip->setPosition(Vec2(200, 90));
+    errorTip->setTextColor(Color4B::RED);
+    errorTip->setName("errorTip");
+    errorTip->setVisible(false);
+    dialogBg->addChild(errorTip);
+    
+    // 确认按钮
+    auto confirmBtn = Button::create();
+    confirmBtn->setTitleText("确认");
+    confirmBtn->setTitleFontSize(24);
+    confirmBtn->setTitleFontName("Microsoft YaHei");
+    confirmBtn->setContentSize(Size(120, 50));
+    confirmBtn->setScale9Enabled(true);
+    confirmBtn->setPosition(Vec2(120, 40));
+    confirmBtn->addClickEventListener([this, mask, passwordInput, errorTip, userId](Ref*) {
+        std::string password = passwordInput->getString();
+        
+        if (password.empty())
+        {
+            errorTip->setString("密码不能为空！");
+            errorTip->setVisible(true);
+            return;
+        }
+        
+        // 验证密码
+        auto& accMgr = AccountManager::getInstance();
+        if (accMgr.verifyPassword(userId, password))
+        {
+            // 密码正确，执行切换
+            mask->removeFromParent();
+            
+            // 保存目标账号ID并触发切换
+            UserDefault::getInstance()->setStringForKey("switching_to_account", userId);
+            UserDefault::getInstance()->flush();
+            
+            if (_onAccountSwitched)
+            {
+                _onAccountSwitched();
+            }
+        }
+        else
+        {
+            // 密码错误
+            errorTip->setString("密码错误！请重试");
+            errorTip->setVisible(true);
+            
+            // 清空输入框
+            passwordInput->setString("");
+            
+            // 播放错误动画
+            auto shake = Sequence::create(
+                MoveBy::create(0.05f, Vec2(-5, 0)),
+                MoveBy::create(0.05f, Vec2(10, 0)),
+                MoveBy::create(0.05f, Vec2(-10, 0)),
+                MoveBy::create(0.05f, Vec2(10, 0)),
+                MoveBy::create(0.05f, Vec2(-5, 0)),
+                nullptr
+            );
+            passwordInput->runAction(shake);
+        }
+    });
+    dialogBg->addChild(confirmBtn);
+    
+    // 取消按钮
+    auto cancelBtn = Button::create();
+    cancelBtn->setTitleText("取消");
+    cancelBtn->setTitleFontSize(24);
+    cancelBtn->setTitleFontName("Microsoft YaHei");
+    cancelBtn->setContentSize(Size(120, 50));
+    cancelBtn->setScale9Enabled(true);
+    cancelBtn->setPosition(Vec2(280, 40));
+    cancelBtn->addClickEventListener([mask](Ref*) {
+        mask->removeFromParent();
+    });
+    dialogBg->addChild(cancelBtn);
+    
+    // 添加弹出动画
+    dialogBg->setScale(0.0f);
+    dialogBg->runAction(EaseBackOut::create(ScaleTo::create(0.3f, 1.0f)));
 }

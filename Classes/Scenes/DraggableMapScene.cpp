@@ -176,6 +176,10 @@ void DraggableMapScene::setupCallbacks()
         onLogout();
     });
     
+    _uiController->setOnMapChanged([this](const std::string& newMap) {
+        onMapChanged(newMap);
+    });
+    
     // ==================== 建筑管理器回调 ====================
     _buildingManager->setOnBuildingPlaced([this](BaseBuilding* building) {
         onBuildingPlaced(building);
@@ -846,4 +850,20 @@ void DraggableMapScene::onLogout()
     #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
         exit(0);
     #endif
+}
+
+void DraggableMapScene::onMapChanged(const std::string& newMap)
+{
+    CCLOG("✅ Map changed to: %s, reloading scene...", newMap.c_str());
+    
+    // 保存当前状态
+    if (_buildingManager)
+    {
+        _buildingManager->saveCurrentState();
+        CCLOG("✅ Saved current state before map change");
+    }
+    
+    // 重新创建场景以应用新地图
+    auto newScene = DraggableMapScene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(0.5f, newScene));
 }

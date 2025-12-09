@@ -1,8 +1,8 @@
-/****************************************************************
+ï»¿/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     WallBuilding.cpp
- * File Function: ½¨Öşµ¹¼ÆÊ±Àà
- * Author:        ÁõÏà³É
+ * File Function: å»ºç­‘å€’è®¡æ—¶ç±»
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/09
  * License:       MIT License
  ****************************************************************/
@@ -28,29 +28,29 @@ bool UpgradeTimerUI::init(BaseBuilding* building)
     if (!Node::init()) return false;
     _building = building;
 
-    // ÅäÖÃ²ÎÊı
-    const Size barSize(80, 10); // ½ø¶ÈÌõ³ß´ç
-    const Color3B bgColor(50, 50, 50);   // Éî»ÒÉ«±³¾°
-    const Color3B fillColor(0, 255, 0);  // ÁÁÂÌÉ«Ìî³ä
+    // é…ç½®å‚æ•°
+    const Size barSize(80, 10); // è¿›åº¦æ¡å°ºå¯¸
+    const Color3B bgColor(50, 50, 50);   // æ·±ç°è‰²èƒŒæ™¯
+    const Color3B fillColor(0, 255, 0);  // äº®ç»¿è‰²å¡«å……
 
-    // 1. ´´½¨±³¾°Ìõ (»ÒÉ«)
+    // 1. åˆ›å»ºèƒŒæ™¯æ¡ (ç°è‰²)
     _barBg = createColorSprite(barSize, bgColor);
-    _barBg->setPosition(Vec2(0, 100)); // ÔÚ½¨ÖşÉÏ·½ 100 ÏñËØ
+    _barBg->setPosition(Vec2(0, 100)); // åœ¨å»ºç­‘ä¸Šæ–¹ 100 åƒç´ 
     this->addChild(_barBg);
 
-    // 2. ´´½¨Ìî³äÌõ (ÂÌÉ«)
+    // 2. åˆ›å»ºå¡«å……æ¡ (ç»¿è‰²)
     _barFill = createColorSprite(barSize, fillColor);
-    // ¹Ø¼ü£ºÉèÖÃÃªµãÎª (0, 0.5)£¬ÕâÑù setScaleX »á´Ó×óÏòÓÒÑÓÉì
+    // å…³é”®ï¼šè®¾ç½®é”šç‚¹ä¸º (0, 0.5)ï¼Œè¿™æ · setScaleX ä¼šä»å·¦å‘å³å»¶ä¼¸
     _barFill->setAnchorPoint(Vec2(0.0f, 0.5f));
-    // Î»ÖÃÉèÎª±³¾°µÄ×ó±ßÔµ
+    // ä½ç½®è®¾ä¸ºèƒŒæ™¯çš„å·¦è¾¹ç¼˜
     _barFill->setPosition(Vec2(-barSize.width / 2, 100));
-    _barFill->setScaleX(0.0f); // ³õÊ¼½ø¶ÈÎª 0
+    _barFill->setScaleX(0.0f); // åˆå§‹è¿›åº¦ä¸º 0
     this->addChild(_barFill);
 
-    // 3. ´´½¨Ê±¼ä±êÇ©
+    // 3. åˆ›å»ºæ—¶é—´æ ‡ç­¾
     _timeLabel = Label::createWithSystemFont("00:00", "Arial", 16);
-    _timeLabel->setPosition(Vec2(0, 120)); // ÔÚ½ø¶ÈÌõÉÏ·½
-    _timeLabel->enableOutline(Color4B::BLACK, 2); // ºÚÉ«Ãè±ß£¬·ÀÖ¹¿´²»Çå
+    _timeLabel->setPosition(Vec2(0, 120)); // åœ¨è¿›åº¦æ¡ä¸Šæ–¹
+    _timeLabel->enableOutline(Color4B::BLACK, 2); // é»‘è‰²æè¾¹ï¼Œé˜²æ­¢çœ‹ä¸æ¸…
     this->addChild(_timeLabel);
 
     scheduleUpdate();
@@ -61,21 +61,21 @@ void UpgradeTimerUI::update(float dt)
 {
     if (!_building) return;
 
-    // Èç¹û½¨Öş²»ÔÙÉı¼¶£¬Ïú»Ù×Ô¼º
+    // å¦‚æœå»ºç­‘ä¸å†å‡çº§ï¼Œé”€æ¯è‡ªå·±
     if (!_building->isUpgrading())
     {
         this->removeFromParent();
         return;
     }
 
-    // »ñÈ¡Êı¾İ
+    // è·å–æ•°æ®
     float progress = _building->getUpgradeProgress(); // 0.0 ~ 1.0
     float remaining = _building->getUpgradeRemainingTime();
 
-    // ¸üĞÂ UI
+    // æ›´æ–° UI
     if (_barFill)
     {
-        // ÏŞÖÆ½ø¶ÈÔÚ 0~1 Ö®¼ä
+        // é™åˆ¶è¿›åº¦åœ¨ 0~1 ä¹‹é—´
         progress = std::max(0.0f, std::min(1.0f, progress));
         _barFill->setScaleX(progress);
     }
@@ -96,11 +96,11 @@ cocos2d::Sprite* UpgradeTimerUI::createColorSprite(const cocos2d::Size& size, co
 
 std::string UpgradeTimerUI::formatTime(float seconds)
 {
-    int s = static_cast<int>(ceil(seconds)); // ÏòÉÏÈ¡Õû
+    int s = static_cast<int>(ceil(seconds)); // å‘ä¸Šå–æ•´
     if (s < 0) s = 0;
     int m = s / 60;
     s %= 60;
-    // ¸ñÊ½»¯Îª 00:00
+    // æ ¼å¼åŒ–ä¸º 00:00
     char buf[16];
     snprintf(buf, sizeof(buf), "%02d:%02d", m, s);
     return std::string(buf);

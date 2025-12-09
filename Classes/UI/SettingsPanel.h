@@ -34,6 +34,7 @@ public:
     // 回调设置
     void setOnAccountSwitched(const std::function<void()>& callback) { _onAccountSwitched = callback; }
     void setOnLogout(const std::function<void()>& callback) { _onLogout = callback; }
+    void setOnMapChanged(const std::function<void(const std::string&)>& callback) { _onMapChanged = callback; }
     
 private:
     cocos2d::Size _visibleSize;
@@ -49,6 +50,7 @@ private:
     cocos2d::Label* _sfxValueLabel = nullptr;
     
     // 功能按钮
+    cocos2d::ui::Button* _mapSwitchButton = nullptr;
     cocos2d::ui::Button* _accountSwitchButton = nullptr;
     cocos2d::ui::Button* _logoutButton = nullptr;
     cocos2d::ui::Button* _fullResourceButton = nullptr;
@@ -56,6 +58,7 @@ private:
     // 回调
     std::function<void()> _onAccountSwitched;
     std::function<void()> _onLogout;
+    std::function<void(const std::string&)> _onMapChanged;
     
     // 内部方法
     void setupUI();
@@ -65,11 +68,14 @@ private:
     void onCloseClicked();
     void onMusicVolumeChanged(cocos2d::Ref* sender, cocos2d::ui::Slider::EventType type);
     void onSFXVolumeChanged(cocos2d::Ref* sender, cocos2d::ui::Slider::EventType type);
+    void onMapSwitchClicked();
     void onAccountSwitchClicked();
     void onLogoutClicked();
     void onFullResourceClicked();
     
+    void showMapSelectionPanel();
     void showAccountList();
+    void showPasswordDialog(const std::string& userId, const std::string& username);
     void loadVolumeSettings();
     void saveVolumeSettings();
 };

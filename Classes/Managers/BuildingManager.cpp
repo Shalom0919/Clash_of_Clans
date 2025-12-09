@@ -703,6 +703,10 @@ void BuildingManager::clearAllBuildings()
     if (!_gridMap)
         return;
     
+    // 🔴 关键修复：在清除建筑前，先清理 UpgradeManager 中的所有升级任务
+    // 防止任务中的建筑指针在场景切换后变成野指针
+    UpgradeManager::getInstance()->clearAllUpgradeTasks();
+    
     // 清除网格占用
     for (auto* building : _buildings)
     {
@@ -739,6 +743,10 @@ void BuildingManager::saveCurrentState()
     gameData.darkElixir = 0;
     gameData.gems = resMgr.getResourceCount(ResourceType::kGem);
     
+    // 🆕 同步资源容量
+    gameData.goldCapacity = resMgr.getResourceCapacity(ResourceType::kGold);
+    gameData.elixirCapacity = resMgr.getResourceCapacity(ResourceType::kElixir);
+    
     // 获取大本营等级
     for (auto* building : _buildings)
     {
@@ -752,8 +760,9 @@ void BuildingManager::saveCurrentState()
     // 更新并保存
     accMgr.updateGameData(gameData);
     
-    CCLOG("💾 Current state saved: %zu buildings, Gold=%d, Elixir=%d", 
-          gameData.buildings.size(), gameData.gold, gameData.elixir);
+    CCLOG("💾 Current state saved: %zu buildings, Gold=%d/%d, Elixir=%d/%d", 
+          gameData.buildings.size(), gameData.gold, gameData.goldCapacity,
+          gameData.elixir, gameData.elixirCapacity);
 }
 
 void BuildingManager::loadCurrentAccountState()
@@ -762,25 +771,37 @@ void BuildingManager::loadCurrentAccountState()
     auto gameData = accMgr.getCurrentGameData();
     auto& resMgr = ResourceManager::getInstance();
 
-    // 1. 🆕 清空当前的容量和资源，为加载做准备
-    resMgr.setResourceCapacity(ResourceType::kGold, 0);
-    resMgr.setResourceCapacity(ResourceType::kElixir, 0);
-
-    // 2. 加载建筑 (建筑实体被创建，并向 CapacityManager 注册)
+    // 1. 加载建筑 (建筑实体被创建，并向 CapacityManager 注册)
     loadBuildingsFromData(gameData.buildings, false);
 
-    // 3. 强制 Capacity Manager 重新计算所有仓库容量并更新 ResourceManager。
-    //    此时，ResourceManager 拥有了正确的容量上限（例如 50000）。
-    BuildingCapacityManager::getInstance().recalculateCapacity();
+    // 2. 🆕 先恢复保存的容量
+    //    如果存档中有容量数据，直接使用；否则通过 CapacityManager 重新计算
+    if (gameData.goldCapacity > 0 || gameData.elixirCapacity > 0)
+    {
+        // 使用保存的容量数据
+        resMgr.setResourceCapacity(ResourceType::kGold, gameData.goldCapacity);
+        resMgr.setResourceCapacity(ResourceType::kElixir, gameData.elixirCapacity);
+        
+        CCLOG("📂 从存档恢复容量: 金币=%d, 圣水=%d", 
+              gameData.goldCapacity, gameData.elixirCapacity);
+    }
+    else
+    {
+        // 旧存档没有容量数据，通过建筑重新计算
+        BuildingCapacityManager::getInstance().recalculateCapacity();
+        
+        CCLOG("📂 旧存档：通过建筑重新计算容量");
+    }
 
-    // 4. 🔴 关键修复：最后才加载玩家的资源数量。
-    //    由于容量现在是正确的（例如 50000），加载 3000 金币就不会被截断。
-
+    // 3. 最后加载资源数量（此时容量已正确设置）
     resMgr.setResourceCount(ResourceType::kGold, gameData.gold);
     resMgr.setResourceCount(ResourceType::kElixir, gameData.elixir);
-    // ...
+    resMgr.setResourceCount(ResourceType::kGem, gameData.gems);
 
-    CCLOG("📂 Loaded account state: Capacity Updated, Resources Applied.");
+    CCLOG("📂 Loaded account state: Gold=%d/%d, Elixir=%d/%d, Buildings=%zu",
+          gameData.gold, resMgr.getResourceCapacity(ResourceType::kGold),
+          gameData.elixir, resMgr.getResourceCapacity(ResourceType::kElixir),
+          gameData.buildings.size());
 }
 
 bool BuildingManager::loadPlayerBase(const std::string& userId)

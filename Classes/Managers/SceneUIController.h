@@ -33,6 +33,7 @@ public:
     
     using ButtonCallback = std::function<void()>;
     using BuildingCallback = std::function<void(const BuildingData&)>;
+    using MapChangedCallback = std::function<void(const std::string&)>;
     
     void setOnShopClicked(const ButtonCallback& callback) { _onShopClicked = callback; }
     void setOnAttackClicked(const ButtonCallback& callback) { _onAttackClicked = callback; }
@@ -42,6 +43,7 @@ public:
     void setOnCancelBuilding(const ButtonCallback& callback) { _onCancelBuilding = callback; }
     void setOnAccountSwitched(const ButtonCallback& callback) { _onAccountSwitched = callback; }
     void setOnLogout(const ButtonCallback& callback) { _onLogout = callback; }
+    void setOnMapChanged(const MapChangedCallback& callback) { _onMapChanged = callback; }
     
     // ==================== 建筑列表 ====================
     
@@ -111,6 +113,7 @@ private:
     ButtonCallback _onClanClicked;
     ButtonCallback _onAccountSwitched;
     ButtonCallback _onLogout;
+    MapChangedCallback _onMapChanged;
     BuildingCallback _onBuildingSelected;
     ButtonCallback _onConfirmBuilding;
     ButtonCallback _onCancelBuilding;

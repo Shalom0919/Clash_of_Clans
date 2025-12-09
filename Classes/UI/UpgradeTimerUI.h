@@ -1,19 +1,19 @@
-#pragma once
+ï»¿#pragma once
 #include "cocos2d.h"
 
 class BaseBuilding;
 /****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     WallBuilding.cpp
- * File Function: ½¨Öşµ¹¼ÆÊ±Àà
- * Author:        ÁõÏà³É
+ * File Function: å»ºç­‘å€’è®¡æ—¶ç±»
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/09
  * License:       MIT License
  ****************************************************************/
 /**
  * @class UpgradeTimerUI
- * @brief ½¨ÖşÉı¼¶µ¹¼ÆÊ±UI
- * ÏÔÊ¾£ºµ¹¼ÆÊ±ÎÄ±¾ + ÂÌÉ«½ø¶ÈÌõ£¨´Ó×óÏòÓÒÌî³ä»ÒÉ«±³¾°£©
+ * @brief å»ºç­‘å‡çº§å€’è®¡æ—¶UI
+ * æ˜¾ç¤ºï¼šå€’è®¡æ—¶æ–‡æœ¬ + ç»¿è‰²è¿›åº¦æ¡ï¼ˆä»å·¦å‘å³å¡«å……ç°è‰²èƒŒæ™¯ï¼‰
  */
 class UpgradeTimerUI : public cocos2d::Node
 {
@@ -24,11 +24,11 @@ public:
 
 private:
     BaseBuilding* _building = nullptr;
-    cocos2d::Sprite* _barBg = nullptr;   // »ÒÉ«±³¾°
-    cocos2d::Sprite* _barFill = nullptr; // ÂÌÉ«Ìî³ä
-    cocos2d::Label* _timeLabel = nullptr;// Ê£ÓàÊ±¼ä
+    cocos2d::Sprite* _barBg = nullptr;   // ç°è‰²èƒŒæ™¯
+    cocos2d::Sprite* _barFill = nullptr; // ç»¿è‰²å¡«å……
+    cocos2d::Label* _timeLabel = nullptr;// å‰©ä½™æ—¶é—´
 
-    // ¸¨Öú£º´´½¨´¿É«ÎÆÀí
+    // è¾…åŠ©ï¼šåˆ›å»ºçº¯è‰²çº¹ç†
     cocos2d::Sprite* createColorSprite(const cocos2d::Size& size, const cocos2d::Color3B& color);
     std::string formatTime(float seconds);
 };

@@ -306,3 +306,15 @@ void UpgradeManager::update(float dt)
         }
     }
 }
+
+void UpgradeManager::clearAllUpgradeTasks()
+{
+    CCLOG("🧹 UpgradeManager: 清理所有升级任务（共 %d 个），防止野指针", (int)_upgradeTasks.size());
+    _upgradeTasks.clear();
+    
+    // 通知UI更新工人数量
+    if (_onAvailableBuildersChanged)
+    {
+        _onAvailableBuildersChanged(getAvailableBuilders());
+    }
+}
