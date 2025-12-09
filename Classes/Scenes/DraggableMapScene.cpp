@@ -63,14 +63,7 @@ bool DraggableMapScene::init()
     setupNetworkCallbacks();
     
     scheduleUpdate();
-    // 在创建 HUDLayer 之后添加：
-    auto hudLayer = HUDLayer::create();
-    this->addChild(hudLayer, 100); // 假设这是在场景里
-
-    // 绑定回调：当 UpgradeManager 通知工人变化时，刷新 HUD
-    UpgradeManager::getInstance()->setOnAvailableBuilderChanged([hudLayer](int available) {
-        hudLayer->updateDisplay();
-        });
+    
     // 延迟加载游戏状态
     this->scheduleOnce([this](float dt) {
         loadGameState();
