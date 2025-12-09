@@ -38,10 +38,20 @@ bool DraggableMapScene::init()
         return false;
     }
     // 1. 获取单例
-    this->addChild(&BuildingCapacityManager::getInstance(), 0);
+    auto* capacityMgr = &BuildingCapacityManager::getInstance();
+    if (capacityMgr->getParent())
+    {
+        capacityMgr->removeFromParent();
+    }
+    this->addChild(capacityMgr, 0);
+
     ResourceCollectionManager* mgr = ResourceCollectionManager::getInstance();
 
     // 🔴 关键步骤：将单例 Node 添加到场景中（只需一次），这样它的触摸监听和 update 才会工作。
+    if (mgr->getParent())
+    {
+        mgr->removeFromParent();
+    }
     this->addChild(mgr, 0); // 较低 Z-order，确保不遮挡UI
     _visibleSize = Director::getInstance()->getVisibleSize();
     
@@ -164,6 +174,10 @@ void DraggableMapScene::setupCallbacks()
     
     _uiController->setOnLogout([this]() {
         onLogout();
+    });
+    
+    _uiController->setOnMapChanged([this](const std::string& newMap) {
+        onMapChanged(newMap);
     });
     
     // ==================== 建筑管理器回调 ====================
@@ -836,4 +850,20 @@ void DraggableMapScene::onLogout()
     #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
         exit(0);
     #endif
+}
+
+void DraggableMapScene::onMapChanged(const std::string& newMap)
+{
+    CCLOG("✅ Map changed to: %s, reloading scene...", newMap.c_str());
+    
+    // 保存当前状态
+    if (_buildingManager)
+    {
+        _buildingManager->saveCurrentState();
+        CCLOG("✅ Saved current state before map change");
+    }
+    
+    // 重新创建场景以应用新地图
+    auto newScene = DraggableMapScene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(0.5f, newScene));
 }

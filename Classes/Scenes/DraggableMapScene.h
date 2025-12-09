@@ -92,7 +92,8 @@ private:
     void onCancelBuilding();
     void onAccountSwitched();
     void onLogout();
-    
+    void onMapChanged(const std::string& newMap);
+
     // ==================== 建筑回调 ====================
     void onBuildingPlaced(BaseBuilding* building);
     void onBuildingClicked(BaseBuilding* building);

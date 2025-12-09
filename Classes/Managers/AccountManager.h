@@ -62,6 +62,10 @@ struct AccountGameData {
 
     int townHallLevel = 1;
 
+    // 🆕 添加资源容量字段
+    int goldCapacity = 3000;
+    int elixirCapacity = 3000;
+    
     std::vector<BuildingSerialData> buildings;
 
 
@@ -147,6 +151,12 @@ public:
     // Verify account password.
 
     bool verifyPassword(const std::string& userId, const std::string& password) const;
+
+
+
+    // Delete an account by userId. Returns true if successful.
+
+    bool deleteAccount(const std::string& userId);
 
 
 

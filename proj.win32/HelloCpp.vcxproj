@@ -819,6 +819,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\DraggableMapScene.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\HelloWorldScene.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingCapacityManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HUDLayer.h" />
@@ -828,6 +829,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MapController.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceCollectionManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\SceneUIController.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ShopLayer.h" />
@@ -835,7 +837,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\TownHallSystem.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\UpgradeManager.h" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\UpgradeTimerUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Models\Hero.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Models\Pathfinder.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap\GridMap.h" />
@@ -852,7 +853,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\WallBuilding.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\TrainingUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\unit.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\SettingsPanel.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\UpgradeTimerUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\BuildingUpgradeService.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\main.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\resource.h" />
@@ -863,6 +866,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\DraggableMapScene_New.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\HelloWorldScene.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingCapacityManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HUDLayer.cpp" />
@@ -872,6 +876,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MapController.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\NetworkManager.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceCollectionManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ResourceManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\SceneUIController.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ShopLayer.cpp" />
@@ -879,7 +884,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\StorageManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\TownHallSystem.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\UpgradeManager.cpp" />
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\UpgradeTimerUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Models\Hero.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\GridMap\GridMap.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\ArmyBuilding.cpp" />
@@ -894,7 +898,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\WallBuilding.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\TrainingUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\unit.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\SettingsPanel.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\UpgradeTimerUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\BuildingUpgradeService.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\main.cpp" />
     <ResourceCompile Include="C:\Users\Shalom\Documents\GitHub\coc\proj.win32\game.rc" />

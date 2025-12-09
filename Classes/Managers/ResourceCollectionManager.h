@@ -1,12 +1,12 @@
-/**
+ï»¿/**
  * @file ResourceCollectionManager.h
- * @brief ×ÊÔ´ÊÕ¼¯¹ÜÀíÆ÷£¨´¦Àí×ÊÔ´½¨ÖşµÄÊÕ¼¯½»»¥£©
+ * @brief èµ„æºæ”¶é›†ç®¡ç†å™¨ï¼ˆå¤„ç†èµ„æºå»ºç­‘çš„æ”¶é›†äº¤äº’ï¼‰
  */
  /****************************************************************
     * Project Name:  Clash_of_Clans
     * File Name:     WallBuilding.cpp
-    * File Function: ×ÊÔ´ÊÕ¼¯¹ÜÀíÆ÷Àà
-    * Author:        ÁõÏà³É
+    * File Function: èµ„æºæ”¶é›†ç®¡ç†å™¨ç±»
+    * Author:        åˆ˜ç›¸æˆ
     * Update Date:   2025/12/09
     * License:       MIT License
     ****************************************************************/
@@ -22,7 +22,7 @@ class ResourceCollectionUI;
 
 /**
  * @class ResourceCollectionManager
- * @brief ¹ÜÀí×ÊÔ´½¨ÖşµÄÊÕ¼¯½»»¥£¨µã»÷ÊÕ¼¯£©
+ * @brief ç®¡ç†èµ„æºå»ºç­‘çš„æ”¶é›†äº¤äº’ï¼ˆç‚¹å‡»æ”¶é›†ï¼‰
  */
 class ResourceCollectionManager : public cocos2d::Node
 {
@@ -31,22 +31,22 @@ public:
     static ResourceCollectionManager* getInstance();
     virtual bool init() override;
     
-    // ×¢²á×ÊÔ´½¨ÖşÒÔ½øĞĞÊÕ¼¯¹ÜÀí
+    // æ³¨å†Œèµ„æºå»ºç­‘ä»¥è¿›è¡Œæ”¶é›†ç®¡ç†
     void registerBuilding(ResourceBuilding* building);
     
-    // ´¦Àí´¥ÃşÊÂ¼ş£¨ÔÚ³¡¾°µÄ´¥Ãş»Øµ÷ÖĞµ÷ÓÃ£©
+    // å¤„ç†è§¦æ‘¸äº‹ä»¶ï¼ˆåœ¨åœºæ™¯çš„è§¦æ‘¸å›è°ƒä¸­è°ƒç”¨ï¼‰
     bool handleTouch(const cocos2d::Vec2& touchPos);
     
-    // Çå¿ÕËùÓĞ×¢²áµÄ½¨Öş
+    // æ¸…ç©ºæ‰€æœ‰æ³¨å†Œçš„å»ºç­‘
     void clear();
     
 private:
     std::vector<ResourceBuilding*> _trackedBuildings;
-    ResourceCollectionManager(); // Ë½ÓĞ»¯¹¹Ôìº¯Êı
-    static ResourceCollectionManager* _instance; // ¾²Ì¬µ¥ÀıÖ¸Õë
+    ResourceCollectionManager(); // ç§æœ‰åŒ–æ„é€ å‡½æ•°
+    static ResourceCollectionManager* _instance; // é™æ€å•ä¾‹æŒ‡é’ˆ
 
    
-    // »ñÈ¡½¨Öş¶ÔÓ¦µÄÊÕ¼¯UI
+    // è·å–å»ºç­‘å¯¹åº”çš„æ”¶é›†UI
     ResourceCollectionUI* getCollectionUI(ResourceBuilding* building);
 };
 

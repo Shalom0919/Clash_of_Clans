@@ -116,6 +116,11 @@ public:
      */
     int getAvailableBuilders() const;
     
+    /**
+     * @brief 清理所有升级任务（场景切换时调用，防止野指针）
+     */
+    void clearAllUpgradeTasks();
+    
     // ==================== 回调接口 ====================
     
     /**

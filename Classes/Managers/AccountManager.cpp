@@ -65,6 +65,10 @@ std::string AccountGameData::toJson() const {
     doc.AddMember("trophies", trophies, allocator);
     doc.AddMember("townHallLevel", townHallLevel, allocator);
     
+    // 🆕 序列化资源容量
+    doc.AddMember("goldCapacity", goldCapacity, allocator);
+    doc.AddMember("elixirCapacity", elixirCapacity, allocator);
+    
     // Serialize buildings
     rapidjson::Value buildingsArray(rapidjson::kArrayType);
     for (const auto& building : buildings) {
@@ -107,6 +111,14 @@ AccountGameData AccountGameData::fromJson(const std::string& jsonStr) {
     }
     if (doc.HasMember("townHallLevel") && doc["townHallLevel"].IsInt()) {
         data.townHallLevel = doc["townHallLevel"].GetInt();
+    }
+    
+    // 🆕 反序列化资源容量
+    if (doc.HasMember("goldCapacity") && doc["goldCapacity"].IsInt()) {
+        data.goldCapacity = doc["goldCapacity"].GetInt();
+    }
+    if (doc.HasMember("elixirCapacity") && doc["elixirCapacity"].IsInt()) {
+        data.elixirCapacity = doc["elixirCapacity"].GetInt();
     }
     
     // Deserialize buildings
@@ -217,6 +229,52 @@ void AccountManager::signOut()
 {
     _activeIndex = -1;
     save();
+}
+
+bool AccountManager::deleteAccount(const std::string& userId)
+{
+    // 查找要删除的账号
+    auto it = std::find_if(_accounts.begin(), _accounts.end(), 
+        [&userId](const AccountInfo& acc) { return acc.userId == userId; });
+    
+    if (it == _accounts.end())
+    {
+        CCLOG("❌ Account not found: %s", userId.c_str());
+        return false;
+    }
+    
+    // 检查是否是当前登录的账号
+    int indexToDelete = static_cast<int>(std::distance(_accounts.begin(), it));
+    bool isDeletingCurrentAccount = (indexToDelete == _activeIndex);
+    
+    // 删除游戏数据文件
+    std::string filePath = getGameDataFilePath(userId);
+    if (FileUtils::getInstance()->isFileExist(filePath))
+    {
+        FileUtils::getInstance()->removeFile(filePath);
+        CCLOG("✅ Deleted game data file: %s", filePath.c_str());
+    }
+    
+    // 从列表中移除账号
+    _accounts.erase(it);
+    
+    // 调整活动账号索引
+    if (isDeletingCurrentAccount)
+    {
+        // 如果删除的是当前账号，清除活动索引
+        _activeIndex = -1;
+    }
+    else if (_activeIndex > indexToDelete)
+    {
+        // 如果活动账号在删除账号之后，索引需要减1
+        _activeIndex--;
+    }
+    
+    // 保存更新后的账号列表
+    save();
+    
+    CCLOG("✅ Account deleted: %s", userId.c_str());
+    return true;
 }
 
 // ==================== Game State Management ====================

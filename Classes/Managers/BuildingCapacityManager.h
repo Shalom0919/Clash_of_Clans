@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 /****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     WallBuilding.cpp
- * File Function: ½¨ÖşÔö¼Ó×ÊÔ´ÈİÁ¿Àà
- * Author:        ÁõÏà³É
+ * File Function: å»ºç­‘å¢åŠ èµ„æºå®¹é‡ç±»
+ * Author:        åˆ˜ç›¸æˆ
  * Update Date:   2025/12/09
  * License:       MIT License
  ****************************************************************/
@@ -14,11 +14,11 @@
 
 /**
  * @class BuildingCapacityManager
- * @brief ½¨ÖşÈİÁ¿¹ÜÀíÆ÷£¨µ¥Àı£©
- * * Ö°Ôğ£º
- * - ¸ú×ÙËùÓĞ´æ´¢ĞÍ½¨Öş (ResourceBuilding::isStorage())
- * - ÊµÊ±¼ÆËãËùÓĞ´æ´¢½¨ÖşÌá¹©µÄ×ÜÈİÁ¿
- * - ¸üĞÂ ResourceManager ÖĞµÄÈİÁ¿ÉÏÏŞ
+ * @brief å»ºç­‘å®¹é‡ç®¡ç†å™¨ï¼ˆå•ä¾‹ï¼‰
+ * * èŒè´£ï¼š
+ * - è·Ÿè¸ªæ‰€æœ‰å­˜å‚¨å‹å»ºç­‘ (ResourceBuilding::isStorage())
+ * - å®æ—¶è®¡ç®—æ‰€æœ‰å­˜å‚¨å»ºç­‘æä¾›çš„æ€»å®¹é‡
+ * - æ›´æ–° ResourceManager ä¸­çš„å®¹é‡ä¸Šé™
  */
 class BuildingCapacityManager : public cocos2d::Node
 {
@@ -28,29 +28,29 @@ public:
     virtual bool init() override;
 
     /**
-     * @brief ×¢²á»òÈ¡Ïû×¢²á½¨Öş£¬²¢´¥·¢ÈİÁ¿ÖØĞÂ¼ÆËã
-     * @param building ´æ´¢ĞÍ½¨Öş
-     * @param added ÊÇ·ñÊÇÌí¼Ó£¨true=½¨Ôì/Éı¼¶£¬false=ÒÆ³ı£©
+     * @brief æ³¨å†Œæˆ–å–æ¶ˆæ³¨å†Œå»ºç­‘ï¼Œå¹¶è§¦å‘å®¹é‡é‡æ–°è®¡ç®—
+     * @param building å­˜å‚¨å‹å»ºç­‘
+     * @param added æ˜¯å¦æ˜¯æ·»åŠ ï¼ˆtrue=å»ºé€ /å‡çº§ï¼Œfalse=ç§»é™¤ï¼‰
      */
     void registerOrUpdateBuilding(ResourceBuilding* building, bool added);
 
     /**
-     * @brief ÖØĞÂ¼ÆËã²¢ÉèÖÃ ResourceManager µÄÈİÁ¿ÉÏÏŞ
+     * @brief é‡æ–°è®¡ç®—å¹¶è®¾ç½® ResourceManager çš„å®¹é‡ä¸Šé™
      */
     void recalculateCapacity();
 
     /**
-     * @brief »ñÈ¡Ä³×ÊÔ´ÀàĞÍµ±Ç°µÄ×ÜÈİÁ¿
-     * @param type ×ÊÔ´ÀàĞÍ
+     * @brief è·å–æŸèµ„æºç±»å‹å½“å‰çš„æ€»å®¹é‡
+     * @param type èµ„æºç±»å‹
      */
     int getTotalCapacity(ResourceType type) const;
 
 private:
     BuildingCapacityManager();
 
-    // ´æ´¢ÀàĞÍ -> ¹ØÁªµÄ×ÊÔ´½¨ÖşÁĞ±í
+    // å­˜å‚¨ç±»å‹ -> å…³è”çš„èµ„æºå»ºç­‘åˆ—è¡¨
     std::map<ResourceType, std::vector<ResourceBuilding*>> _storageBuildings;
 
-    // µ±Ç°¼ÆËã³öµÄÈİÁ¿×ÜºÍ
+    // å½“å‰è®¡ç®—å‡ºçš„å®¹é‡æ€»å’Œ
     std::map<ResourceType, int> _currentTotalCapacity;
 };

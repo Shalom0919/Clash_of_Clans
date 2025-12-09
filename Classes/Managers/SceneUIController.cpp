@@ -37,8 +37,8 @@ void SceneUIController::setupMainButtons()
     // Settings 按钮 (齿轮图标)
     _settingsButton = Button::create();
     _settingsButton->setTitleText("\xE2\x9A\x99");  // UTF-8编码的 ⚙
-    _settingsButton->setTitleFontSize(32);
-    _settingsButton->setContentSize(Size(60, 60));
+    _settingsButton->setTitleFontSize(46);
+    _settingsButton->setContentSize(Size(68, 68));
     _settingsButton->setPosition(Vec2(_visibleSize.width - 60, _visibleSize.height - 160));
     _settingsButton->addClickEventListener([this](Ref*) {
         onSettingsClicked();
@@ -83,6 +83,13 @@ void SceneUIController::onSettingsClicked()
         if (_onLogout)
         {
             _onLogout();
+        }
+    });
+    
+    settingsPanel->setOnMapChanged([this](const std::string& newMap) {
+        if (_onMapChanged)
+        {
+            _onMapChanged(newMap);
         }
     });
     

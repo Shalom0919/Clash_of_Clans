@@ -34,4 +34,6 @@ private:
     void showPasswordDialog(const std::string& userId);
 
     void showCreateAccountDialog();
+    
+    void showDeleteConfirmDialog(const std::string& userId, const std::string& username);
 };
