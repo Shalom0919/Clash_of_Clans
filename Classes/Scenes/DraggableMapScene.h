@@ -22,6 +22,7 @@ class InputController;
 class BuildingManager;
 class BaseBuilding;
 class HUDLayer;
+class ResourceCollectionManager;
 struct BuildingData;
 
 /**
@@ -53,6 +54,7 @@ private:
     InputController* _inputController = nullptr;
     BuildingManager* _buildingManager = nullptr;
     HUDLayer* _hudLayer = nullptr;
+    ResourceCollectionManager* _collectionMgr = nullptr;
     
     // ==================== 游戏状态 ====================
     bool _isAttackMode = false;
@@ -70,6 +72,7 @@ private:
     // ==================== 初始化 ====================
     void initializeManagers();
     void setupCallbacks();
+    void setupUpgradeManagerCallbacks();  // ✅ 新增
     void loadGameState();
     void initBuildingData();
     
@@ -99,6 +102,9 @@ private:
     void showUpgradeUI(BaseBuilding* building);
     void hideUpgradeUI();
     void cleanupUpgradeUI();
+
+    // ==================== 资源建筑注册 ====================
+    void registerResourceBuilding(class ResourceBuilding* building);
 
     // ==================== 多人游戏 ====================
     bool switchToAttackMode(const std::string& targetUserId);

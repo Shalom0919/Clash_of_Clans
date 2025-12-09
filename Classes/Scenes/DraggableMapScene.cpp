@@ -18,8 +18,11 @@
 #include "BuildingData.h"
 #include "BaseBuilding.h"
 #include "Buildings/ArmyBuilding.h"
+#include "Buildings/ResourceBuilding.h"
+#include "Managers/ResourceCollectionManager.h"
+#include "Managers/UpgradeManager.h"
 #include "Unit/unit.h"
-#include "Managers/UpgradeManager.h"  
+#include "BuildingCapacityManager.h"
 
 USING_NS_CC;
 
@@ -34,17 +37,30 @@ bool DraggableMapScene::init()
     {
         return false;
     }
+    // 1. 获取单例
+    this->addChild(&BuildingCapacityManager::getInstance(), 0);
+    ResourceCollectionManager* mgr = ResourceCollectionManager::getInstance();
 
+    // 🔴 关键步骤：将单例 Node 添加到场景中（只需一次），这样它的触摸监听和 update 才会工作。
+    this->addChild(mgr, 0); // 较低 Z-order，确保不遮挡UI
     _visibleSize = Director::getInstance()->getVisibleSize();
     
     initializeManagers();
     setupCallbacks();
+    setupUpgradeManagerCallbacks();  // ✅ 添加升级管理器回调设置
     
     connectToServer();
     setupNetworkCallbacks();
     
     scheduleUpdate();
-    
+    // 在创建 HUDLayer 之后添加：
+    auto hudLayer = HUDLayer::create();
+    this->addChild(hudLayer, 100); // 假设这是在场景里
+
+    // 绑定回调：当 UpgradeManager 通知工人变化时，刷新 HUD
+    UpgradeManager::getInstance()->setOnAvailableBuilderChanged([hudLayer](int available) {
+        hudLayer->updateDisplay();
+        });
     // 延迟加载游戏状态
     this->scheduleOnce([this](float dt) {
         loadGameState();
@@ -89,6 +105,9 @@ void DraggableMapScene::initializeManagers()
     // ==================== HUD ====================
     _hudLayer = HUDLayer::create();
     this->addChild(_hudLayer, 100);
+    
+    // ==================== ✅ 资源收集管理器 ====================
+    
 }
 
 void DraggableMapScene::setupCallbacks()
@@ -161,6 +180,21 @@ void DraggableMapScene::setupCallbacks()
     });
 }
 
+// ==================== ✅ 新增：升级管理器回调设置 ====================
+void DraggableMapScene::setupUpgradeManagerCallbacks()
+{
+    // ✅ 监听升级管理器的工人数量变化
+    auto* upgradeMgr = UpgradeManager::getInstance();
+    upgradeMgr->setOnAvailableBuilderChanged([this](int availableBuilders) {
+        // 当工人数量变化时，强制更新HUD显示
+        if (_hudLayer)
+        {
+            _hudLayer->updateDisplay();
+        }
+        CCLOG("👷 工人数量已更新：可用=%d", availableBuilders);
+    });
+}
+
 void DraggableMapScene::initBuildingData()
 {
     std::vector<BuildingData> buildingList;
@@ -194,6 +228,13 @@ void DraggableMapScene::loadGameState()
 bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
 {
     Vec2 touchPos = touch->getLocation();
+    
+    // 【优先级0】✅ 资源收集优先处理
+    if (_collectionMgr && _collectionMgr->handleTouch(touchPos))
+    {
+        CCLOG("✅ 资源收集：触摸已处理");
+        return true;
+    }
     
     // 【优先级1】升级UI
     if (_currentUpgradeUI && _currentUpgradeUI->isVisible())
@@ -299,6 +340,14 @@ void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
 
 void DraggableMapScene::onTouchEnded(Touch* touch, Event* event)
 {
+    cocos2d::Vec2 worldPos = touch->getLocation();
+
+    // 1. 检查是否在收集资源
+    if (ResourceCollectionManager::getInstance()->handleTouch(worldPos))
+    {
+        // 如果处理了收集事件，则停止进一步处理（不移动地图，不选择建筑）
+        return;
+    }
     Vec2 touchPos = touch->getLocation();
     
     // 【优先级1】建筑移动模式
@@ -477,6 +526,13 @@ void DraggableMapScene::onBuildingPlaced(BaseBuilding* building)
     
     CCLOG("Building placed: %s", building->getDisplayName().c_str());
     
+    // ✅ 检查是否为资源生产建筑，如果是则注册用于收集
+    auto resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
+    if (resourceBuilding && resourceBuilding->isProducer())
+    {
+        registerResourceBuilding(resourceBuilding);
+    }
+    
     // 检查是否为兵营建筑
     if (building->getBuildingType() == BuildingType::kArmy)
     {
@@ -582,6 +638,17 @@ void DraggableMapScene::cleanupUpgradeUI()
             _currentUpgradeUI->removeFromParent();
         }
         _currentUpgradeUI = nullptr;
+    }
+}
+
+// ==================== ✅ 资源建筑注册 ====================
+
+void DraggableMapScene::registerResourceBuilding(ResourceBuilding* building)
+{
+    if (_collectionMgr && building)
+    {
+        _collectionMgr->registerBuilding(building);
+        CCLOG("✅ 注册资源建筑收集：%s", building->getDisplayName().c_str());
     }
 }
 
