@@ -65,12 +65,27 @@ void ResourceCollectionManager::registerBuilding(ResourceBuilding* building)
     CCLOG("✅ 注册资源建筑收集：%s", building->getDisplayName().c_str());
 }
 
+// ✅ 新增：注销资源建筑
+void ResourceCollectionManager::unregisterBuilding(ResourceBuilding* building)
+{
+    if (!building)
+        return;
+    
+    auto it = std::find(_trackedBuildings.begin(), _trackedBuildings.end(), building);
+    if (it != _trackedBuildings.end())
+    {
+        _trackedBuildings.erase(it);
+        CCLOG("🗑️ 注销资源建筑收集：%s", building->getDisplayName().c_str());
+    }
+}
+
 bool ResourceCollectionManager::handleTouch(const cocos2d::Vec2& touchPos)
 {
     // 遍历所有注册的建筑，查看是否有可收集的资源被点击
     for (auto* building : _trackedBuildings)
     {
-        if (!building || !building->isVisible())
+        // ✅ 改进：添加更安全的检查
+        if (!building || !building->getParent() || !building->isVisible())
             continue;
         
         auto collectionUI = getCollectionUI(building);

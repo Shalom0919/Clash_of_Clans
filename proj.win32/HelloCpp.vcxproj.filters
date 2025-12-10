@@ -28,6 +28,9 @@
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
@@ -118,6 +121,12 @@
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\unit.cpp">
       <Filter>Source Files\Classes\Unit</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.cpp">
+      <Filter>Source Files\Classes\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.cpp">
+      <Filter>Source Files\Classes\UI</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.cpp">
       <Filter>Source Files\Classes\UI</Filter>
     </ClCompile>
@@ -160,6 +169,9 @@
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.h">
@@ -252,11 +264,20 @@
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\WallBuilding.h">
       <Filter>Source Files\Classes\Buildings</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\CombatStats.h">
+      <Filter>Source Files\Classes\Unit</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\TrainingUI.h">
       <Filter>Source Files\Classes\Unit</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\unit.h">
       <Filter>Source Files\Classes\Unit</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.h">
+      <Filter>Source Files\Classes\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.h">
+      <Filter>Source Files\Classes\UI</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.h">
       <Filter>Source Files\Classes\UI</Filter>
@@ -922,6 +943,9 @@
       <Filter>Resources\icon</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\Gold.png">
+      <Filter>Resources\icon</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\crystal.png">
       <Filter>Resources\icon</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\loading_picture.png">

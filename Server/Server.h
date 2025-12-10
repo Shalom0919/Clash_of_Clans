@@ -30,6 +30,10 @@ enum PacketType
 
     PACKET_ATTACK_DATA = 4,
 
+    // 🆕 用户列表
+    REQ_USER_LIST = 5,      // 请求可攻击的用户列表
+    RESP_USER_LIST = 6,     // 返回用户列表
+
     // 玩家对战
 
     PACKET_FIND_MATCH = 10,  // 请求匹配对手
@@ -298,6 +302,9 @@ private:
     AttackResult deserializeAttackResult(const std::string& data);
 
     SOCKET findSocketByPlayerId(const std::string& playerId);
+    
+    // 🆕 获取用户列表
+    std::string getUserListJson(const std::string& requesterId);
 };
 
 #endif

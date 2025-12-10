@@ -107,6 +107,9 @@ private:
     // ==================== 资源建筑注册 ====================
     void registerResourceBuilding(class ResourceBuilding* building);
 
+    // ==================== 场景生命周期 ====================
+    void onSceneResume();  // ✅ 新增：场景恢复时的清理
+    
     // ==================== 多人游戏 ====================
     bool switchToAttackMode(const std::string& targetUserId);
     void returnToOwnBase();
@@ -114,6 +117,12 @@ private:
     // ==================== 网络 ====================
     void connectToServer();
     void setupNetworkCallbacks();
+    
+    // ==================== 🆕 PVP异步掠夺 ====================
+    void showLocalPlayerList();
+    void showPlayerListFromServerData(const std::string& serverData);
+    void startAttack(const std::string& targetUserId);
+    std::string getCurrentTimestamp();
 };
 
 #endif // __DRAGGABLE_MAP_SCENE_H__

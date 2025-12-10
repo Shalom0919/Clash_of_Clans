@@ -256,6 +256,13 @@ void SocketClient::handlePacket(uint32_t type, const std::string& data)
             _onMapReceived(data);
         }
         break;
+    // 🆕 处理用户列表响应
+    case RESP_USER_LIST:
+        if (_onUserListReceived)
+        {
+            _onUserListReceived(data);
+        }
+        break;
     case PACKET_MATCH_FOUND:
         if (_onMatchFound)
         {
@@ -368,6 +375,11 @@ void SocketClient::queryMap(const std::string& targetId)
 {
     sendPacket(PACKET_QUERY_MAP, targetId);
 }
+void SocketClient::requestUserList()
+{
+    sendPacket(REQ_USER_LIST, "");
+    cocos2d::log("[SocketClient] 请求用户列表");
+}
 // ==================== 玩家对战 ====================
 void SocketClient::findMatch()
 {
@@ -476,6 +488,11 @@ void SocketClient::setOnClanWarStatus(std::function<void(const std::string&, int
 void SocketClient::setOnMapReceived(std::function<void(const std::string&)> callback)
 {
     _onMapReceived = callback;
+}
+// 🆕 设置用户列表回调
+void SocketClient::setOnUserListReceived(std::function<void(const std::string&)> callback)
+{
+    _onUserListReceived = callback;
 }
 void SocketClient::setOnDisconnected(std::function<void()> callback)
 {

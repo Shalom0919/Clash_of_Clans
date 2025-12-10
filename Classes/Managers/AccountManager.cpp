@@ -356,18 +356,26 @@ bool AccountManager::loadGameStateFromFile(const std::string& userId) {
 }
 
 AccountGameData AccountManager::getPlayerGameData(const std::string& userId) const {
-    // First check if user is in local accounts
-    for (const auto& account : _accounts) {
-        if (account.userId == userId) {
-            return account.gameData;
+    // 1. If it's the current active account, return the in-memory data (most up-to-date)
+    if (_activeIndex >= 0 && _activeIndex < (int)_accounts.size()) {
+        if (_accounts[_activeIndex].userId == userId) {
+            return _accounts[_activeIndex].gameData;
         }
     }
-    
-    // Try to load from file
+
+    // 2. For any other account, load from file directly
+    // Because inactive accounts in _accounts list don't have their gameData loaded (it's empty by default)
     std::string filePath = getGameDataFilePath(userId);
     if (FileUtils::getInstance()->isFileExist(filePath)) {
         std::string jsonData = FileUtils::getInstance()->getStringFromFile(filePath);
         return AccountGameData::fromJson(jsonData);
+    }
+    
+    // 3. Fallback: check if user is in local accounts (might return empty data)
+    for (const auto& account : _accounts) {
+        if (account.userId == userId) {
+            return account.gameData;
+        }
     }
     
     CCLOG("⚠️ Player game data not found for userId: %s", userId.c_str());

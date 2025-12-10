@@ -32,6 +32,9 @@ enum PacketType
     PACKET_UPLOAD_MAP = 2,
     PACKET_QUERY_MAP = 3,
     PACKET_ATTACK_DATA = 4,
+    // 🆕 用户列表
+    REQ_USER_LIST = 5,      // 请求可攻击的用户列表
+    RESP_USER_LIST = 6,     // 返回用户列表
     // 玩家对战
     PACKET_FIND_MATCH = 10,
     PACKET_MATCH_FOUND = 11,
@@ -107,6 +110,8 @@ public:
     void login(const std::string& playerId, const std::string& playerName, int trophies);
     void uploadMap(const std::string& mapData);
     void queryMap(const std::string& targetId);
+    // 🆕 请求用户列表
+    void requestUserList();
     // 玩家对战
     void findMatch();
     void cancelMatch();
@@ -129,6 +134,8 @@ public:
     void setOnMatchCancelled(std::function<void()> callback);
     void setOnAttackStart(std::function<void(const std::string&)> callback); // 收到对手地图
     void setOnAttackResult(std::function<void(const AttackResult&)> callback);
+    // 🆕 用户列表回调
+    void setOnUserListReceived(std::function<void(const std::string&)> callback);
     void setOnClanCreated(std::function<void(bool, const std::string&)> callback);
     void setOnClanJoined(std::function<void(bool)> callback);
     void setOnClanLeft(std::function<void(bool)> callback);
@@ -169,6 +176,8 @@ private:
     std::function<void(const std::string&, int, int)> _onClanWarStatus;
     std::function<void(const std::string&)> _onMapReceived;
     std::function<void()> _onDisconnected;
+    // 🆕 用户列表回调
+    std::function<void(const std::string&)> _onUserListReceived;
     // 网络函数
     bool sendPacket(uint32_t type, const std::string& data);
     bool recvPacket(uint32_t& outType, std::string& outData);
