@@ -80,6 +80,11 @@ public:
      */
     void showDefenseLogUI();
     
+    /**
+     * @brief 🆕 显示攻击详情弹窗
+     */
+    static void showAttackDetailPopup(const cocos2d::Size& visibleSize, cocos2d::Scene* scene, const DefenseLog& log);
+    
 private:
     DefenseLogSystem() = default;
     ~DefenseLogSystem() = default;

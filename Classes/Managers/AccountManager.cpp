@@ -4,6 +4,7 @@
 
 #include "StorageManager.h"
 #include "ResourceManager.h"
+#include "DefenseLogSystem.h"
 #include "cocos2d.h"
 
 using namespace cocos2d;
@@ -147,6 +148,10 @@ bool AccountManager::initialize()
     // Load game data for current account
     if (_activeIndex >= 0 && _activeIndex < (int)_accounts.size()) {
         loadGameStateFromFile(_accounts[_activeIndex].userId);
+        
+        // 🆕 初始化时也加载当前账号的防守日志
+        DefenseLogSystem::getInstance().load();
+        CCLOG("📂 Loaded defense logs during initialization");
     }
     
     return _activeIndex >= 0 && _activeIndex < (int)_accounts.size();
@@ -163,6 +168,13 @@ const AccountInfo* AccountManager::getCurrentAccount() const
 
 bool AccountManager::switchAccount(const std::string& userId)
 {
+    // 🆕 切换账号前，保存当前账号的防守日志
+    if (_activeIndex >= 0 && _activeIndex < (int)_accounts.size())
+    {
+        DefenseLogSystem::getInstance().save();
+        CCLOG("💾 Saved defense logs for account: %s", _accounts[_activeIndex].userId.c_str());
+    }
+    
     for (size_t i = 0; i < _accounts.size(); ++i)
     {
         if (_accounts[i].userId == userId)
@@ -172,6 +184,33 @@ bool AccountManager::switchAccount(const std::string& userId)
             
             // Load game state for new account
             loadGameStateFromFile(userId);
+            
+            // 🆕 切换账号后，加载新账号的防守日志
+            DefenseLogSystem::getInstance().load();
+            CCLOG("📂 Loaded defense logs for account: %s", userId.c_str());
+            
+            // 🆕 如果有未查看的日志，在主线程中延迟显示
+            if (DefenseLogSystem::getInstance().hasUnviewedLogs())
+            {
+                auto director = Director::getInstance();
+                if (director && director->getRunningScene())
+                {
+                    // 延迟1秒显示防守日志UI，确保场景完全加载
+                    director->getScheduler()->schedule(
+                        [](float dt) {
+                            DefenseLogSystem::getInstance().showDefenseLogUI();
+                        },
+                        director->getRunningScene(),
+                        1.0f,  // 延迟1秒
+                        0,     // 不重复
+                        0.0f,  // 立即开始延迟计时
+                        false,
+                        "show_defense_log_after_switch"
+                    );
+                    
+                    CCLOG("🔔 Scheduled defense log UI to show after account switch");
+                }
+            }
             
             return true;
         }

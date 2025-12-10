@@ -6,6 +6,8 @@
 #include "ResourceManager.h"
 #include "Buildings/BaseBuilding.h"
 #include "Buildings/DefenseBuilding.h"
+#include "Managers/DefenseLogSystem.h"  // 🔴 添加防守日志系统头文件
+#include <ctime>  // 🔴 添加time头文件
 
 USING_NS_CC;
 using namespace ui;
@@ -19,8 +21,14 @@ Scene* BattleScene::createScene()
 
 BattleScene* BattleScene::createWithEnemyData(const AccountGameData& enemyData)
 {
+    // Keep for backward compatibility if needed, or redirect
+    return createWithEnemyData(enemyData, "Enemy");
+}
+
+BattleScene* BattleScene::createWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId)
+{
     BattleScene* scene = new (std::nothrow) BattleScene();
-    if (scene && scene->initWithEnemyData(enemyData))
+    if (scene && scene->initWithEnemyData(enemyData, enemyUserId))
     {
         scene->autorelease();
         return scene;
@@ -52,6 +60,11 @@ bool BattleScene::init()
 
 bool BattleScene::initWithEnemyData(const AccountGameData& enemyData)
 {
+    return initWithEnemyData(enemyData, "Enemy");
+}
+
+bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId)
+{
     if (!Scene::init())
     {
         return false;
@@ -59,7 +72,7 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData)
 
     _visibleSize = Director::getInstance()->getVisibleSize();
     _enemyGameData = enemyData;
-    _enemyUserId = "Enemy";  // 从 enemyData 中提取（需要扩展结构）
+    _enemyUserId = enemyUserId;
     _enemyTownHallLevel = enemyData.townHallLevel;
 
     setupMap();
@@ -652,9 +665,9 @@ void BattleScene::setupTouchListeners()
         
         if (_mapSprite)
         {
-            float zoomFactor = scrollY > 0 ? 1.1f : 0.9f;
+            float zoomFactor = scrollY < 0 ? 1.1f : 0.9f;
             float newScale = _mapSprite->getScale() * zoomFactor;
-            newScale = std::max(0.5f, std::min(newScale, 3.0f)); // 限制缩放范围
+            newScale = std::max(0.7f, std::min(newScale, 2.0f)); // 限制缩放范围
             _mapSprite->setScale(newScale);
         }
     };
@@ -681,27 +694,63 @@ void BattleScene::returnToMainScene()
 
 void BattleScene::uploadBattleResult()
 {
-    // TODO: 上传战斗结果到服务器（可选）
-    // 包括：
-    // - 攻击者和防守者ID
-    // - 星数、掠夺资源、奖杯变化
-    // - 战斗回放数据（可选）
+    // 🔴 修复：实际提交战斗结果
+    auto& accMgr = AccountManager::getInstance();
+    const auto* currentAccount = accMgr.getCurrentAccount();
+    if (!currentAccount)
+    {
+        CCLOG("❌ No current account, cannot upload battle result");
+        return;
+    }
 
-    CCLOG("📤 Uploading battle result to server (not implemented)");
+    // 创建防守日志并添加到被攻击者的日志中
+    DefenseLog defenseLog;
+    defenseLog.attackerId = currentAccount->userId;
+    defenseLog.attackerName = currentAccount->username;
+    defenseLog.starsLost = _starsEarned;
+    defenseLog.goldLost = _goldLooted;
+    defenseLog.elixirLost = _elixirLooted;
+    defenseLog.trophyChange = -(_starsEarned * 10 - (3 - _starsEarned) * 3); // 被攻击者的奖杯变化是负值
+    defenseLog.timestamp = getCurrentTimestamp();
+    defenseLog.isViewed = false;
+
+    // 🔴 关键修复：直接将防守日志添加到被攻击者账号的日志系统
+    // 切换到被攻击者帳號 -> 添加日志 -> 切换回来
+    std::string attackerUserId = currentAccount->userId;
     
-    /* 示例代码（需要服务器支持）:
-    auto& client = SocketClient::getInstance();
-    
-    json result;
-    result["attackerId"] = AccountManager::getInstance().getCurrentAccount()->userId;
-    result["defenderId"] = _enemyUserId;
-    result["starsEarned"] = _starsEarned;
-    result["goldLooted"] = _goldLooted;
-    result["elixirLooted"] = _elixirLooted;
-    result["trophyChange"] = _starsEarned * 10 - (3 - _starsEarned) * 3;
-    
-    client.uploadBattleResult(result.dump());
-    */
+    if (accMgr.switchAccount(_enemyUserId))
+    {
+        DefenseLogSystem::getInstance().load(); // 加载被攻击者的日志
+        DefenseLogSystem::getInstance().addDefenseLog(defenseLog);
+        CCLOG("🛡️ Defense log added to defender %s: attacked by %s, stars=%d, gold=%d, elixir=%d",
+              _enemyUserId.c_str(), attackerUserId.c_str(), 
+              _starsEarned, _goldLooted, _elixirLooted);
+        
+        // 切换回攻击者账号
+        accMgr.switchAccount(attackerUserId);
+        DefenseLogSystem::getInstance().load(); // 重新加载攻击者的日志
+    }
+    else
+    {
+        CCLOG("❌ Failed to switch to defender account %s to add defense log", _enemyUserId.c_str());
+    }
+
+    CCLOG("📤 Battle result recorded: Stars=%d, Gold=%d, Elixir=%d",
+          _starsEarned, _goldLooted, _elixirLooted);
+}
+
+std::string BattleScene::getCurrentTimestamp()
+{
+    time_t now = time(nullptr);
+    struct tm tmv;
+#ifdef _WIN32
+    localtime_s(&tmv, &now);
+#else
+    localtime_r(&now, &tmv);
+#endif
+    char buf[64];
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tmv);
+    return std::string(buf);
 }
 
 // ==================== ⭐ 新增：士兵 AI 更新逻辑 ====================
