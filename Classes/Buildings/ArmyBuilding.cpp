@@ -25,7 +25,7 @@ float ArmyBuilding::getUpgradeTime() const
     // 升级时间（秒）
     static const float times[] = {
         0,      // Level 0 (无效)
-        0,      // Level 1 (即时)
+        30,      // Level 1 (即时)
         60,     // Level 2 (1分钟)
         300,    // Level 3 (5分钟)
         900,    // Level 4 (15分钟)
@@ -137,7 +137,26 @@ std::string ArmyBuilding::getDisplayName() const
 int ArmyBuilding::getUpgradeCost() const
 {
     // 升级费用随等级递增
-    static const int costs[] = {0, 1000, 2000, 4000, 8000, 15000, 30000, 60000, 120000, 200000};
+    static const int costs[] = {
+        0, 
+        1000, 
+        2000, 
+        4000, 
+        8000, 
+        15000, 
+        30000, 
+        60000, 
+        120000, 
+        200000,
+        280000,
+        360000,
+        440000,
+		520000,
+        600000,
+        700000,
+        800000,
+		900000
+    };
     int idx = std::min(_level, getMaxLevel());
     return costs[idx];
 }
