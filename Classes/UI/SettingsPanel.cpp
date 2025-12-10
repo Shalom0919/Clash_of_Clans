@@ -184,25 +184,29 @@ void SettingsPanel::onLogoutClicked()
 
 void SettingsPanel::onFullResourceClicked()
 {
+    CCLOG("📊 点击了资源全满按钮");
+    
+    // 调用 ResourceManager 的新方法
     auto& resMgr = ResourceManager::getInstance();
-    resMgr.addResource(ResourceType::kGold, 100000);
-    resMgr.addResource(ResourceType::kElixir, 100000);
-    resMgr.addResource(ResourceType::kGem, 1000);
+    resMgr.fillAllResourcesMax();
     
-    CCLOG("✅ Resources filled to maximum!");
-    
-    auto hint = Label::createWithSystemFont("资源已全满！", "Microsoft YaHei", 24);
+    // 显示提示信息
+    auto hint = Label::createWithSystemFont("✅ 资源已全满！", "Microsoft YaHei", 24);
     hint->setPosition(Vec2(300, 50));
     hint->setTextColor(Color4B::GREEN);
+    hint->setOpacity(0);
     _panel->addChild(hint);
     
+    // 播放提示动画
     hint->runAction(Sequence::create(
         FadeIn::create(0.2f),
-        DelayTime::create(1.5f),
+        DelayTime::create(2.0f),
         FadeOut::create(0.3f),
         RemoveSelf::create(),
         nullptr
     ));
+    
+    CCLOG("✅ 资源全满提示已显示");
 }
 
 void SettingsPanel::onMapSwitchClicked()
