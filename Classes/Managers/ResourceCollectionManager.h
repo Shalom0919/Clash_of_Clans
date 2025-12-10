@@ -34,6 +34,9 @@ public:
     // 注册资源建筑以进行收集管理
     void registerBuilding(ResourceBuilding* building);
     
+    // 注销资源建筑
+    void unregisterBuilding(ResourceBuilding* building);
+    
     // 处理触摸事件（在场景的触摸回调中调用）
     bool handleTouch(const cocos2d::Vec2& touchPos);
     

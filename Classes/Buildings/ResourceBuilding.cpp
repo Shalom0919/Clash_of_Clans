@@ -32,6 +32,15 @@ static const int UPGRADE_COSTS[] = {0,     150,   300,    700,    1400,   3000, 
                                     28000, 56000, 100000, 200000, 400000, 800000, 1500000, 3000000,
                                     6000000, 0};
 
+ResourceBuilding::~ResourceBuilding()
+{
+    // ✅ 析构时自动从 ResourceCollectionManager 注销
+    if (isProducer())
+    {
+        ResourceCollectionManager::getInstance()->unregisterBuilding(this);
+    }
+}
+
 ResourceBuilding* ResourceBuilding::create(ResourceBuildingType buildingType, int level)
 {
     ResourceBuilding* ret = new (std::nothrow) ResourceBuilding();

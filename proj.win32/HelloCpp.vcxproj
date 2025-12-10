@@ -821,6 +821,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingCapacityManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HUDLayer.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HeroManager.h" />
@@ -851,8 +852,11 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\StorageBuilding.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\TownHallBuilding.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\WallBuilding.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\CombatStats.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\TrainingUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\unit.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\SettingsPanel.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\UpgradeTimerUI.h" />
@@ -868,6 +872,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\AccountManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingCapacityManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HUDLayer.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HeroManager.cpp" />
@@ -898,6 +903,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\WallBuilding.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\TrainingUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Unit\unit.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\SettingsPanel.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\UpgradeTimerUI.cpp" />
@@ -1120,6 +1127,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\Elixir.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\Gem.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\Gold.png" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\crystal.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\loading_picture.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\loading_picture_christmas.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\loading_picture_festival.png" />

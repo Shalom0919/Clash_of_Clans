@@ -28,6 +28,10 @@ class ResourceBuilding : public BaseBuilding
 {
 public:
     static ResourceBuilding* create(ResourceBuildingType buildingType, int level = 1);
+    
+    // ✅ 添加析构函数声明
+    virtual ~ResourceBuilding();
+    
     // ==================== BaseBuilding 接口实现 ====================
     virtual BuildingType getBuildingType() const override { return BuildingType::kResource; }
     virtual std::string getDisplayName() const override;

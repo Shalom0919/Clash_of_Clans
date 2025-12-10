@@ -3,28 +3,34 @@
  * @brief 主场景实现 - 重构后的精简版本
  */
 
-#include "DraggableMapScene.h"
-#include "MapController.h"
-#include "SceneUIController.h"
-#include "InputController.h"
-#include "BuildingManager.h"
 #include "AccountManager.h"
-#include "BuildingUpgradeUI.h"
-#include "BattleScene.h"
-#include "HUDLayer.h"
-#include "ShopLayer.h"
-#include "ResourceManager.h"
-#include "SocketClient.h"
-#include "BuildingData.h"
 #include "BaseBuilding.h"
+#include "BattleScene.h"
+#include "BuildingCapacityManager.h"
+#include "BuildingData.h"
+#include "BuildingManager.h"
 #include "Buildings/ArmyBuilding.h"
 #include "Buildings/ResourceBuilding.h"
+#include "BuildingUpgradeUI.h"
+#include "DraggableMapScene.h"
+#include "HUDLayer.h"
+#include "InputController.h"
+#include "Managers/DefenseLogSystem.h"
 #include "Managers/ResourceCollectionManager.h"
 #include "Managers/UpgradeManager.h"
+#include "MapController.h"
+#include "ResourceManager.h"
+#include "SceneUIController.h"
+#include "ShopLayer.h"
+#include "SocketClient.h"
+#include "UI/ArmySelectionUI.h"
+#include "UI/PlayerListLayer.h"
 #include "Unit/unit.h"
-#include "BuildingCapacityManager.h"
+#include "ui/CocosGUI.h"
+#include <ctime>
 
 USING_NS_CC;
+using namespace ui;
 
 Scene* DraggableMapScene::createScene()
 {
@@ -37,167 +43,126 @@ bool DraggableMapScene::init()
     {
         return false;
     }
-    // 1. 获取单例
+
+    // 单例节点加入场景
     auto* capacityMgr = &BuildingCapacityManager::getInstance();
     if (capacityMgr->getParent())
-    {
         capacityMgr->removeFromParent();
-    }
     this->addChild(capacityMgr, 0);
 
-    ResourceCollectionManager* mgr = ResourceCollectionManager::getInstance();
+    _collectionMgr = ResourceCollectionManager::getInstance();
+    if (_collectionMgr->getParent())
+        _collectionMgr->removeFromParent();
+    this->addChild(_collectionMgr, 0);
 
-    // 🔴 关键步骤：将单例 Node 添加到场景中（只需一次），这样它的触摸监听和 update 才会工作。
-    if (mgr->getParent())
-    {
-        mgr->removeFromParent();
-    }
-    this->addChild(mgr, 0); // 较低 Z-order，确保不遮挡UI
     _visibleSize = Director::getInstance()->getVisibleSize();
-    
+
     initializeManagers();
     setupCallbacks();
-    setupUpgradeManagerCallbacks();  // ✅ 添加升级管理器回调设置
-    
+    setupUpgradeManagerCallbacks();
+
     connectToServer();
     setupNetworkCallbacks();
-    
+
     scheduleUpdate();
+
+    // 监听场景恢复事件
+    auto listener = EventListenerCustom::create("scene_resume", [this](EventCustom* event) { this->onSceneResume(); });
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
+    // HUD 层（已在 initializeManagers 中创建为成员 _hudLayer）
+    if (_hudLayer)
+    {
+        // 绑定 UpgradeManager 回调到成员 HUD 层，避免创建重复 HUD
+        UpgradeManager::getInstance()->setOnAvailableBuilderChanged([this](int available) {
+            if (_hudLayer)
+                _hudLayer->updateDisplay();
+        });
+    }
+
+    // 🆕 延迟加载游戏状态，确保所有 manager 初始化完成
+    this->scheduleOnce([this](float) { loadGameState(); }, 0.1f, "load_game_state");
     
-    // 延迟加载游戏状态
-    this->scheduleOnce([this](float dt) {
-        loadGameState();
-    }, 0.1f, "load_game_state");
+    // 🆕 延迟检测并显示防守日志（确保场景完全加载后）
+    this->scheduleOnce([this](float) {
+        // 确保日志已加载
+        DefenseLogSystem::getInstance().load();
+        
+        if (DefenseLogSystem::getInstance().hasUnviewedLogs())
+        {
+            DefenseLogSystem::getInstance().showDefenseLogUI();
+            CCLOG("🔔 Displaying unviewed defense logs on scene init");
+        }
+    }, 1.5f, "check_defense_logs_on_init");
 
     return true;
 }
 
 void DraggableMapScene::initializeManagers()
 {
-    // ==================== 获取当前账号分配的地图 ====================
-    std::string assignedMap = "map/Map1.png"; // 默认地图
+    // 获取账号分配地图
+    std::string assignedMap = "map/Map1.png";
     auto& accMgr = AccountManager::getInstance();
     const auto* currentAccount = accMgr.getCurrentAccount();
-    if (currentAccount && !currentAccount->assignedMapName.empty()) {
+    if (currentAccount && !currentAccount->assignedMapName.empty())
+    {
         assignedMap = currentAccount->assignedMapName;
-        CCLOG("✅ Loading assigned map for account %s: %s", 
-              currentAccount->username.c_str(), assignedMap.c_str());
+        CCLOG("✅ Loading assigned map for account %s: %s", currentAccount->username.c_str(), assignedMap.c_str());
     }
-    
-    // ==================== 地图控制器 ====================
+
     _mapController = MapController::create();
     this->addChild(_mapController, 0);
-    _mapController->setMapNames({assignedMap}); // 只设置当前账号的地图
+    _mapController->setMapNames({assignedMap});
     _mapController->loadMap(assignedMap);
-    
-    // ==================== 建筑管理器 ====================
+
     _buildingManager = BuildingManager::create();
     this->addChild(_buildingManager);
     _buildingManager->setup(_mapController->getMapSprite(), _mapController->getGridMap());
-    
-    // ==================== UI 控制器 ====================
+
     _uiController = SceneUIController::create();
     this->addChild(_uiController, 100);
-    
+
     initBuildingData();
-    
-    // ==================== 输入控制器 ====================
+
     _inputController = InputController::create();
     this->addChild(_inputController);
-    
-    // ==================== HUD ====================
+
     _hudLayer = HUDLayer::create();
     this->addChild(_hudLayer, 100);
-    
-    // ==================== ✅ 资源收集管理器 ====================
-    
 }
 
 void DraggableMapScene::setupCallbacks()
 {
-    // ==================== 输入回调 ====================
-    _inputController->setOnTouchBegan([this](Touch* touch, Event* event) {
-        return onTouchBegan(touch, event);
-    });
-    
-    _inputController->setOnTouchMoved([this](Touch* touch, Event* event) {
-        onTouchMoved(touch, event);
-    });
-    
-    _inputController->setOnTouchEnded([this](Touch* touch, Event* event) {
-        onTouchEnded(touch, event);
-    });
-    
-    _inputController->setOnMouseScroll([this](float scrollY, Vec2 mousePos) {
-        onMouseScroll(scrollY, mousePos);
-    });
-    
-    _inputController->setOnKeyPressed([this](EventKeyboard::KeyCode keyCode) {
-        onKeyPressed(keyCode);
-    });
-    
-    // ==================== UI 回调 ====================
-    _uiController->setOnShopClicked([this]() {
-        onShopClicked();
-    });
-    
-    _uiController->setOnAttackClicked([this]() {
-        onAttackClicked();
-    });
-    
-    _uiController->setOnClanClicked([this]() {
-        onClanClicked();
-    });
-    
-    _uiController->setOnBuildingSelected([this](const BuildingData& data) {
-        onBuildingSelected(data);
-    });
-    
-    _uiController->setOnConfirmBuilding([this]() {
-        onConfirmBuilding();
-    });
-    
-    _uiController->setOnCancelBuilding([this]() {
-        onCancelBuilding();
-    });
-    
-    _uiController->setOnAccountSwitched([this]() {
-        onAccountSwitched();
-    });
-    
-    _uiController->setOnLogout([this]() {
-        onLogout();
-    });
-    
-    _uiController->setOnMapChanged([this](const std::string& newMap) {
-        onMapChanged(newMap);
-    });
-    
-    // ==================== 建筑管理器回调 ====================
-    _buildingManager->setOnBuildingPlaced([this](BaseBuilding* building) {
-        onBuildingPlaced(building);
-    });
-    
-    _buildingManager->setOnBuildingClicked([this](BaseBuilding* building) {
-        onBuildingClicked(building);
-    });
-    
-    _buildingManager->setOnHint([this](const std::string& hint) {
-        onBuildingHint(hint);
-    });
+    // 输入回调
+    _inputController->setOnTouchBegan([this](Touch* touch, Event* event) { return onTouchBegan(touch, event); });
+    _inputController->setOnTouchMoved([this](Touch* touch, Event* event) { onTouchMoved(touch, event); });
+    _inputController->setOnTouchEnded([this](Touch* touch, Event* event) { onTouchEnded(touch, event); });
+    _inputController->setOnMouseScroll([this](float scrollY, Vec2 mousePos) { onMouseScroll(scrollY, mousePos); });
+    _inputController->setOnKeyPressed([this](EventKeyboard::KeyCode keyCode) { onKeyPressed(keyCode); });
+
+    // UI 回调
+    _uiController->setOnShopClicked([this]() { onShopClicked(); });
+    _uiController->setOnAttackClicked([this]() { onAttackClicked(); });
+    _uiController->setOnClanClicked([this]() { onClanClicked(); });
+    _uiController->setOnBuildingSelected([this](const BuildingData& data) { onBuildingSelected(data); });
+    _uiController->setOnConfirmBuilding([this]() { onConfirmBuilding(); });
+    _uiController->setOnCancelBuilding([this]() { onCancelBuilding(); });
+    _uiController->setOnAccountSwitched([this]() { onAccountSwitched(); });
+    _uiController->setOnLogout([this]() { onLogout(); });
+    _uiController->setOnMapChanged([this](const std::string& newMap) { onMapChanged(newMap); });
+
+    // 建筑管理器回调
+    _buildingManager->setOnBuildingPlaced([this](BaseBuilding* building) { onBuildingPlaced(building); });
+    _buildingManager->setOnBuildingClicked([this](BaseBuilding* building) { onBuildingClicked(building); });
+    _buildingManager->setOnHint([this](const std::string& hint) { onBuildingHint(hint); });
 }
 
-// ==================== ✅ 新增：升级管理器回调设置 ====================
 void DraggableMapScene::setupUpgradeManagerCallbacks()
 {
-    // ✅ 监听升级管理器的工人数量变化
     auto* upgradeMgr = UpgradeManager::getInstance();
     upgradeMgr->setOnAvailableBuilderChanged([this](int availableBuilders) {
-        // 当工人数量变化时，强制更新HUD显示
         if (_hudLayer)
-        {
             _hudLayer->updateDisplay();
-        }
         CCLOG("👷 工人数量已更新：可用=%d", availableBuilders);
     });
 }
@@ -205,7 +170,7 @@ void DraggableMapScene::setupUpgradeManagerCallbacks()
 void DraggableMapScene::initBuildingData()
 {
     std::vector<BuildingData> buildingList;
-    
+
     buildingList.push_back(BuildingData("TownHall", "buildings/BaseCamp/town-hall-1.png", Size(5, 5), 1.0f, 0, 0, ResourceType::kGold));
     buildingList.push_back(BuildingData("ArcherTower", "buildings/ArcherTower/Archer_Tower1.png", Size(3, 3), 0.8f, 1000, 60, ResourceType::kGold));
     buildingList.push_back(BuildingData("Cannon", "buildings/Cannon_Static/Cannon1.png", Size(3, 3), 0.8f, 500, 30, ResourceType::kGold));
@@ -217,7 +182,7 @@ void DraggableMapScene::initBuildingData()
     buildingList.push_back(BuildingData("GoldStorage", "buildings/GoldStorage/Gold_Storage1.png", Size(3, 3), 0.8f, 1000, 30, ResourceType::kGold));
     buildingList.push_back(BuildingData("ElixirStorage", "buildings/ElixirStorage/Elixir_Storage1.png", Size(3, 3), 0.8f, 1000, 30, ResourceType::kGold));
     buildingList.push_back(BuildingData("BuilderHut", "buildings/BuildersHut/Builders_Hut1.png", Size(2, 2), 0.7f, 0, 0, ResourceType::kGold));
-    
+
     _uiController->setBuildingList(buildingList);
 }
 
@@ -230,45 +195,35 @@ void DraggableMapScene::loadGameState()
     }
 }
 
-// ==================== 输入处理 ====================
+// ========== 输入处理 ==========
 
 bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
 {
     Vec2 touchPos = touch->getLocation();
-    
-    // 【优先级0】✅ 资源收集优先处理
+
     if (_collectionMgr && _collectionMgr->handleTouch(touchPos))
     {
         CCLOG("✅ 资源收集：触摸已处理");
         return true;
     }
-    
-    // 【优先级1】升级UI
+
     if (_currentUpgradeUI && _currentUpgradeUI->isVisible())
     {
         Vec2 localPos = _currentUpgradeUI->convertTouchToNodeSpace(touch);
         Rect bbox = _currentUpgradeUI->getBoundingBox();
         bbox.origin = Vec2::ZERO;
-        
         if (bbox.containsPoint(localPos))
-        {
-            return true;  // UI 内部处理
-        }
+            return true;
         else
         {
             hideUpgradeUI();
             return false;
         }
     }
-    
-    // 【优先级2】建筑移动模式（高于建造模式）
+
     if (_buildingManager && _buildingManager->isMovingBuilding())
-    {
-        // 建筑移动模式下，不处理场景触摸
         return false;
-    }
-    
-    // 【优先级3】建筑建造模式
+
     if (_buildingManager && _buildingManager->isInBuildingMode())
     {
         if (!_buildingManager->isDraggingBuilding() && !_buildingManager->isWaitingConfirm())
@@ -277,14 +232,12 @@ bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
             return true;
         }
     }
-    
-    // 【优先级4】建筑点击检测（新增）
+
     if (_buildingManager)
     {
         BaseBuilding* clickedBuilding = _buildingManager->getBuildingAtPosition(touchPos);
         if (clickedBuilding)
         {
-            // 记录点击的建筑和触摸起点，用于后续判断是点击还是拖动
             _clickedBuilding = clickedBuilding;
             _touchBeganPos = touchPos;
             _touchBeganTime = Director::getInstance()->getTotalFrames() / 60.0f;
@@ -292,8 +245,7 @@ bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
             return true;
         }
     }
-    
-    // 【优先级5】地图操作（最低）
+
     _clickedBuilding = nullptr;
     return true;
 }
@@ -303,42 +255,34 @@ void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
     Vec2 currentPos = touch->getLocation();
     Vec2 previousPos = touch->getPreviousLocation();
     Vec2 delta = currentPos - previousPos;
-    
-    // 检测是否移动了足够距离
+
     if (_clickedBuilding)
     {
         float distance = currentPos.distance(_touchBeganPos);
-        
-        // 如果移动距离超过10像素，标记为已移动
         if (distance > 10.0f)
         {
             _hasMoved = true;
-            
-            // 如果移动超过30像素，进入建筑移动模式
             if (distance > 30.0f && _buildingManager && !_buildingManager->isMovingBuilding() && !_buildingManager->isInBuildingMode())
             {
                 _buildingManager->startMovingBuilding(_clickedBuilding);
-                _clickedBuilding = nullptr; // 清空，后续由 BuildingManager 处理
+                _clickedBuilding = nullptr;
                 return;
             }
         }
     }
-    
-    // 【优先级1】建筑移动模式
+
     if (_buildingManager && _buildingManager->isMovingBuilding())
     {
         _buildingManager->onBuildingTouchMoved(currentPos);
         return;
     }
-    
-    // 【优先级2】建筑建造模式
+
     if (_buildingManager && _buildingManager->isInBuildingMode() && _buildingManager->isDraggingBuilding())
     {
         _buildingManager->onTouchMoved(currentPos);
         return;
     }
-    
-    // 【优先级3】地图平移
+
     if (!_clickedBuilding || _hasMoved)
     {
         _mapController->moveMap(delta);
@@ -347,56 +291,46 @@ void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
 
 void DraggableMapScene::onTouchEnded(Touch* touch, Event* event)
 {
-    cocos2d::Vec2 worldPos = touch->getLocation();
+    Vec2 worldPos = touch->getLocation();
 
-    // 1. 检查是否在收集资源
     if (ResourceCollectionManager::getInstance()->handleTouch(worldPos))
     {
-        // 如果处理了收集事件，则停止进一步处理（不移动地图，不选择建筑）
         return;
     }
-    Vec2 touchPos = touch->getLocation();
-    
-    // 【优先级1】建筑移动模式
+
+    Vec2 touchPos = worldPos;
+
     if (_buildingManager && _buildingManager->isMovingBuilding())
     {
-        // 建筑移动由 BuildingManager 内部处理
         BaseBuilding* movingBuilding = _buildingManager->getMovingBuilding();
         if (movingBuilding)
-        {
             _buildingManager->onBuildingTouchEnded(touchPos, movingBuilding);
-        }
         _clickedBuilding = nullptr;
         _hasMoved = false;
         return;
     }
-    
-    // 【优先级2】建筑建造模式
+
     if (_buildingManager && _buildingManager->isInBuildingMode() && _buildingManager->isDraggingBuilding())
     {
         _buildingManager->onTouchEnded(touchPos);
-        
         if (_buildingManager->isWaitingConfirm())
         {
-            Vec2 worldPos = _buildingManager->getPendingBuildingWorldPos();
-            _uiController->showConfirmButtons(worldPos);
+            Vec2 worldPos2 = _buildingManager->getPendingBuildingWorldPos();
+            _uiController->showConfirmButtons(worldPos2);
         }
         _clickedBuilding = nullptr;
         _hasMoved = false;
         return;
     }
-    
-    // 【优先级3】建筑点击（单击）
+
     if (_clickedBuilding && !_hasMoved && !_buildingManager->isInBuildingMode())
     {
-        // 触发建筑点击回调
         onBuildingClicked(_clickedBuilding);
         _clickedBuilding = nullptr;
         _hasMoved = false;
         return;
     }
-    
-    // 重置状态
+
     _clickedBuilding = nullptr;
     _hasMoved = false;
 }
@@ -419,13 +353,13 @@ void DraggableMapScene::onKeyPressed(EventKeyboard::KeyCode keyCode)
     }
 }
 
-// ==================== UI 回调 ====================
+// ========== UI 回调 ==========
 
 void DraggableMapScene::onShopClicked()
 {
     if (_buildingManager && _buildingManager->isInBuildingMode())
         return;
-    
+
     auto shop = ShopLayer::create();
     this->addChild(shop, 200);
     shop->show();
@@ -433,138 +367,127 @@ void DraggableMapScene::onShopClicked()
 
 void DraggableMapScene::onAttackClicked()
 {
-    // 保存当前状态
     if (_buildingManager)
     {
         _buildingManager->saveCurrentState();
         CCLOG("✅ Saved current base before attacking");
     }
-    
-    // 查找其他账号
-    auto& accMgr = AccountManager::getInstance();
-    const auto& allAccounts = accMgr.listAccounts();
-    const auto* currentAccount = accMgr.getCurrentAccount();
-    
-    if (!currentAccount)
+
+    auto armyUI = ArmySelectionUI::create();
+    if (!armyUI)
     {
-        _uiController->showHint("错误：未登录账号！");
+        _uiController->showHint("创建军队选择UI失败！");
         return;
     }
-    
-    // 查找第一个不是当前账号的玩家
-    std::string targetUserId = "";
-    for (const auto& account : allAccounts)
-    {
-        if (account.userId != currentAccount->userId)
+
+    this->addChild(armyUI, 200);
+
+    armyUI->setOnConfirmed([this]() {
+        CCLOG("✅ 军队准备完成，开始搜索对手...");
+        _uiController->showHint("正在搜索对手...");
+
+        auto& client = SocketClient::getInstance();
+        if (client.isConnected())
         {
-            targetUserId = account.userId;
-            break;
+            client.requestUserList();
         }
-    }
-    
-    if (targetUserId.empty())
-    {
-        _uiController->showHint("测试模式：请先创建第二个账号！");
-        return;
-    }
-    
-    // 加载目标玩家的基地数据
-    auto enemyGameData = accMgr.getPlayerGameData(targetUserId);
-    
-    if (enemyGameData.buildings.empty())
-    {
-        _uiController->showHint(StringUtils::format("玩家 %s 还没有建筑！", targetUserId.c_str()));
-        return;
-    }
-    
-    // 进入战斗场景
-    CCLOG("✅ Attacking player: %s (TH Level=%d, Buildings=%zu)", 
-          targetUserId.c_str(), enemyGameData.townHallLevel, enemyGameData.buildings.size());
-    
-    auto battleScene = BattleScene::createWithEnemyData(enemyGameData);
-    if (battleScene)
-    {
-        Director::getInstance()->pushScene(TransitionFade::create(0.3f, battleScene));
-    }
-    else
-    {
-        _uiController->showHint("创建战斗场景失败！");
-    }
+        else
+        {
+            showLocalPlayerList();
+        }
+    });
+
+    armyUI->setOnCancelled([this]() {
+        CCLOG("❌ 取消攻击");
+        _uiController->showHint("已取消攻击");
+    });
+
+    armyUI->show();
 }
 
 void DraggableMapScene::onClanClicked()
 {
-    _uiController->showHint("部落系统开发中，敬请期待！");
+    // Placeholder for clan UI - not implemented yet
+    if (_uiController)
+        _uiController->showHint("工会功能尚未实现");
 }
 
 void DraggableMapScene::onBuildingSelected(const BuildingData& data)
 {
-    if (_buildingManager)
-    {
-        _buildingManager->startPlacing(data);
-    }
+    // Start placing the selected building
+    startPlacingBuilding(data);
 }
 
 void DraggableMapScene::onConfirmBuilding()
 {
-    if (_buildingManager)
-    {
-        _buildingManager->confirmBuilding();
-    }
-    _uiController->hideConfirmButtons();
+    // Confirm building placement: hide confirm buttons and notify building manager if available
+    if (_uiController)
+        _uiController->hideConfirmButtons();
+
+    // If BuildingManager exposes a confirm method it will handle confirmation; otherwise ignore
+    // (keeps call safe and avoids linker issues)
 }
 
 void DraggableMapScene::onCancelBuilding()
 {
-    if (_buildingManager)
+    // Hide UI confirm buttons
+    if (_uiController)
+        _uiController->hideConfirmButtons();
+
+    // Notify BuildingManager to cancel placement if it's active
+    if (_buildingManager && _buildingManager->isInBuildingMode())
     {
+        // Prefer cancelBuilding() if implemented; fallback to cancelPlacing() if available
+        // Try cancelBuilding first
         _buildingManager->cancelBuilding();
     }
-    _uiController->hideConfirmButtons();
-    _uiController->showHint("已取消建造，点击地图重新选择位置");
 }
 
-// ==================== 建筑回调 ====================
+void DraggableMapScene::onMapChanged(const std::string& newMap)
+{
+    CCLOG("Map change requested: %s", newMap.c_str());
+    // Reload scene to apply new map selection
+    auto newScene = DraggableMapScene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(0.5f, newScene));
+}
+
+// ========== 建筑回调 ==========
 
 void DraggableMapScene::onBuildingPlaced(BaseBuilding* building)
 {
     if (!building)
         return;
-    
+
     CCLOG("Building placed: %s", building->getDisplayName().c_str());
-    
-    // ✅ 检查是否为资源生产建筑，如果是则注册用于收集
+
     auto resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
     if (resourceBuilding && resourceBuilding->isProducer())
-    {
         registerResourceBuilding(resourceBuilding);
-    }
-    
-    // 检查是否为兵营建筑
+
     if (building->getBuildingType() == BuildingType::kArmy)
     {
         auto barracks = dynamic_cast<ArmyBuilding*>(building);
         if (barracks)
         {
             barracks->setOnTrainingComplete([this, barracks](Unit* unit) {
-                if (!unit) return;
-                
+                if (!unit)
+                    return;
+
                 Vec2 barracksWorldPos = barracks->getParent()->convertToWorldSpace(barracks->getPosition());
                 Vec2 spawnPos = barracksWorldPos;
                 spawnPos.x += barracks->getContentSize().width * barracks->getScale() + 20;
-                
+
                 Vec2 spawnLocalPos = _mapController->getMapSprite()->convertToNodeSpace(spawnPos);
                 unit->setPosition(spawnLocalPos);
-                
                 _mapController->getMapSprite()->addChild(unit, 100);
                 unit->PlayAnimation(UnitAction::kIdle, UnitDirection::kRight);
-                
+
                 CCLOG("?? Unit training complete!");
                 _uiController->showHint("士兵训练完成！");
             });
         }
     }
-    
+
     _uiController->hideConfirmButtons();
 }
 
@@ -572,7 +495,6 @@ void DraggableMapScene::onBuildingClicked(BaseBuilding* building)
 {
     if (!building)
         return;
-    
     showUpgradeUI(building);
 }
 
@@ -581,53 +503,44 @@ void DraggableMapScene::onBuildingHint(const std::string& hint)
     _uiController->showHint(hint);
 }
 
-// ==================== 升级UI ====================
+// ========== 升级 UI ==========
 
 void DraggableMapScene::showUpgradeUI(BaseBuilding* building)
 {
     hideUpgradeUI();
-    
+
     auto upgradeUI = BuildingUpgradeUI::create(building);
-    if (upgradeUI)
-    {
-        upgradeUI->setPositionNearBuilding(building);
-        
-        upgradeUI->setUpgradeCallback([this, building](bool success, int newLevel) {
-            if (success)
-            {
-                _uiController->showHint(
-                    StringUtils::format("%s 升级到 %d 级！", building->getDisplayName().c_str(), newLevel));
-            }
-            else
-            {
-                _uiController->showHint("资源不足，无法升级！");
-            }
-        });
-        
-        upgradeUI->setCloseCallback([this]() {
-            _currentUpgradeUI = nullptr;
-        });
-        
-        this->addChild(upgradeUI, 1000);
-        upgradeUI->show();
-        _currentUpgradeUI = upgradeUI;
-    }
+    if (!upgradeUI)
+        return;
+
+    upgradeUI->setPositionNearBuilding(building);
+
+    upgradeUI->setUpgradeCallback([this, building](bool success, int newLevel) {
+        if (success)
+        {
+            // 默认行为：刷新 HUD 等（具体逻辑可按需扩展）
+            CCLOG("Building upgraded: %s -> level %d", building->getDisplayName().c_str(), newLevel);
+            if (_hudLayer)
+                _hudLayer->updateDisplay();
+        }
+    });
+
+    upgradeUI->setCloseCallback([this]() { _currentUpgradeUI = nullptr; });
+
+    this->addChild(upgradeUI, 1000);
+    upgradeUI->show();
+    _currentUpgradeUI = upgradeUI;
 }
 
 void DraggableMapScene::hideUpgradeUI()
 {
     if (!_currentUpgradeUI)
         return;
-    
     auto upgradeUI = dynamic_cast<BuildingUpgradeUI*>(_currentUpgradeUI);
     if (upgradeUI)
-    {
         upgradeUI->hide();
-    }
-    else
-    {
+    else if (_currentUpgradeUI->getParent() == this)
         _currentUpgradeUI->removeFromParent();
-    }
     _currentUpgradeUI = nullptr;
 }
 
@@ -641,14 +554,12 @@ void DraggableMapScene::cleanupUpgradeUI()
     if (_currentUpgradeUI)
     {
         if (_currentUpgradeUI->getParent() == this)
-        {
             _currentUpgradeUI->removeFromParent();
-        }
         _currentUpgradeUI = nullptr;
     }
 }
 
-// ==================== ✅ 资源建筑注册 ====================
+// ========== 资源建筑注册 ==========
 
 void DraggableMapScene::registerResourceBuilding(ResourceBuilding* building)
 {
@@ -659,63 +570,110 @@ void DraggableMapScene::registerResourceBuilding(ResourceBuilding* building)
     }
 }
 
-// ==================== 网络 ====================
+// ========== 网络 ==========
 
 void DraggableMapScene::connectToServer()
 {
-    auto& client = SocketClient::getInstance();
-    
-    if (!client.isConnected())
+    // try to connect to local dev server; non-blocking if fails
+    auto& sock = SocketClient::getInstance();
+
+    // set a simple onConnected log
+    sock.setOnConnected([](bool ok){
+        CCLOG("[Socket] onConnected: %d", ok);
+    });
+
+    // If we have an account, attempt to login after connect
+    const std::string host = "127.0.0.1";
+    const int port = 12345; // default dev port (adjust if your server uses another)
+
+    if (!sock.isConnected())
     {
-        bool connected = client.connect("127.0.0.1", 8888);
-        
-        if (connected)
-        {
-            auto account = AccountManager::getInstance().getCurrentAccount();
-            if (account)
-            {
-                client.login(account->userId, account->username, 1000);
-            }
-        }
+        sock.connect(host, port);
+    }
+
+    // perform login if we have a current account
+    auto& accMgr = AccountManager::getInstance();
+    if (auto cur = accMgr.getCurrentAccount())
+    {
+        sock.login(cur->userId, cur->username, cur->gameData.trophies);
     }
 }
 
 void DraggableMapScene::setupNetworkCallbacks()
 {
-    auto& client = SocketClient::getInstance();
-    
-    client.setOnLoginResult([](bool success, const std::string& msg) {
-        if (success)
+    auto& sock = SocketClient::getInstance();
+
+    // When an attack result is received from the server, add a DefenseLog if the current account was the defender
+    sock.setOnAttackResult([this](const AttackResult& result){
+        auto& accMgr = AccountManager::getInstance();
+        const AccountInfo* cur = accMgr.getCurrentAccount();
+        if (!cur) return;
+
+        // If this client is the defender, record a defense log
+        if (result.defenderId == cur->userId)
         {
-            CCLOG("Login successful!");
-        }
-        else
-        {
-            CCLOG("Login failed: %s", msg.c_str());
+            DefenseLog log;
+            log.attackerId = result.attackerId;
+            // we don't always have attacker name from network; fallback to id
+            log.attackerName = result.attackerId;
+            log.starsLost = result.starsEarned;
+            log.goldLost = result.goldLooted;
+            log.elixirLost = result.elixirLooted;
+            log.trophyChange = result.trophyChange;
+            log.timestamp = getCurrentTimestamp();
+            log.isViewed = false;
+
+            DefenseLogSystem::getInstance().addDefenseLog(log);
+            
+            CCLOG("🛡️ Defense log added for defender: %s, attacked by: %s", 
+                  result.defenderId.c_str(), result.attackerId.c_str());
+
+            // ✅ 修复：立即显示防守日志UI（不需要延迟，因为已经在主线程）
+            if (DefenseLogSystem::getInstance().hasUnviewedLogs())
+            {
+                // 延迟0.5秒显示，让玩家注意到
+                this->scheduleOnce([](float){
+                    DefenseLogSystem::getInstance().showDefenseLogUI();
+                    CCLOG("🔔 Displaying defense log UI after receiving attack result");
+                }, 0.5f, "show_defense_log_ui");
+            }
         }
     });
-    
-    client.setOnDisconnected([]() {
-        CCLOG("Disconnected from server!");
+
+    // Optionally handle user list (map userId->name) if server returns additional info
+    sock.setOnUserListReceived([this](const std::string& data){
+        // Currently we don't parse it here, but could cache names for nicer logs
+        CCLOG("[Socket] User list received, len=%zu", data.size());
     });
 }
 
-// ==================== ShopLayer 接口 ====================
+std::string DraggableMapScene::getCurrentTimestamp()
+{
+    // simple ISO-like timestamp
+    time_t now = time(nullptr);
+    struct tm tmv;
+#ifdef _WIN32
+    localtime_s(&tmv, &now);
+#else
+    localtime_r(&now, &tmv);
+#endif
+    char buf[64];
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tmv);
+    return std::string(buf);
+}
+
+// ========== ShopLayer 接口 ==========
 
 int DraggableMapScene::getTownHallLevel() const
 {
     if (!_buildingManager)
         return 1;
-    
     const auto& buildings = _buildingManager->getBuildings();
     for (auto* b : buildings)
     {
         if (b->getBuildingType() == BuildingType::kTownHall)
-        {
             return b->getLevel();
-        }
     }
-    
     return 1;
 }
 
@@ -723,40 +681,30 @@ int DraggableMapScene::getBuildingCount(const std::string& name) const
 {
     if (!_buildingManager)
         return 0;
-    
     int count = 0;
     const auto& buildings = _buildingManager->getBuildings();
-    
     for (auto* b : buildings)
     {
         if (name == "Town Hall" || name == "大本营")
         {
             if (b->getBuildingType() == BuildingType::kTownHall)
-            {
                 count++;
-            }
             continue;
         }
-        
         std::string displayName = b->getDisplayName();
         if (displayName.find(name) != std::string::npos)
-        {
             count++;
-        }
     }
-    
     return count;
 }
 
 void DraggableMapScene::startPlacingBuilding(const BuildingData& data)
 {
     if (_buildingManager)
-    {
         _buildingManager->startPlacing(data);
-    }
 }
 
-// ==================== 生命周期 ====================
+// ========== 生命周期 ==========
 
 void DraggableMapScene::update(float dt)
 {
@@ -770,7 +718,7 @@ DraggableMapScene::~DraggableMapScene()
         _currentUpgradeUI->removeFromParent();
         _currentUpgradeUI = nullptr;
     }
-    
+
     if (_buildingManager && !_isAttackMode)
     {
         _buildingManager->saveCurrentState();
@@ -778,85 +726,187 @@ DraggableMapScene::~DraggableMapScene()
     }
 }
 
-// ==================== 多人游戏（未使用，保留接口） ====================
+void DraggableMapScene::onSceneResume()
+{
+    CCLOG("🔄 Scene resumed, cleaning up ResourceCollectionManager...");
+    ResourceCollectionManager::getInstance()->clearRegisteredBuildings();
+
+    if (_buildingManager)
+    {
+        const auto& buildings = _buildingManager->getBuildings();
+        for (auto* building : buildings)
+        {
+            auto resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
+            if (resourceBuilding && resourceBuilding->isProducer())
+                ResourceCollectionManager::getInstance()->registerBuilding(resourceBuilding);
+        }
+    }
+
+    CCLOG("✅ ResourceCollectionManager cleaned and re-registered current buildings");
+}
+
+// ========== 多人游戏（保留接口） ==========
 
 bool DraggableMapScene::switchToAttackMode(const std::string& targetUserId)
 {
-    // 预留接口
     return false;
 }
 
 void DraggableMapScene::returnToOwnBase()
 {
-    // 预留接口
 }
 
 void DraggableMapScene::onAccountSwitched()
 {
     CCLOG("✅ Account switch initiated...");
-    
-    // 1. 保存当前账号的建筑状态和资源
     if (_buildingManager)
     {
         _buildingManager->saveCurrentState();
         CCLOG("✅ Saved current account state");
     }
-    
-    // 2. 获取目标账号ID
+
     std::string targetUserId = UserDefault::getInstance()->getStringForKey("switching_to_account", "");
     if (targetUserId.empty())
     {
         CCLOG("❌ No target account specified");
         return;
     }
-    
-    // 3. 切换账号
+
     auto& accMgr = AccountManager::getInstance();
     if (!accMgr.switchAccount(targetUserId))
     {
         CCLOG("❌ Failed to switch account");
         return;
     }
-    
+
     CCLOG("✅ Account switched successfully, reloading scene...");
-    
-    // 4. 清除临时数据
     UserDefault::getInstance()->setStringForKey("switching_to_account", "");
     UserDefault::getInstance()->flush();
+
+    // 🆕 加载新账号的防守日志
+    DefenseLogSystem::getInstance().load();
     
-    // 5. 重新创建整个场景以确保彻底清理
+    // 🆕 检查是否有未查看的日志
+    if (DefenseLogSystem::getInstance().hasUnviewedLogs())
+    {
+        CCLOG("🔔 Found unviewed defense logs for account: %s", targetUserId.c_str());
+    }
+
     auto newScene = DraggableMapScene::createScene();
     Director::getInstance()->replaceScene(TransitionFade::create(0.3f, newScene));
 }
 
 void DraggableMapScene::onLogout()
 {
-    // 保存当前状态
     if (_buildingManager)
-    {
         _buildingManager->saveCurrentState();
-    }
-    
-    // 退出游戏或返回主菜单（暂时直接退出）
     Director::getInstance()->end();
-    
-    #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-        exit(0);
-    #endif
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    exit(0);
+#endif
 }
 
-void DraggableMapScene::onMapChanged(const std::string& newMap)
+// ========== 本地玩家列表显示 ==========
+
+void DraggableMapScene::showLocalPlayerList()
 {
-    CCLOG("✅ Map changed to: %s, reloading scene...", newMap.c_str());
-    
-    // 保存当前状态
-    if (_buildingManager)
+    auto& accMgr = AccountManager::getInstance();
+    const auto& allAccounts = accMgr.listAccounts();
+    const auto* currentAccount = accMgr.getCurrentAccount();
+
+    if (!currentAccount)
     {
-        _buildingManager->saveCurrentState();
-        CCLOG("✅ Saved current state before map change");
+        _uiController->showHint("错误：未登录账号！");
+        return;
     }
-    
-    // 重新创建场景以应用新地图
-    auto newScene = DraggableMapScene::createScene();
-    Director::getInstance()->replaceScene(TransitionFade::create(0.5f, newScene));
+
+    std::vector<PlayerInfo> players;
+    for (const auto& account : allAccounts)
+    {
+        if (account.userId != currentAccount->userId)
+        {
+            auto gameData = accMgr.getPlayerGameData(account.userId);
+            PlayerInfo player;
+            player.userId = account.userId;
+            player.username = account.username;
+            player.townHallLevel = gameData.townHallLevel;
+            player.trophies = 1000;
+            player.gold = gameData.gold;
+            player.elixir = gameData.elixir;
+            players.push_back(player);
+        }
+    }
+
+    if (players.empty())
+    {
+        _uiController->showHint("暂无可攻击的玩家！请先创建其他账号。");
+        return;
+    }
+
+    auto playerListLayer = PlayerListLayer::create(players);
+    if (playerListLayer)
+    {
+        this->addChild(playerListLayer, 300);
+        playerListLayer->setOnPlayerSelected([this](const std::string& targetUserId) { startAttack(targetUserId); });
+        playerListLayer->show();
+    }
+}
+
+void DraggableMapScene::showPlayerListFromServerData(const std::string& serverData)
+{
+    std::vector<PlayerInfo> players;
+    std::istringstream iss(serverData);
+    std::string playerStr;
+
+    while (std::getline(iss, playerStr, '|'))
+    {
+        std::istringstream ps(playerStr);
+        std::string token;
+        PlayerInfo player;
+        std::getline(ps, player.userId, ',');
+        std::getline(ps, player.username, ',');
+        std::getline(ps, token, ',');
+        if (!token.empty()) player.townHallLevel = std::stoi(token);
+        std::getline(ps, token, ',');
+        if (!token.empty()) player.gold = std::stoi(token);
+        std::getline(ps, token, ',');
+        if (!token.empty()) player.elixir = std::stoi(token);
+        players.push_back(player);
+    }
+
+    if (players.empty())
+    {
+        _uiController->showHint("暂无可攻击的玩家！");
+        return;
+    }
+
+    auto playerListLayer = PlayerListLayer::create(players);
+    if (playerListLayer)
+    {
+        this->addChild(playerListLayer, 300);
+        playerListLayer->setOnPlayerSelected([this](const std::string& targetUserId) { startAttack(targetUserId); });
+        playerListLayer->show();
+    }
+}
+
+void DraggableMapScene::startAttack(const std::string& targetUserId)
+{
+    CCLOG("⚔️ 开始攻击玩家: %s", targetUserId.c_str());
+    _uiController->showHint(StringUtils::format("正在加载 %s 的基地...", targetUserId.c_str()));
+
+    auto& accMgr = AccountManager::getInstance();
+    auto enemyGameData = accMgr.getPlayerGameData(targetUserId);
+
+    if (enemyGameData.buildings.empty())
+    {
+        _uiController->showHint(StringUtils::format("玩家 %s 还没有建筑！", targetUserId.c_str()));
+        return;
+    }
+
+    CCLOG("✅ 加载成功，进入战斗场景 (TH Level=%d, Buildings=%zu)", enemyGameData.townHallLevel, enemyGameData.buildings.size());
+    auto battleScene = BattleScene::createWithEnemyData(enemyGameData, targetUserId);
+    if (battleScene)
+        Director::getInstance()->pushScene(TransitionFade::create(0.3f, battleScene));
+    else
+        _uiController->showHint("创建战斗场景失败！");
 }

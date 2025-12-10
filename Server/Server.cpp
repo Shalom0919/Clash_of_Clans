@@ -165,6 +165,41 @@ SOCKET Server::findSocketByPlayerId(const std::string& playerId)
     return INVALID_SOCKET;
 }
 
+// 🆕 获取用户列表JSON
+std::string Server::getUserListJson(const std::string& requesterId)
+{
+    std::lock_guard<std::mutex> lock(dataMutex);
+    
+    std::ostringstream oss;
+    bool first = true;
+    
+    for (const auto& pair : onlinePlayers)
+    {
+        const auto& player = pair.second;
+        
+        // 排除请求者自己
+        if (player.playerId == requesterId || player.playerId.empty())
+        {
+            continue;
+        }
+        
+        if (!first)
+        {
+            oss << "|";
+        }
+        first = false;
+        
+        // 格式: userId,username,thLevel,gold,elixir
+        oss << player.playerId << ","
+            << player.playerName << ","
+            << "1" << ","  // 大本营等级（TODO: 从地图数据解析）
+            << player.gold << ",")
+            << player.elixir;
+    }
+    
+    return oss.str();
+}
+
 std::string Server::generateClanId()
 
 {
@@ -878,6 +913,15 @@ void clientHandler(SOCKET clientSocket, Server& server)
                 std::cout << "[Attack] Received replay data." << std::endl;
 
                 break;
+
+                // ========== 🆕 用户列表 ==========
+            case REQ_USER_LIST: {
+                std::string requesterId = server.onlinePlayers[clientSocket].playerId;
+                std::string userList = server.getUserListJson(requesterId);
+                Server::sendPacket(clientSocket, RESP_USER_LIST, userList);
+                std::cout << "[UserList] Sent user list to: " << requesterId << std::endl;
+            }
+            break;
 
                 // ========== 玩家匹配对战 ==========
 

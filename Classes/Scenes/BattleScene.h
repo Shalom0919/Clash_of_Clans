@@ -37,6 +37,13 @@ public:
      * @param enemyData 敌方玩家的基地数据
      */
     static BattleScene* createWithEnemyData(const AccountGameData& enemyData);
+
+    /**
+     * @brief 创建战斗场景（带敌方数据）
+     * @param enemyData 敌方玩家的基地数据
+     * @param enemyUserId 敌方玩家ID
+     */
+    static BattleScene* createWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId);
     
     virtual bool init() override;
     
@@ -45,6 +52,13 @@ public:
      * @param enemyData 敌方玩家的基地数据
      */
     virtual bool initWithEnemyData(const AccountGameData& enemyData);
+
+    /**
+     * @brief 初始化战斗场景（带敌方数据）
+     * @param enemyData 敌方玩家的基地数据
+     * @param enemyUserId 敌方玩家ID
+     */
+    virtual bool initWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId);
     
     virtual void update(float dt) override;
     
@@ -95,6 +109,10 @@ private:
     cocos2d::ui::Button* _endBattleButton = nullptr;
     cocos2d::ui::Button* _returnButton = nullptr;
     
+    // ✅ 新增：触摸控制相关
+    cocos2d::Vec2 _lastTouchPos;
+    bool _isDragging = false;
+    
     // ==================== 士兵部署 UI ⭐ 新增 ====================
     cocos2d::ui::Button* _barbarianButton = nullptr;
     cocos2d::ui::Button* _archerButton = nullptr;
@@ -112,6 +130,7 @@ private:
     // ==================== 初始化方法 ====================
     void setupMap();
     void setupUI();
+    void setupTouchListeners();  // ✅ 新增
     void loadEnemyBase();
     void setupTroopButtons();  // ⭐ 新增：设置部署按钮
     
@@ -139,6 +158,9 @@ private:
     
     // ==================== 网络相关（可选） ====================
     void uploadBattleResult();
+    
+    // ==================== 🆕 辅助函数 ====================
+    std::string getCurrentTimestamp();
 };
 
 #endif // __BATTLE_SCENE_H__
