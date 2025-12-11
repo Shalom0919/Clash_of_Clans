@@ -363,7 +363,39 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /cocos2d
-/proj.android
 /proj.ios_mac
 /proj.linux
 /build
+
+# ----------------------------------------
+# Cocos2d-x Android specific ignores
+# ----------------------------------------
+
+# Android 必须忽略的本地配置文件
+local.properties
+properties/
+
+# Android Studio 编译产生的垃圾和缓存
+.gradle/
+.idea/
+.cxx/
+.externalNativeBuild/
+
+# 所有的编译输出目录 (APK, 中间文件)
+**/build/
+**/bin/
+**/obj/
+**/out/
+
+# Android Studio 临时文件
+*.iml
+*.ide
+*.keystore
+!debug.keystore
+
+# ----------------------------------------
+# Cocos2d-x General
+# ----------------------------------------
+# Cocos 编译时的临时文件
+temp/
+cocos2d/cocos/platform/android/java/src/org/cocos2dx/lib/Cocos2dxLocalStorage.java
