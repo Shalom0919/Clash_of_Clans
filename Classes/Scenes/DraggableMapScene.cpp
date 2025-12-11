@@ -93,7 +93,7 @@ bool DraggableMapScene::init()
             DefenseLogSystem::getInstance().showDefenseLogUI();
             CCLOG("🔔 Displaying unviewed defense logs on scene init");
         }
-    }, 1.5f, "check_defense_logs_on_init");
+    }, 0.5f, "check_defense_logs_on_init");
 
     return true;
 }
