@@ -65,14 +65,23 @@ bool AppDelegate::applicationDidFinishLaunching()
     auto glview = director->getOpenGLView();
     if (!glview)
     {
-        // 使用 createWithRect 而不是 create
-        // 参数4 (true) = 允许调整窗口大小 (Resizable)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+        // Android 平台：使用 GLViewImpl::create
+        glview = GLViewImpl::create("My Clash Game");
+        director->setOpenGLView(glview);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+        // Windows/Linux/Mac 平台：使用 createWithRect 支持自定义窗口尺寸
         glview = GLViewImpl::createWithRect("My Clash Game",        // 标题
                                             Rect(0, 0, 2560, 1440), // 初始位置和大小(2K)
                                             1.0f,                   // 缩放系数
-                                            true                    // 设为 true 表示可以用鼠标拉伸窗口！
+                                            true                    // 设为 true 表示可以用鼠标拉伸窗口
         );
         director->setOpenGLView(glview);
+#else
+        // 其他平台：使用默认创建方式
+        glview = GLView::create("My Clash Game");
+        director->setOpenGLView(glview);
+#endif
     }
     // 2. 开启调试数据显示 (FPS等)
     director->setDisplayStats(true);
