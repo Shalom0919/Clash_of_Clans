@@ -424,8 +424,11 @@ void DraggableMapScene::onConfirmBuilding()
     if (_uiController)
         _uiController->hideConfirmButtons();
 
-    // If BuildingManager exposes a confirm method it will handle confirmation; otherwise ignore
-    // (keeps call safe and avoids linker issues)
+    // Notify BuildingManager to confirm placement if it's waiting for confirmation
+    if (_buildingManager && _buildingManager->isWaitingConfirm())
+    {
+        _buildingManager->confirmBuilding();
+    }
 }
 
 void DraggableMapScene::onCancelBuilding()
