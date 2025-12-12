@@ -297,7 +297,10 @@ void ShopLayer::show() {
 void ShopLayer::hide() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     auto moveDown = MoveTo::create(0.3f, Vec2(visibleSize.width / 2, -350));
-    // 🔧 修复内存泄漏：使用 RemoveSelf 替代 lambda 捕获 this
+    _container->runAction(moveDown);
+
+    // 延迟后移除整个层（包括遮罩），而不仅仅是容器
+    auto delay = DelayTime::create(0.3f);
     auto removeSelf = RemoveSelf::create();
-    _container->runAction(Sequence::create(moveDown, removeSelf, nullptr));
+    this->runAction(Sequence::create(delay, removeSelf, nullptr));
 }

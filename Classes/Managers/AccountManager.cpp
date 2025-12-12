@@ -177,7 +177,7 @@ const AccountInfo* AccountManager::getCurrentAccount() const
     return nullptr;
 }
 
-bool AccountManager::switchAccount(const std::string& userId)
+bool AccountManager::switchAccount(const std::string& userId, bool silent)
 {
     // 🆕 切换账号前，保存当前账号的防守日志
     if (_activeIndex >= 0 && _activeIndex < (int)_accounts.size())
@@ -201,7 +201,8 @@ bool AccountManager::switchAccount(const std::string& userId)
             CCLOG("📂 Loaded defense logs for account: %s", userId.c_str());
             
             // 🆕 如果有未查看的日志，在主线程中延迟显示
-            if (DefenseLogSystem::getInstance().hasUnviewedLogs())
+            // 🔴 修复：如果是静默切换（如上传战斗结果时），不显示UI
+            if (!silent && DefenseLogSystem::getInstance().hasUnviewedLogs())
             {
                 auto director = Director::getInstance();
                 if (director && director->getRunningScene())
@@ -398,7 +399,7 @@ bool AccountManager::loadGameStateFromFile(const std::string& userId) {
             resMgr.setResourceCount(ResourceType::kGem, account.gameData.gems);
             
             // 🔴 修复：不要在这里恢复士兵库存！
-            // 因为此时建筑还没有加载，军队人口容量还是0
+            // 因为此时建筑还沒有加载，军隊人口容量還是0
             // 士兵库存应该在 BuildingManager::loadCurrentAccountState() 中恢复
             // 这里只先清空，避免显示旧数据
             auto& troopInv = TroopInventory::getInstance();

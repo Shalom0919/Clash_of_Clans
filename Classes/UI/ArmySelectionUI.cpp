@@ -136,7 +136,10 @@ void ArmySelectionUI::show()
 void ArmySelectionUI::hide()
 {
     auto scaleAction = ScaleTo::create(0.2f, 0.0f);
-    // 🔧 修复内存泄漏：使用 RemoveSelf 替代 lambda 捕获 this
+    _container->runAction(scaleAction);
+
+    // 延迟后移除整个层（包括遮罩），而不仅仅是容器
+    auto delay = DelayTime::create(0.2f);
     auto removeSelf = RemoveSelf::create();
-    _container->runAction(Sequence::create(scaleAction, removeSelf, nullptr));
+    this->runAction(Sequence::create(delay, removeSelf, nullptr));
 }

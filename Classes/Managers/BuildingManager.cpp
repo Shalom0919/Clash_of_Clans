@@ -705,7 +705,8 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
     }
     
     // 先清空现有建筑
-    clearAllBuildings();
+    // 🔴 关键修复：如果是只读模式（攻击别人），不要清空士兵库存!
+    clearAllBuildings(!isReadOnly);
     
     _isReadOnlyMode = isReadOnly;
     
@@ -797,7 +798,7 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
           _buildings.size(), isReadOnly ? "Attack" : "Edit");
 }
 
-void BuildingManager::clearAllBuildings()
+void BuildingManager::clearAllBuildings(bool clearTroops)
 {
     /**
      * 清空所有建筑
@@ -823,20 +824,27 @@ void BuildingManager::clearAllBuildings()
     // 重置BuildingLimitManager的建筑计数
     BuildingLimitManager::getInstance()->reset();
     
-    // 清空士兵库存（因为没有军营了）
-    TroopInventory::getInstance().clearAll();
-    
-    // 重置军队人口容量为0（因为没有军营了）
-    auto& resMgr = ResourceManager::getInstance();
-    resMgr.setResourceCapacity(ResourceType::kTroopPopulation, 0);
-    resMgr.setResourceCount(ResourceType::kTroopPopulation, 0);
+    if (clearTroops)
+    {
+        // 清空士兵库存（因为没有军营了）
+        TroopInventory::getInstance().clearAll();
+        
+        // 重置军队人口容量为0（因为没有军营了）
+        auto& resMgr = ResourceManager::getInstance();
+        resMgr.setResourceCapacity(ResourceType::kTroopPopulation, 0);
+        resMgr.setResourceCount(ResourceType::kTroopPopulation, 0);
+        
+        CCLOG("🗑️ Cleared all buildings, reset building limits, and cleared troop inventory");
+    }
+    else
+    {
+        CCLOG("🗑️ Cleared all buildings and reset building limits (Troops preserved)");
+    }
     
     // 移除所有建筑节点
     _buildings.clear();
     
     _isReadOnlyMode = false;
-    
-    CCLOG("🗑️ Cleared all buildings, reset building limits, and cleared troop inventory");
 }
 
 void BuildingManager::saveCurrentState()
