@@ -1002,6 +1002,13 @@ void BuildingManager::restoreArmyCampTroopDisplays()
         return;
     }
     
+    // 🔴 方案A修复：先清空所有军营的旧显示，避免重复
+    CCLOG("🧹 Clearing existing troop displays from %zu Army Camps before restore", armyCamps.size());
+    for (auto* armyCamp : armyCamps)
+    {
+        armyCamp->clearTroopDisplays();
+    }
+    
     // 获取所有兵种
     const std::vector<UnitType> unitTypes = {
         UnitType::kBarbarian,

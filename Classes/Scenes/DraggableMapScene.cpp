@@ -472,20 +472,12 @@ void DraggableMapScene::onBuildingPlaced(BaseBuilding* building)
         auto barracks = dynamic_cast<ArmyBuilding*>(building);
         if (barracks)
         {
-            barracks->setOnTrainingComplete([this, barracks](Unit* unit) {
-                if (!unit)
-                    return;
-
-                Vec2 barracksWorldPos = barracks->getParent()->convertToWorldSpace(barracks->getPosition());
-                Vec2 spawnPos = barracksWorldPos;
-                spawnPos.x += barracks->getContentSize().width * barracks->getScale() + 20;
-
-                Vec2 spawnLocalPos = _mapController->getMapSprite()->convertToNodeSpace(spawnPos);
-                unit->setPosition(spawnLocalPos);
-                _mapController->getMapSprite()->addChild(unit, 100);
-                unit->PlayAnimation(UnitAction::kIdle, UnitDirection::kRight);
-
-                CCLOG("?? Unit training complete!");
+            // 🔴 方案A优化：训练完成时只显示提示，不在地图上创建独立 Unit
+            // 小兵会自动显示在军营中（由 ArmyBuilding::notifyArmyCampsToDisplayTroop 处理）
+            barracks->setOnTrainingComplete([this](Unit* unit) {
+                // unit 参数现在总是 nullptr，不需要检查
+                // 只显示提示信息
+                CCLOG("🎉 Unit training complete!");
                 _uiController->showHint("士兵训练完成！");
             });
         }
