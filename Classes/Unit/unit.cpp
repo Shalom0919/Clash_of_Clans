@@ -407,8 +407,26 @@ void Unit::PlayAnimation(UnitAction action, UnitDirection dir)
     {
         sprite_->stopAllActions();    // 停止当前动作
         sprite_->setFlippedX(flip_x); // 设置翻转
-        // 运行新动作：RepeatForever 表示无限循环播放
-        sprite_->runAction(RepeatForever::create(Animate::create(anim_cache_[final_key])));
+        
+        // 🎬 攻击动画只播放一次，其他动画循环播放
+        if (action == UnitAction::kAttack || action == UnitAction::kAttack2)
+        {
+            // 攻击动画播放一次后回到待机状态
+            auto animate = Animate::create(anim_cache_[final_key]);
+            auto callback = CallFunc::create([this]() {
+                // 攻击完成后播放待机动画
+                if (!is_dead_ && !is_moving_)
+                {
+                    PlayAnimation(UnitAction::kIdle, current_dir_);
+                }
+            });
+            sprite_->runAction(Sequence::create(animate, callback, nullptr));
+        }
+        else
+        {
+            // 其他动画（跑步、待机）无限循环播放
+            sprite_->runAction(RepeatForever::create(Animate::create(anim_cache_[final_key])));
+        }
         
         if (type_ == UnitType::kGiant)
         {

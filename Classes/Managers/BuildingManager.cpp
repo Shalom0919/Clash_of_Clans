@@ -4,6 +4,7 @@
  */
 #include "BuildingManager.h"
 #include "Managers/UpgradeManager.h" // 引入头文件
+#include "Managers/TroopInventory.h"  // 🆕 引入士兵库存管理
 #include "ArmyBuilding.h"
 #include "ArmyCampBuilding.h"
 #include "BuildersHutBuilding.h"
@@ -751,6 +752,10 @@ void BuildingManager::saveCurrentState()
     gameData.goldCapacity = resMgr.getResourceCapacity(ResourceType::kGold);
     gameData.elixirCapacity = resMgr.getResourceCapacity(ResourceType::kElixir);
     
+    // 🆕 同步士兵库存
+    auto& troopInv = TroopInventory::getInstance();
+    gameData.troopInventory = troopInv.toJson();
+    
     // 获取大本营等级
     for (auto* building : _buildings)
     {
@@ -797,7 +802,18 @@ void BuildingManager::loadCurrentAccountState()
         CCLOG("📂 旧存档：通过建筑重新计算容量");
     }
 
-    // 3. 最后加载资源数量（此时容量已正确设置）
+    // 3. 加载士兵库存
+    auto& troopInv = TroopInventory::getInstance();
+    if (!gameData.troopInventory.empty())
+    {
+        troopInv.fromJson(gameData.troopInventory);
+        CCLOG("📂 从存档恢复士兵库存");
+        
+        // 🆕 恢复军营的小兵显示
+        restoreArmyCampTroopDisplays();
+    }
+    
+    // 4. 最后加载资源数量（此时容量已正确设置）
     resMgr.setResourceCount(ResourceType::kGold, gameData.gold);
     resMgr.setResourceCount(ResourceType::kElixir, gameData.elixir);
     resMgr.setResourceCount(ResourceType::kGem, gameData.gems);
@@ -829,6 +845,65 @@ bool BuildingManager::loadPlayerBase(const std::string& userId)
           userId.c_str(), gameData.buildings.size(), gameData.townHallLevel);
     
     return true;
+}
+
+void BuildingManager::restoreArmyCampTroopDisplays()
+{
+    /**
+     * 恢复军营的小兵显示
+     * 根据TroopInventory中的士兵数量，在军营中显示对应的小兵
+     */
+    auto& troopInv = TroopInventory::getInstance();
+    
+    // 获取所有军营建筑
+    std::vector<ArmyCampBuilding*> armyCamps;
+    for (auto* building : _buildings)
+    {
+        auto* armyCamp = dynamic_cast<ArmyCampBuilding*>(building);
+        if (armyCamp)
+        {
+            armyCamps.push_back(armyCamp);
+        }
+    }
+    
+    if (armyCamps.empty())
+    {
+        CCLOG("⚠️ No Army Camps found to restore troop displays");
+        return;
+    }
+    
+    // 获取所有兵种
+    const std::vector<UnitType> unitTypes = {
+        UnitType::kBarbarian,
+        UnitType::kArcher,
+        UnitType::kGiant,
+        UnitType::kGoblin,
+        UnitType::kWallBreaker
+    };
+    
+    int armyCampIndex = 0;
+    
+    // 遍历每个兵种，将小兵显示在军营中
+    for (auto unitType : unitTypes)
+    {
+        int count = troopInv.getTroopCount(unitType);
+        
+        for (int i = 0; i < count; ++i)
+        {
+            if (armyCampIndex >= armyCamps.size())
+                armyCampIndex = 0;  // 循环使用军营
+            
+            // 在军营中添加小兵显示
+            armyCamps[armyCampIndex]->addTroopDisplay(unitType);
+            
+            // 简单分配：每个军营最多显示一定数量后切换到下一个
+            // 这里可以根据需要调整分配策略
+            if ((i + 1) % 5 == 0)  // 每5个小兵换一个军营
+                armyCampIndex = (armyCampIndex + 1) % armyCamps.size();
+        }
+    }
+    
+    CCLOG("✅ Restored troop displays in %zu Army Camps", armyCamps.size());
 }
 
 BaseBuilding* BuildingManager::createBuildingFromSerialData(const BuildingSerialData& data)
