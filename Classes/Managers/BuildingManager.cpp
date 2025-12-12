@@ -823,12 +823,20 @@ void BuildingManager::clearAllBuildings()
     // 重置BuildingLimitManager的建筑计数
     BuildingLimitManager::getInstance()->reset();
     
+    // 清空士兵库存（因为没有军营了）
+    TroopInventory::getInstance().clearAll();
+    
+    // 重置军队人口容量为0（因为没有军营了）
+    auto& resMgr = ResourceManager::getInstance();
+    resMgr.setResourceCapacity(ResourceType::kTroopPopulation, 0);
+    resMgr.setResourceCount(ResourceType::kTroopPopulation, 0);
+    
     // 移除所有建筑节点
     _buildings.clear();
     
     _isReadOnlyMode = false;
     
-    CCLOG("🗑️ Cleared all buildings and reset building limits");
+    CCLOG("🗑️ Cleared all buildings, reset building limits, and cleared troop inventory");
 }
 
 void BuildingManager::saveCurrentState()
@@ -880,9 +888,18 @@ void BuildingManager::loadCurrentAccountState()
     auto& accMgr = AccountManager::getInstance();
     auto gameData = accMgr.getCurrentGameData();
     auto& resMgr = ResourceManager::getInstance();
+    
+    // 🔍 调试：显示加载前的军队人口状态
+    CCLOG("📊 [Before Loading] TroopPopulation: %d / %d", 
+          resMgr.getResourceCount(ResourceType::kTroopPopulation),
+          resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
 
     // 1. 加载建筑 (建筑实体被创建，并向 CapacityManager 注册)
     loadBuildingsFromData(gameData.buildings, false);
+    
+    // 🔍 调试：显示加载建筑后的军队人口容量
+    CCLOG("📊 [After Loading Buildings] TroopPopulation Capacity: %d", 
+          resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
 
     // 2. 🆕 先恢复保存的容量
     //    如果存档中有容量数据，直接使用；否则通过 CapacityManager 重新计算
@@ -907,11 +924,23 @@ void BuildingManager::loadCurrentAccountState()
     auto& troopInv = TroopInventory::getInstance();
     if (!gameData.troopInventory.empty())
     {
+        CCLOG("📦 准备恢复士兵库存，当前容量: %d", 
+              resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
         troopInv.fromJson(gameData.troopInventory);
-        CCLOG("📂 从存档恢复士兵库存");
+        CCLOG("📂 从存档恢复士兵库存，当前人口: %d / %d",
+              resMgr.getResourceCount(ResourceType::kTroopPopulation),
+              resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
         
         // 🆕 恢复军营的小兵显示
         restoreArmyCampTroopDisplays();
+    }
+    else
+    {
+        // 新账号或没有士兵数据，清空士兵库存
+        troopInv.clearAll();
+        CCLOG("📂 新账号：清空士兵库存，当前人口: %d / %d",
+              resMgr.getResourceCount(ResourceType::kTroopPopulation),
+              resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
     }
     
     // 4. 最后加载资源数量（此时容量已正确设置）

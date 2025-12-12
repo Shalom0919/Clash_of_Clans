@@ -397,15 +397,14 @@ bool AccountManager::loadGameStateFromFile(const std::string& userId) {
             // darkElixir 暂不支持
             resMgr.setResourceCount(ResourceType::kGem, account.gameData.gems);
             
-            // 🆕 Sync troop inventory to TroopInventory
+            // 🔴 修复：不要在这里恢复士兵库存！
+            // 因为此时建筑还没有加载，军队人口容量还是0
+            // 士兵库存应该在 BuildingManager::loadCurrentAccountState() 中恢复
+            // 这里只先清空，避免显示旧数据
             auto& troopInv = TroopInventory::getInstance();
-            if (!account.gameData.troopInventory.empty()) {
-                troopInv.fromJson(account.gameData.troopInventory);
-            } else {
-                troopInv.clearAll();  // 清空士兵库存
-            }
+            troopInv.clearAll();
             
-            CCLOG("✅ Game state loaded for user %s: Gold=%d, Elixir=%d, Buildings=%zu",
+            CCLOG("✅ Game state loaded for user %s: Gold=%d, Elixir=%d, Buildings=%zu (Troops will be restored after buildings)",
                   userId.c_str(), account.gameData.gold, account.gameData.elixir, 
                   account.gameData.buildings.size());
             
