@@ -623,14 +623,14 @@ void DraggableMapScene::setupNetworkCallbacks()
             CCLOG("🛡️ Defense log added for defender: %s, attacked by: %s", 
                   result.defenderId.c_str(), result.attackerId.c_str());
 
-            // ✅ 修复：立即显示防守日志UI（不需要延迟，因为已经在主线程）
+            // 🔧 修复内存泄漏：使用 performFunctionInCocosThread 避免循环引用
             if (DefenseLogSystem::getInstance().hasUnviewedLogs())
             {
-                // 延迟0.5秒显示，让玩家注意到
-                this->scheduleOnce([](float){
+                // 直接在主线程显示，不使用 scheduleOnce 捕获 this
+                Director::getInstance()->getScheduler()->performFunctionInCocosThread([](){
                     DefenseLogSystem::getInstance().showDefenseLogUI();
                     CCLOG("🔔 Displaying defense log UI after receiving attack result");
-                }, 0.5f, "show_defense_log_ui");
+                });
             }
         }
     });
@@ -708,6 +708,12 @@ void DraggableMapScene::update(float dt)
 
 DraggableMapScene::~DraggableMapScene()
 {
+    // 🔧 修复内存泄漏：清理所有 schedule 回调
+    this->unscheduleAllCallbacks();
+    
+    // 🔧 修复内存泄漏：移除所有事件监听器
+    _eventDispatcher->removeEventListenersForTarget(this);
+    
     if (_currentUpgradeUI)
     {
         _currentUpgradeUI->removeFromParent();
@@ -717,8 +723,10 @@ DraggableMapScene::~DraggableMapScene()
     if (_buildingManager && !_isAttackMode)
     {
         _buildingManager->saveCurrentState();
-        CCLOG("? Game state auto-saved on scene destruction");
+        CCLOG("💾 Game state auto-saved on scene destruction");
     }
+    
+    CCLOG("🗑️ DraggableMapScene destroyed, all callbacks cleaned");
 }
 
 void DraggableMapScene::onSceneResume()

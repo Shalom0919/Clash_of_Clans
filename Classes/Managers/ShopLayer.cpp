@@ -297,8 +297,7 @@ void ShopLayer::show() {
 void ShopLayer::hide() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     auto moveDown = MoveTo::create(0.3f, Vec2(visibleSize.width / 2, -350));
-    auto callback = CallFunc::create([this]() {
-        this->removeFromParent();
-    });
-    _container->runAction(Sequence::create(moveDown, callback, nullptr));
+    // 🔧 修复内存泄漏：使用 RemoveSelf 替代 lambda 捕获 this
+    auto removeSelf = RemoveSelf::create();
+    _container->runAction(Sequence::create(moveDown, removeSelf, nullptr));
 }

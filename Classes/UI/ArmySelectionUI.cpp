@@ -136,8 +136,7 @@ void ArmySelectionUI::show()
 void ArmySelectionUI::hide()
 {
     auto scaleAction = ScaleTo::create(0.2f, 0.0f);
-    auto callback = CallFunc::create([this]() {
-        this->removeFromParent();
-    });
-    _container->runAction(Sequence::create(scaleAction, callback, nullptr));
+    // 🔧 修复内存泄漏：使用 RemoveSelf 替代 lambda 捕获 this
+    auto removeSelf = RemoveSelf::create();
+    _container->runAction(Sequence::create(scaleAction, removeSelf, nullptr));
 }
