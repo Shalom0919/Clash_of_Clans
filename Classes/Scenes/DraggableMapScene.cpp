@@ -10,6 +10,7 @@
 #include "BuildingData.h"
 #include "BuildingManager.h"
 #include "Buildings/ArmyBuilding.h"
+#include "Buildings/ArmyCampBuilding.h"
 #include "Buildings/ResourceBuilding.h"
 #include "BuildingUpgradeUI.h"
 #include "DraggableMapScene.h"
@@ -742,6 +743,14 @@ void DraggableMapScene::onSceneResume()
             auto resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
             if (resourceBuilding && resourceBuilding->isProducer())
                 ResourceCollectionManager::getInstance()->registerBuilding(resourceBuilding);
+            
+            // 🆕 刷新军营的小兵显示（从 TroopInventory 读取）
+            auto armyCamp = dynamic_cast<ArmyCampBuilding*>(building);
+            if (armyCamp)
+            {
+                armyCamp->refreshDisplayFromInventory();
+                CCLOG("✅ Refreshed ArmyCamp display from inventory");
+            }
         }
     }
 

@@ -45,6 +45,9 @@ public:
     
     /** @brief 更新小兵显示位置（军营移动时调用） */
     void updateTroopPositions();
+    
+    /** @brief 根据士兵库存刷新军营显示（战斗结束后调用） */
+    void refreshDisplayFromInventory();
 
 protected:
     virtual bool init(int level) override;

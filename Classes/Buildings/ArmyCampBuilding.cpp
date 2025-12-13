@@ -7,6 +7,7 @@
  * License:       MIT License
  ****************************************************************/
 #include "ArmyCampBuilding.h"
+#include "Managers/TroopInventory.h"
 USING_NS_CC;
 
 ArmyCampBuilding* ArmyCampBuilding::create(int level)
@@ -266,4 +267,39 @@ Vec2 ArmyCampBuilding::getTroopDisplayPosition(int index) const
     float spacingY = buildingHeight * 0.25f;
     
     return Vec2(startX + col * spacingX, startY - row * spacingY);
+}
+
+void ArmyCampBuilding::refreshDisplayFromInventory()
+{
+    // 清空当前显示
+    clearTroopDisplays();
+    
+    // 从士兵库存读取所有士兵数量
+    auto& troopInv = TroopInventory::getInstance();
+    const auto& allTroops = troopInv.getAllTroops();
+    
+    // 按顺序添加士兵显示（优先级：野蛮人 > 弓箭手 > 哥布林 > 巨人 > 炸弹人）
+    std::vector<UnitType> displayOrder = {
+        UnitType::kBarbarian,
+        UnitType::kArcher,
+        UnitType::kGoblin,
+        UnitType::kGiant,
+        UnitType::kWallBreaker
+    };
+    
+    for (UnitType type : displayOrder)
+    {
+        auto it = allTroops.find(type);
+        if (it != allTroops.end() && it->second > 0)
+        {
+            // 添加该兵种的显示（最多显示容纳人口数的小兵）
+            int count = std::min(it->second, getHousingSpace());
+            for (int i = 0; i < count; ++i)
+            {
+                addTroopDisplay(type);
+            }
+        }
+    }
+    
+    CCLOG("✅ 军营显示已刷新（从库存）：显示 %zu 个小兵", _troopSprites.size());
 }
