@@ -18,6 +18,7 @@
 #include "InputController.h"
 #include "Managers/DefenseLogSystem.h"
 #include "Managers/ResourceCollectionManager.h"
+#include "Managers/TroopInventory.h"
 #include "Managers/UpgradeManager.h"
 #include "MapController.h"
 #include "ResourceManager.h"
@@ -732,29 +733,39 @@ DraggableMapScene::~DraggableMapScene()
 
 void DraggableMapScene::onSceneResume()
 {
-    CCLOG("🔄 Scene resumed, cleaning up ResourceCollectionManager...");
-    ResourceCollectionManager::getInstance()->clearRegisteredBuildings();
-
+    CCLOG("🔄 Scene resumed, refreshing ArmyCamp displays...");
+    
+    // 重新加载士兵库存
+    TroopInventory::getInstance().load();
+    
     if (_buildingManager)
     {
         const auto& buildings = _buildingManager->getBuildings();
         for (auto* building : buildings)
         {
-            auto resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
-            if (resourceBuilding && resourceBuilding->isProducer())
-                ResourceCollectionManager::getInstance()->registerBuilding(resourceBuilding);
-            
-            // 🆕 刷新军营的小兵显示（从 TroopInventory 读取）
+            // 刷新军营的小兵显示
             auto armyCamp = dynamic_cast<ArmyCampBuilding*>(building);
             if (armyCamp)
             {
                 armyCamp->refreshDisplayFromInventory();
                 CCLOG("✅ Refreshed ArmyCamp display from inventory");
             }
+            
+            // 重新注册资源建筑
+            auto resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
+            if (resourceBuilding && resourceBuilding->isProducer())
+                ResourceCollectionManager::getInstance()->registerBuilding(resourceBuilding);
         }
     }
+    
+    // 刷新HUD显示
+    if (_hudLayer)
+    {
+        _hudLayer->updateDisplay();
+        CCLOG("✅ Refreshed HUD display");
+    }
 
-    CCLOG("✅ ResourceCollectionManager cleaned and re-registered current buildings");
+    CCLOG("✅ Scene resume complete");
 }
 
 // ========== 多人游戏（保留接口） ==========

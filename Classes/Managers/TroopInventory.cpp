@@ -1,4 +1,5 @@
 ﻿/****************************************************************
+/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     TroopInventory.cpp
  * File Function: 士兵库存管理器实现
@@ -8,6 +9,7 @@
  ****************************************************************/
 #include "TroopInventory.h"
 #include "ResourceManager.h"
+#include "AccountManager.h"
 #include "json/document.h"
 #include "json/writer.h"
 #include "json/stringbuffer.h"
@@ -85,6 +87,9 @@ int TroopInventory::addTroops(UnitType type, int count)
         
         // 通知UI更新
         notifyChange(type, _troops[type]);
+        
+        // 自动保存
+        save();
     }
     
     return actualCount;
@@ -114,6 +119,9 @@ bool TroopInventory::consumeTroops(UnitType type, int count)
     
     // 通知UI更新
     notifyChange(type, _troops[type]);
+    
+    // 自动保存
+    save();
     
     return true;
 }
@@ -233,6 +241,63 @@ bool TroopInventory::fromJson(const std::string& jsonStr)
     CCLOG("✅ 士兵库存加载完成，总人口：%d", totalPop);
     
     return true;
+}
+
+// ==================== 文件保存/加载 ====================
+
+void TroopInventory::save()
+{
+    auto& accMgr = AccountManager::getInstance();
+    const auto* account = accMgr.getCurrentAccount();
+    
+    if (!account)
+    {
+        CCLOG("⚠️ 无当前账号，无法保存士兵库存");
+        return;
+    }
+    
+    std::string filename = "troop_inv_" + account->userId + ".json";
+    std::string path = FileUtils::getInstance()->getWritablePath() + filename;
+    std::string json = toJson();
+    
+    FILE* file = fopen(path.c_str(), "w");
+    if (file)
+    {
+        fputs(json.c_str(), file);
+        fclose(file);
+        CCLOG("💾 士兵库存已保存：%s", filename.c_str());
+    }
+    else
+    {
+        CCLOG("❌ 保存士兵库存失败：%s", filename.c_str());
+    }
+}
+
+void TroopInventory::load()
+{
+    auto& accMgr = AccountManager::getInstance();
+    const auto* account = accMgr.getCurrentAccount();
+    
+    if (!account)
+    {
+        CCLOG("⚠️ 无当前账号，无法加载士兵库存");
+        return;
+    }
+    
+    std::string filename = "troop_inv_" + account->userId + ".json";
+    std::string path = FileUtils::getInstance()->getWritablePath() + filename;
+    
+    if (!FileUtils::getInstance()->isFileExist(path))
+    {
+        CCLOG("⚠️ 士兵库存文件不存在，使用默认值：%s", filename.c_str());
+        return;
+    }
+    
+    std::string json = FileUtils::getInstance()->getStringFromFile(path);
+    if (fromJson(json))
+    {
+        CCLOG("📂 士兵库存已加载：%s", filename.c_str());
+    }
 }
 
 // ==================== 回调通知 ====================

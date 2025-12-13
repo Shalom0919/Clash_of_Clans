@@ -76,41 +76,56 @@ bool Unit::init(UnitType type)
     LoadConfig(type);
 
     // 2. 创建初始 Sprite (精灵) - 根据类型选择不同的初始帧
-    // 注意：必须确保 plist 已经被加载，且图片名正确，否则这里会崩溃或显示为空
-    std::string initialFrame;
-    if (type == UnitType::kBarbarian)
+    if (type == UnitType::kArcher)
     {
-        initialFrame = "barbarian25.0.png";  // 野蛮人待机帧
-    }
-    else if (type == UnitType::kArcher)
-    {
-        initialFrame = "archer27.0.png";  // 弓箭手待机帧（右方向中间帧）
-    }
-    else if (type == UnitType::kGiant)
-    {
-        initialFrame = "giant38.0.png";  // 巨人待机帧（右方向）
-    }
-    else if (type == UnitType::kGoblin)
-    {
-        initialFrame = "goblin26.0.png";  // 哥布林待机帧（右方向）
-    }
-    else if (type == UnitType::kWallBreaker)
-    {
-        initialFrame = "wall_breaker21.0.png";  // 炸弹人待机帧（右方向）
+        // 弓箭手：必须先加载一帧，然后才能播放动画
+        auto texture = Director::getInstance()->getTextureCache()->addImage("units/archer/archer_side_walk_01.png");
+        if (texture)
+        {
+            auto frame = SpriteFrame::createWithTexture(
+                texture,
+                Rect(0, 0, texture->getContentSize().width, texture->getContentSize().height)
+            );
+            sprite_ = Sprite::createWithSpriteFrame(frame);
+        }
+        
+        if (!sprite_)
+        {
+            CCLOG("ERROR: Failed to create archer sprite!");
+            return false;
+        }
     }
     else
     {
-        CCLOG("ERROR: Unknown unit type!");
-        return false;
+        // 其他单位使用plist中的资源
+        std::string initialFrame;
+        if (type == UnitType::kBarbarian)
+        {
+            initialFrame = "barbarian25.0.png";  // 野蛮人待机帧
+        }
+        else if (type == UnitType::kGiant)
+        {
+            initialFrame = "giant38.0.png";  // 巨人待机帧（右方向）
+        }
+        else if (type == UnitType::kGoblin)
+        {
+            initialFrame = "goblin26.0.png";  // 哥布林待机帧（右方向）
+        }
+        else if (type == UnitType::kWallBreaker)
+        {
+            initialFrame = "wall_breaker21.0.png";  // 炸弹人待机帧（右方向）
+        }
+        else
+        {
+            CCLOG("ERROR: Unknown unit type!");
+            return false;
+        }
+
+        sprite_ = Sprite::createWithSpriteFrameName(initialFrame);
     }
-
-    sprite_ = Sprite::createWithSpriteFrameName(initialFrame);
-
-
 
     if (sprite_)
     {
-
         this->addChild(sprite_); // 把精灵作为子节点添加到 Unit 节点上
 
         // 3. 设置初始状态：待机，朝右
@@ -182,30 +197,34 @@ void Unit::LoadConfig(UnitType type)
     }
     else if (type == UnitType::kArcher)
     {
-        // 加载弓箭手图集
-        SpriteFrameCache::getInstance()->addSpriteFramesWithFile("units/archer/archer.plist");
-
+        // 弓箭手使用新的资源格式，不需要plist
+        // 资源文件格式: archer_upper_walk_01.png, archer_side_attack_03.png 等
+        
         // ========== 跑步动画 ==========
-        AddAnim("archer", "run_down_right", 1, 8, 0.1f);   // 1~8 downright run
-        AddAnim("archer", "run_right", 9, 16, 0.1f);        // 9~16 right run
-        AddAnim("archer", "run_up_right", 17, 24, 0.1f);    // 17~24 upright run
+        // upper = 右上方向
+        AddAnimFromFiles("units/archer/", "archer_upper_walk_%02d.png", "run_up_right", 1, 8, 0.1f);
+        // side = 右方向
+        AddAnimFromFiles("units/archer/", "archer_side_walk_%02d.png", "run_right", 1, 8, 0.1f);
+        // under = 右下方向
+        AddAnimFromFiles("units/archer/", "archer_under_walk_%02d.png", "run_down_right", 1, 8, 0.1f);
 
         // ========== 待机动画 ==========
-        AddAnim("archer", "idle_down_right", 25, 26, 0.5f); // 25,26 downright stand
-        AddAnim("archer", "idle_right", 27, 29, 0.3f);      // 27,28,29 right stand
-        AddAnim("archer", "idle_up_right", 30, 31, 0.5f);   // 30,31 upright stand
+        // 使用走路动画的前3帧作为待机动画
+        AddAnimFromFiles("units/archer/", "archer_upper_walk_%02d.png", "idle_up_right", 1, 3, 0.3f);
+        AddAnimFromFiles("units/archer/", "archer_side_walk_%02d.png", "idle_right", 1, 3, 0.3f);
+        AddAnimFromFiles("units/archer/", "archer_under_walk_%02d.png", "idle_down_right", 1, 3, 0.3f);
 
-        // ========== 攻击动画（完整射箭流程）==========
-        // downright: 32~34(拿箭) + 41~44(射箭) - 跳过35-40
-        // 注意：这里为了动画连贯，我们分两段加载
-        AddAnim("archer", "attack_down_right", 32, 44, 0.08f);
-        // right: 35~37(拿箭) + 45~48(射箭) - 跳过38-44
-        AddAnim("archer", "attack_right", 35, 48, 0.08f);
-        // upright: 38~40(拿箭) + 49~52(射箭)
-        AddAnim("archer", "attack_up_right", 38, 52, 0.08f);
+        // ========== 攻击动画 ==========
+        // upper = 右上方向 (9帧)
+        AddAnimFromFiles("units/archer/", "archer_upper_attack_%02d.png", "attack_up_right", 1, 9, 0.08f);
+        // side = 右方向 (10帧)
+        AddAnimFromFiles("units/archer/", "archer_side_attack_%02d.png", "attack_right", 1, 10, 0.08f);
+        // under = 右下方向 (9帧)
+        AddAnimFromFiles("units/archer/", "archer_under_attack_%02d.png", "attack_down_right", 1, 9, 0.08f);
 
         // ========== 死亡动画 ==========
-        AddAnim("archer", "death", 53, 54, 0.5f); // 53 死亡光环, 54 墓碑
+        // 使用旧的死亡资源（如果存在archer53.0.png和archer54.0.png）
+        AddAnimFromFiles("units/archer/", "archer%d.0.png", "death", 53, 54, 0.5f);
     }
     else if (type == UnitType::kGiant)
     {
@@ -318,6 +337,100 @@ void Unit::AddAnim(const std::string& unitName, const std::string& key, int star
 }
 
 // --------------------------------------------------------------------------
+// 辅助函数：创建非连续帧序列的 Animation 对象并缓存（用于弓箭手等）
+// --------------------------------------------------------------------------
+void Unit::AddAnimWithSkip(const std::string& unitName, const std::string& key, const std::vector<int>& frameIndices, float delay)
+{
+    Vector<SpriteFrame*> frames;
+    // 按照提供的帧序号列表获取图片
+    for (int i : frameIndices)
+    {
+        // 拼接文件名，例如 "archer32.0.png"
+        std::string name = StringUtils::format("%s%d.0.png", unitName.c_str(), i);
+        auto frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(name);
+        if (frame)
+            frames.pushBack(frame);
+        else
+        {
+            // 输出警告，帮助排查缺失的帧
+            CCLOG("WARN: SpriteFrame not found: %s", name.c_str());
+        }
+    }
+
+    // 如果找到了帧，就创建动画对象
+    if (!frames.empty())
+    {
+        auto anim = Animation::createWithSpriteFrames(frames, delay);
+        
+        // 【重要】retain() 防止动画被自动释放
+        anim->retain();
+        
+        anim_cache_[key] = anim;
+    }
+    else
+    {
+        CCLOG("ERROR: No frames found for animation key: %s. Check your .plist file!", key.c_str());
+    }
+}
+
+// --------------------------------------------------------------------------
+// 辅助函数：从单独的PNG文件加载动画（用于新格式的弓箭手资源）
+// --------------------------------------------------------------------------
+void Unit::AddAnimFromFiles(const std::string& basePath, const std::string& namePattern, const std::string& key, int start, int end, float delay)
+{
+    Vector<SpriteFrame*> frames;
+    
+    // 按照提供的文件名模式加载PNG文件
+    for (int i = start; i <= end; ++i)
+    {
+        // 使用格式化字符串构建完整文件路径
+        char buffer[256];
+        snprintf(buffer, sizeof(buffer), namePattern.c_str(), i);
+        std::string fullPath = basePath + buffer;
+        
+        // 直接从文件加载纹理
+        auto texture = Director::getInstance()->getTextureCache()->addImage(fullPath);
+        if (texture)
+        {
+            // 创建SpriteFrame（使用整个纹理）
+            auto frame = SpriteFrame::createWithTexture(
+                texture, 
+                Rect(0, 0, texture->getContentSize().width, texture->getContentSize().height)
+            );
+            if (frame)
+            {
+                frames.pushBack(frame);
+            }
+            else
+            {
+                CCLOG("WARN: Failed to create SpriteFrame from: %s", fullPath.c_str());
+            }
+        }
+        else
+        {
+            CCLOG("WARN: Failed to load texture: %s", fullPath.c_str());
+        }
+    }
+    
+    // 如果找到了帧，就创建动画对象
+    if (!frames.empty())
+    {
+        auto anim = Animation::createWithSpriteFrames(frames, delay);
+        
+        // 【重要】retain() 防止动画被自动释放
+        anim->retain();
+        
+        anim_cache_[key] = anim;
+        
+        CCLOG("✅ Loaded animation '%s' with %d frames from files", key.c_str(), (int)frames.size());
+    }
+    else
+    {
+        CCLOG("ERROR: No frames found for animation key: %s. Check file path: %s", key.c_str(), (basePath + namePattern).c_str());
+    }
+}
+
+// --------------------------------------------------------------------------
 // 核心动画控制：根据动作和方向选择动画，并处理翻转
 // --------------------------------------------------------------------------
 void Unit::PlayAnimation(UnitAction action, UnitDirection dir)
@@ -395,9 +508,10 @@ void Unit::PlayAnimation(UnitAction action, UnitDirection dir)
     std::string final_key = prefix + anim_key;
 
     // 🔍 调试日志：检查动画是否存在
-    if (type_ == UnitType::kGiant)
+    if (type_ == UnitType::kGiant || type_ == UnitType::kArcher)
     {
-        CCLOG("🎬 Giant PlayAnimation: action=%s, dir=%s, final_key=%s, exists=%d",
+        CCLOG("🎬 %s PlayAnimation: action=%s, dir=%s, final_key=%s, exists=%d",
+              type_ == UnitType::kGiant ? "Giant" : "Archer",
               prefix.c_str(), anim_key.c_str(), final_key.c_str(), 
               anim_cache_.count(final_key) ? 1 : 0);
     }
@@ -428,16 +542,19 @@ void Unit::PlayAnimation(UnitAction action, UnitDirection dir)
             sprite_->runAction(RepeatForever::create(Animate::create(anim_cache_[final_key])));
         }
         
-        if (type_ == UnitType::kGiant)
+        if (type_ == UnitType::kGiant || type_ == UnitType::kArcher)
         {
-            CCLOG("✅ Giant animation started: %s", final_key.c_str());
+            CCLOG("✅ %s animation started: %s", 
+                  type_ == UnitType::kGiant ? "Giant" : "Archer",
+                  final_key.c_str());
         }
     }
     else
     {
-        if (type_ == UnitType::kGiant)
+        if (type_ == UnitType::kGiant || type_ == UnitType::kArcher)
         {
-            CCLOG("❌ Giant animation NOT found or sprite is null: %s (sprite=%p, count=%d)", 
+            CCLOG("❌ %s animation NOT found or sprite is null: %s (sprite=%p, count=%d)", 
+                  type_ == UnitType::kGiant ? "Giant" : "Archer",
                   final_key.c_str(), sprite_, anim_cache_.count(final_key));
         }
     }

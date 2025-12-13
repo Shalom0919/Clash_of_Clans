@@ -934,19 +934,16 @@ void BattleScene::setupTouchListeners()
 
 void BattleScene::returnToMainScene()
 {
-    // ❌ 错误：replaceScene 会销毁旧场景，导致数据丢失
-    // auto scene = DraggableMapScene::createScene();
-    // Director::getInstance()->replaceScene(TransitionFade::create(0.5f, scene, Color3B::BLACK));
-    
     // ✅ 正确：使用 popScene 返回到之前的 DraggableMapScene
-    // 这样可以保留原场景的数据和状态
-    
-    // ✅ 在返回前通知主场景进行清理
-    Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("scene_resume");
-    
     Director::getInstance()->popScene();
     
-    CCLOG("✅ Returned to main scene (data preserved)");
+    // ✅ 延迟通知主场景刷新（确保已经切换回主场景）
+    Director::getInstance()->getScheduler()->performFunctionInCocosThread([](){
+        Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("scene_resume");
+        CCLOG("✅ Dispatched scene_resume event");
+    });
+    
+    CCLOG("✅ Returned to main scene");
 }
 
 void BattleScene::uploadBattleResult()
@@ -1164,8 +1161,32 @@ void BattleScene::updateUnitAI(float dt)
             }
             else
             {
-                // 移动到目标
-                unit->MoveTo(targetPos);
+                // 🔧 修复：只在士兵没有移动时才调用 MoveTo()
+                // 避免每帧都调用导致动画被重复中断
+                static std::map<Unit*, Vec2> lastTargets;
+                
+                // 检查目标是否改变或士兵是否已停止移动
+                bool needsNewPath = false;
+                if (lastTargets.find(unit) == lastTargets.end())
+                {
+                    needsNewPath = true;
+                }
+                else
+                {
+                    Vec2 lastTarget = lastTargets[unit];
+                    float targetMoved = lastTarget.distance(targetPos);
+                    // 如果目标移动超过一定距离，或者士兵已经到达上一个目标点
+                    if (targetMoved > 50.0f || unitPos.distance(lastTarget) < 10.0f)
+                    {
+                        needsNewPath = true;
+                    }
+                }
+                
+                if (needsNewPath)
+                {
+                    unit->MoveTo(targetPos);
+                    lastTargets[unit] = targetPos;
+                }
             }
         }
         

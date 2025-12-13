@@ -94,6 +94,16 @@ public:
      */
     bool fromJson(const std::string& jsonStr);
     
+    /**
+     * @brief 保存到文件（按账号）
+     */
+    void save();
+    
+    /**
+     * @brief 从文件加载（按账号）
+     */
+    void load();
+    
     // ==================== 回调通知 ====================
     
     /**

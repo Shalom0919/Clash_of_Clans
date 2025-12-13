@@ -216,6 +216,16 @@ private:
     // key: 缓存用的名字 (如 "run_up")
     // start/end: 图片序号 (如 barbarian1.png 到 barbarian8.png)
     void AddAnim(const std::string& unitName, const std::string& key, int start, int end, float delay);
+    
+    // 辅助工具：读取非连续序列帧并存入 anim_cache_ (用于弓箭手等跳跃帧动画)
+    // frameIndices: 帧序号列表 (如 {32,33,34,41,42,43,44})
+    void AddAnimWithSkip(const std::string& unitName, const std::string& key, const std::vector<int>& frameIndices, float delay);
+    
+    // 辅助工具：从单独的PNG文件加载动画（用于新格式的弓箭手资源）
+    // basePath: 基础路径 (如 "units/archer/")
+    // namePattern: 文件名模式 (如 "archer_upper_walk_%02d.png")
+    // start/end: 帧序号范围
+    void AddAnimFromFiles(const std::string& basePath, const std::string& namePattern, const std::string& key, int start, int end, float delay);
 
     // 数学计算：根据向量差值 (目标点 - 当前点) 算出 8 个方向之一
     UnitDirection CalculateDirection(const cocos2d::Vec2& diff);
