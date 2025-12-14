@@ -770,44 +770,56 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
         // 记录建筑到BuildingLimitManager（只在非只读模式下）
         if (!isReadOnly)
         {
+            // 🔴 关键修复：先移除等级后缀，再进行名称匹配
+            std::string rawName = data.name;
+            size_t lvPos = rawName.find(" (Lv.");
+            if (lvPos == std::string::npos)
+            {
+                lvPos = rawName.find(" Lv.");
+            }
+            if (lvPos != std::string::npos)
+            {
+                rawName = rawName.substr(0, lvPos);
+            }
+            
             // 建筑名称映射到 BuildingLimitManager 的键
-            std::string limitKey = data.name;
-            if (data.name.find("Town Hall") != std::string::npos || data.name.find("大本营") != std::string::npos) {
+            std::string limitKey = rawName;
+            if (rawName.find("Town Hall") != std::string::npos || rawName.find("大本营") != std::string::npos) {
                 limitKey = "TownHall";
             }
-            else if (data.name.find("Wall") != std::string::npos || data.name.find("城墙") != std::string::npos) {
+            else if (rawName.find("Wall") != std::string::npos || rawName.find("城墙") != std::string::npos) {
                 limitKey = "Wall";
             }
-            else if (data.name.find("Builder") != std::string::npos || data.name.find("建筑工人") != std::string::npos) {
+            else if (rawName.find("Builder") != std::string::npos || rawName.find("建筑工人") != std::string::npos) {
                 limitKey = "BuildersHut";
             }
-            else if (data.name.find("Cannon") != std::string::npos || data.name.find("炮塔") != std::string::npos) {
+            else if (rawName.find("Cannon") != std::string::npos || rawName.find("炮塔") != std::string::npos || rawName.find("加农炮") != std::string::npos) {
                 limitKey = "Cannon";
             }
-            else if (data.name.find("Archer Tower") != std::string::npos || data.name.find("箭塔") != std::string::npos) {
+            else if (rawName.find("Archer Tower") != std::string::npos || rawName.find("箭塔") != std::string::npos) {
                 limitKey = "ArcherTower";
             }
-            else if (data.name.find("Wizard Tower") != std::string::npos || data.name.find("法师塔") != std::string::npos) {
-                limitKey = "WizardTower";
-            }
-            else if (data.name.find("Gold Mine") != std::string::npos || data.name.find("金矿") != std::string::npos) {
+            else if (rawName.find("Gold Mine") != std::string::npos || rawName.find("金矿") != std::string::npos) {
                 limitKey = "GoldMine";
             }
-            else if (data.name.find("Elixir Collector") != std::string::npos || data.name.find("圣水收集器") != std::string::npos) {
+            else if (rawName.find("Elixir Collector") != std::string::npos || rawName.find("圣水收集器") != std::string::npos) {
                 limitKey = "ElixirCollector";
             }
-            else if (data.name.find("Gold Storage") != std::string::npos || data.name.find("金币仓库") != std::string::npos) {
+            else if (rawName.find("Gold Storage") != std::string::npos || rawName.find("金币仓库") != std::string::npos) {
                 limitKey = "GoldStorage";
             }
-            else if (data.name.find("Elixir Storage") != std::string::npos || data.name.find("圣水仓库") != std::string::npos) {
+            else if (rawName.find("Elixir Storage") != std::string::npos || rawName.find("圣水仓库") != std::string::npos) {
                 limitKey = "ElixirStorage";
             }
-            else if (data.name.find("Barracks") != std::string::npos || data.name.find("兵营") != std::string::npos) {
+            else if (rawName.find("Barracks") != std::string::npos || rawName.find("兵营") != std::string::npos) {
                 limitKey = "Barracks";
             }
-            else if (data.name.find("Army Camp") != std::string::npos || data.name.find("军营") != std::string::npos) {
+            else if (rawName.find("Army Camp") != std::string::npos || rawName.find("军营") != std::string::npos) {
                 limitKey = "ArmyCamp";
             }
+            
+            CCLOG("📝 记录建筑到 LimitManager: 原始名=%s, 处理后=%s, 键=%s", 
+                  data.name.c_str(), rawName.c_str(), limitKey.c_str());
             
             BuildingLimitManager::getInstance()->recordBuilding(limitKey);
             
@@ -1141,11 +1153,15 @@ BaseBuilding* BuildingManager::createBuildingFromSerialData(const BuildingSerial
     }
     else if (name.find("Archer Tower") != std::string::npos || name.find("箭塔") != std::string::npos)
     {
-        return DefenseBuilding::create(DefenseType::kArcherTower, level);
+        CCLOG("✅ 创建箭塔：等级=%d", level);
+        std::string imagePath = StringUtils::format("buildings/ArcherTower/Archer_Tower%d.png", level);
+        return DefenseBuilding::create(DefenseType::kArcherTower, level, imagePath);
     }
     else if (name.find("Cannon") != std::string::npos || name.find("加农炮") != std::string::npos)
     {
-        return DefenseBuilding::create(DefenseType::kCannon, level);
+        CCLOG("✅ 创建加农炮：等级=%d", level);
+        std::string imagePath = StringUtils::format("buildings/Cannon_Static/Cannon%d.png", level);
+        return DefenseBuilding::create(DefenseType::kCannon, level, imagePath);
     }
     else if (name.find("Wizard Tower") != std::string::npos || name.find("法师塔") != std::string::npos)
     {

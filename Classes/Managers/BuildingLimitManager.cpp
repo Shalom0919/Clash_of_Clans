@@ -125,7 +125,7 @@ void BuildingLimitManager::updateLimitsFromTownHall(int townHallLevel)
     // ========== 规则4：其他建筑 ==========
     // 每升级增加1，且不少于大本营等级
     std::vector<std::string> otherBuildings = {
-        "Cannon", "ArcherTower", "WizardTower",
+        "Cannon", "ArcherTower",
         "GoldMine", "ElixirCollector", "GoldStorage", "ElixirStorage",
         "Barracks", "ArmyCamp"
     };
