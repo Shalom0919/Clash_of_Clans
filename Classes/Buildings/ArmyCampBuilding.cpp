@@ -9,7 +9,8 @@
 #include "ArmyCampBuilding.h"
 #include "Managers/TroopInventory.h"
 USING_NS_CC;
-
+// 军营生命值 (1-13级)
+static const int  CAMP_HP[] = {0, 250, 280, 320, 360, 400, 450, 500, 550, 620, 700, 800, 1000, 1200};
 ArmyCampBuilding* ArmyCampBuilding::create(int level)
 {
     ArmyCampBuilding* building = new (std::nothrow) ArmyCampBuilding();
@@ -40,7 +41,12 @@ bool ArmyCampBuilding::init(int level)
     int housingSpace = getHousingSpace();
     ResourceManager::getInstance().addCapacity(kTroopPopulation, housingSpace);
     CCLOG("ArmyCampBuilding created at level %d, added %d housing space", _level, housingSpace);
-    
+    // ✅ 【新增】设置军营生命值
+    int idx = std::min(_level, (int)(sizeof(CAMP_HP) / sizeof(int) - 1));
+    int hp  = CAMP_HP[idx];
+    setMaxHitpoints(hp);
+    CCLOG("⛺ %s 初始化 HP: %d", getDisplayName().c_str(), hp);
+    initHealthBarUI();
     return true;
 }
 

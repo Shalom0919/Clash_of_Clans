@@ -22,6 +22,9 @@ ArmyBuilding* ArmyBuilding::create(int level)
     CC_SAFE_DELETE(building);
     return nullptr;
 }
+// 兵营生命值 (1-18级)
+static const int BARRACKS_HP[] = {0,   250, 270, 300, 330, 360,  400,  450,  500, 560,
+                                  620, 700, 780, 860, 950, 1050, 1150, 1250, 1350};
 float ArmyBuilding::getUpgradeTime() const
 {
     // 升级时间（秒）
@@ -69,6 +72,14 @@ bool ArmyBuilding::init(int level)
     {
         return false;
     }
+
+    // ✅ 【新增】设置兵营生命值
+    int idx = std::min(level, (int)(sizeof(BARRACKS_HP) / sizeof(int) - 1));
+    int hp  = BARRACKS_HP[idx];
+    setMaxHitpoints(hp);
+
+    CCLOG("⚔️ %s 初始化 HP: %d", getDisplayName().c_str(), hp);
+
     return true;
 }
 
@@ -121,7 +132,9 @@ bool ArmyBuilding::init(int level, const std::string& imageFile)
             _customName = "防御建筑";
         }
     }
-    
+    int idx = std::min(level, (int)(sizeof(BARRACKS_HP) / sizeof(int) - 1));
+    setMaxHitpoints(BARRACKS_HP[idx]);
+    initHealthBarUI();
     return true;
 }
 

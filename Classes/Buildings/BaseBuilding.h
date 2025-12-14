@@ -14,6 +14,7 @@
 
 // 前向声明
 class Unit;
+class BuildingHealthBarUI;
 /** @brief 建筑类型枚举 */
 enum class BuildingType
 {
@@ -34,6 +35,8 @@ enum class BuildingType
 class BaseBuilding : public cocos2d::Sprite
 {
 public:
+    virtual void enableBattleMode();
+    virtual void disableBattleMode();
     virtual ~BaseBuilding() = default;
     // ==================== 基础属性 ====================
     /** @brief 获取建筑类型 */
@@ -148,9 +151,12 @@ public:
 protected:
     /**
      * @brief 初始化建筑
-     * @param level 初始等级
+     * @param level 初始等级，血条
      */
     virtual bool init(int level);
+    void initHealthBarUI();
+    BuildingHealthBarUI* _healthBarUI = nullptr;
+    bool _battleModeEnabled = false;
     /**
      * @brief 初始化建筑（带图片）
      * @param level 初始等级

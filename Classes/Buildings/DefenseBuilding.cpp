@@ -7,6 +7,7 @@
  * License:       MIT License
  ****************************************************************/
 #include "DefenseBuilding.h"
+#include "UI/BuildingHealthBarUI.h"
 #include "Unit/unit.h"
 
 USING_NS_CC;
@@ -50,6 +51,7 @@ bool DefenseBuilding::init(DefenseType defenseType, int level)
     _level       = level;
 
     initCombatStats();
+    
 
     return true;
 }
@@ -64,6 +66,7 @@ bool DefenseBuilding::init(DefenseType defenseType, int level, const std::string
     _level           = level;
 
     initCombatStats();
+    initHealthBarUI();
 
     return true;
 }
@@ -100,6 +103,7 @@ void DefenseBuilding::initCombatStats()
     CCLOG("🏹 %s 初始化：攻击力=%d, 攻击范围=%.1f, 血量=%d", getDisplayName().c_str(), _combatStats.damage,
           _combatStats.attackRange, _maxHitpoints);
 }
+
 
 std::string DefenseBuilding::getDisplayName() const
 {
@@ -298,3 +302,4 @@ void DefenseBuilding::playAttackAnimation()
     auto seq       = Sequence::create(scaleUp, scaleDown, nullptr);
     this->runAction(seq);
 }
+

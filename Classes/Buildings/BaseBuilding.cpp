@@ -9,7 +9,10 @@
 #include "BaseBuilding.h"
 #include "Managers/UpgradeManager.h"
 #include "Services/BuildingUpgradeService.h"
+#include "BuildingHealthBarUI.h"
+
 USING_NS_CC;
+
 bool BaseBuilding::init(int level)
 {
     _level = level;
@@ -102,6 +105,11 @@ void BaseBuilding::takeDamage(int damage)
     {
         CCLOG("💥 %s 已被摧毁！", getDisplayName().c_str());
         // TODO: 播放摧毁动画
+        auto explosion = ParticleExplosion::create();
+        explosion->setPosition(this->getPosition());
+        this->getParent()->addChild(explosion, 999);
+        // ✅ 【新增代码】让建筑从画面上消失
+        this->setVisible(false);
     }
 }
 
@@ -139,4 +147,53 @@ void BaseBuilding::attackTarget(Unit* target)
           getDisplayName().c_str(), _combatStats.damage);
     
     // 由子类实现具体攻击逻辑（发射炮弹、箭矢等）
+}
+// ==================== 🆕 血条UI初始化 ====================
+void BaseBuilding::initHealthBarUI()
+{
+    // 创建血条UI并添加到建筑上
+    auto* healthBarUI = BuildingHealthBarUI::create(this);
+    if (healthBarUI)
+    {
+        this->addChild(healthBarUI, 1000); // 高Z-Order确保显示在最上面
+        _healthBarUI = healthBarUI;
+
+        CCLOG("✅ %s 血条UI初始化完成", getDisplayName().c_str());
+    }
+}
+// ==================== 🆕 血条战斗模式控制 ====================
+
+void BaseBuilding::enableBattleMode()
+{
+    _battleModeEnabled = true;
+
+    // 启用血条始终显示
+    if (_healthBarUI)
+    {
+        _healthBarUI->setAlwaysVisible(true);
+        _healthBarUI->show();
+    }
+
+    CCLOG("⚔️ %s 进入战斗模式", getDisplayName().c_str());
+}
+
+void BaseBuilding::disableBattleMode()
+{
+    _battleModeEnabled = false;
+
+    // 禁用血条始终显示，恢复自动隐藏
+    if (_healthBarUI)
+    {
+        _healthBarUI->setAlwaysVisible(false);
+    }
+
+    // ==================== 🆕 重要：重置建筑血量 ====================
+    // 如果建筑没有被摧毁，就恢复满血
+    if (!isDestroyed())
+    {
+        _currentHitpoints = _maxHitpoints;
+        CCLOG("💚 %s 血量已恢复满 (%.0f→%.0f)", getDisplayName().c_str(), 0.0f, (float)_maxHitpoints);
+    }
+
+    CCLOG("🛡️ %s 离开战斗模式", getDisplayName().c_str());
 }

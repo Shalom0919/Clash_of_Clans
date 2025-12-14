@@ -41,7 +41,7 @@ bool BuildersHutBuilding::init(int level)
     // 同时增加1个可用工人
     ResourceManager::getInstance().addResource(kBuilder, 1);
     CCLOG("BuildersHutBuilding created at level %d, added 1 builder capacity", _level);
-    
+    initHealthBarUI();
     return true;
 }
 
