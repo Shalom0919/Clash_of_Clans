@@ -58,9 +58,12 @@ struct UpgradeTask
 class UpgradeManager : public cocos2d::Node
 {
 public:
-    static UpgradeManager* getInstance();
+static UpgradeManager* getInstance();
     
-    virtual bool init() override;
+// 销毁单例实例（防止内存泄漏）
+static void destroyInstance();
+    
+virtual bool init() override;
     
     // ==================== 核心接口 ====================
     
@@ -149,8 +152,9 @@ public:
     bool isCheatModeEnabled() const { return _cheatModeEnabled; }
 
 private:
-    UpgradeManager();
-    static UpgradeManager* _instance;
+UpgradeManager();
+~UpgradeManager();
+static UpgradeManager* _instance;
     
     std::vector<UpgradeTask> _upgradeTasks;  // 升级任务列表
     bool _cheatModeEnabled = false;          // 作弊模式开关

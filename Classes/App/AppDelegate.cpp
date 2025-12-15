@@ -27,6 +27,7 @@
 #include "HelloWorldScene.h"
 #include "Managers/AccountManager.h"
 #include "Managers/ResourceManager.h" // 新增：包含资源管理器头文件
+#include "Managers/UpgradeManager.h"  // 新增：包含升级管理器头文件
 // #define USE_AUDIO_ENGINE 1
 #if USE_AUDIO_ENGINE
 #include "audio/include/AudioEngine.h"
@@ -43,6 +44,9 @@ AppDelegate::~AppDelegate()
 #if USE_AUDIO_ENGINE
     AudioEngine::end();
 #endif
+    // 清理单例以防止内存泄漏
+    ResourceManager::destroyInstance();
+    UpgradeManager::destroyInstance();
 }
 // if you want a different context, modify the value of glContextAttrs
 // it will affect all platforms

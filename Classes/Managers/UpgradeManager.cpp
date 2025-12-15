@@ -24,8 +24,23 @@ UpgradeManager* UpgradeManager::getInstance()
     return _instance;
 }
 
+void UpgradeManager::destroyInstance()
+{
+    if (_instance)
+    {
+        delete _instance;
+        _instance = nullptr;
+    }
+}
+
 UpgradeManager::UpgradeManager()
 {
+}
+
+UpgradeManager::~UpgradeManager()
+{
+    // 清理所有升级任务
+    _upgradeTasks.clear();
 }
 
 bool UpgradeManager::init()

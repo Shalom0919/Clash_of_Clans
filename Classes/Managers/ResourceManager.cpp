@@ -16,7 +16,24 @@ ResourceManager& ResourceManager::getInstance()
     }
     return *_instance;
 }
+
+void ResourceManager::destroyInstance()
+{
+    if (_instance)
+    {
+        delete _instance;
+        _instance = nullptr;
+    }
+}
+
 ResourceManager::ResourceManager() {}
+
+ResourceManager::~ResourceManager()
+{
+    // 清理资源
+    _resources.clear();
+    _capacities.clear();
+}
 
 void ResourceManager::init()
 {

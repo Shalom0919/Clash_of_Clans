@@ -22,11 +22,14 @@ enum ResourceType
 class ResourceManager
 {
 public:
-    // 单例访问方法
-    static ResourceManager& getInstance();
+// 单例访问方法
+static ResourceManager& getInstance();
     
-    // 初始化资源
-    void init();
+// 销毁单例实例（防止内存泄漏）
+static void destroyInstance();
+    
+// 初始化资源
+void init();
     
     // 资源读方法
     int getResourceCount(ResourceType type) const;
@@ -57,6 +60,7 @@ public:
     void fillAllResourcesMax();
 private:
     ResourceManager();
+    ~ResourceManager();
     static ResourceManager* _instance;
     std::map<ResourceType, int> _resources;
     std::map<ResourceType, int> _capacities;
