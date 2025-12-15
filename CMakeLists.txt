@@ -84,7 +84,6 @@ target_include_directories(${APP_NAME}
     PRIVATE Classes/Buildings
     PRIVATE Classes/GridMap
     PRIVATE Classes/Managers
-    PRIVATE Classes/Models
     PRIVATE Classes/Scenes
     PRIVATE Classes/Unit
     PRIVATE Classes/UI
