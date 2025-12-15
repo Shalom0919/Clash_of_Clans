@@ -51,6 +51,8 @@ private:
     void onUpgradeClicked();
     void onCloseClicked();
     void onTrainClicked();  // 新增：点击训练按钮
+    void onMoveClicked();   // 新增：点击移动按钮
+    void onArmyCampClicked(); // 新增：点击军队详情按钮
 
     std::string getResourceTypeName(ResourceType type) const;
     std::string formatTime(int seconds) const;
@@ -66,6 +68,8 @@ private:
     cocos2d::ui::Button* _upgradeButton = nullptr;
     cocos2d::ui::Button* _closeButton = nullptr;
     cocos2d::ui::Button* _trainButton = nullptr;  // 新增：训练按钮（仅兵营显示）
+    cocos2d::ui::Button* _moveButton = nullptr;   // 新增：移动按钮
+    cocos2d::ui::Button* _armyCampButton = nullptr; // 新增：军队详情按钮（仅军营显示）
 
     UpgradeResultCallback _resultCallback = nullptr;
     CloseCallback _closeCallback = nullptr;

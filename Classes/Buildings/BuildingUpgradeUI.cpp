@@ -9,9 +9,13 @@
 
 #include "BuildingUpgradeUI.h"
 #include "ArmyBuilding.h"
+#include "ArmyCampBuilding.h"
 #include "Managers/UpgradeManager.h"
+#include "Managers/BuildingManager.h"
+#include "Managers/TroopInventory.h"
 #include "ResourceManager.h"
 #include "SceneUIController.h"
+#include "Scenes/DraggableMapScene.h"
 #include "Services/BuildingUpgradeService.h"
 #include "Unit/TrainingUI.h"
 
@@ -49,7 +53,8 @@ void BuildingUpgradeUI::setupUI()
     // 1. 面板基础设置
     // ============================================================
     bool  isBarracks  = (_building && _building->getBuildingType() == BuildingType::kArmy);
-    float panelHeight = isBarracks ? 340.0f : 260.0f;
+    bool  isArmyCamp  = (_building && _building->getBuildingType() == BuildingType::kArmyCamp);
+    float panelHeight = (isBarracks || isArmyCamp) ? 340.0f : 260.0f;
 
     _panel = Layout::create();
     _panel->setContentSize(Size(280, panelHeight));
@@ -62,6 +67,40 @@ void BuildingUpgradeUI::setupUI()
 
     float panelWidth = _panel->getContentSize().width;
     float centerX    = panelWidth / 2.0f;
+
+    // ============================================================
+    // 关闭按钮 (左上角)
+    // ============================================================
+    _closeButton = Button::create("icon/return_button.png");
+    if (_closeButton->getContentSize().equals(Size::ZERO))
+    {
+        _closeButton = Button::create();
+        _closeButton->ignoreContentAdaptWithSize(false);
+        _closeButton->setContentSize(Size(40, 40));
+        _closeButton->setTitleText("X");
+        _closeButton->setTitleFontSize(20);
+        _closeButton->setTitleColor(Color3B::WHITE);
+
+        auto closeBg = LayerColor::create(Color4B(200, 0, 0, 200), 40, 40);
+        closeBg->setAnchorPoint(Vec2::ZERO);
+        closeBg->setPosition(Vec2::ZERO);
+        _closeButton->addChild(closeBg, -1);
+
+        if (_closeButton->getTitleRenderer())
+        {
+            _closeButton->getTitleRenderer()->setPosition(Vec2(20, 20));
+        }
+    }
+    else
+    {
+        _closeButton->setScale(40.0f / _closeButton->getContentSize().width);
+    }
+    _closeButton->setAnchorPoint(Vec2(0.5f, 0.5f));
+    _closeButton->setPosition(Vec2(20, panelHeight - 20)); // 左上角位置
+    _closeButton->setTouchEnabled(true);
+    _closeButton->setPressedActionEnabled(true);
+    _closeButton->addClickEventListener([this](Ref*) { onCloseClicked(); });
+    _panel->addChild(_closeButton);
 
     // ============================================================
     // 2. 文字信息
@@ -209,36 +248,18 @@ void BuildingUpgradeUI::setupUI()
     });
     _panel->addChild(gemButton, 1); // ZOrder设为1，确保在上层
 
-    // --- C. 关闭按钮 (红色) ---
-    _closeButton = Button::create("icon/return_button.png");
-    if (_closeButton->getContentSize().equals(Size::ZERO))
-    {
-        _closeButton = Button::create();
-        _closeButton->ignoreContentAdaptWithSize(false);
-        _closeButton->setContentSize(Size(btnWidth, btnHeight));
-        _closeButton->setTitleText("关闭");
-        _closeButton->setTitleFontSize(16);
-        _closeButton->setTitleColor(Color3B::WHITE);
-
-        // auto closeBg = LayerColor::create(Color4B(150, 0, 0, 200), btnWidth, btnHeight);
-        // closeBg->setAnchorPoint(Vec2::ZERO);
-        // closeBg->setPosition(Vec2::ZERO);
-        // _closeButton->addChild(closeBg, -1);
-
-        if (_closeButton->getTitleRenderer())
-        {
-            _closeButton->getTitleRenderer()->setPosition(Vec2(btnWidth / 2, btnHeight / 2));
-        }
-    } else {
-        _closeButton->setScale(40.0f / _closeButton->getContentSize().width);
-    }
-    _closeButton->setAnchorPoint(Vec2(0.5f, 0.5f));
-    _closeButton->setPosition(Vec2(startX + btnWidth * 2, bottomY)); // 位置3：紧挨着
-    _closeButton->setTouchEnabled(true);
-    _closeButton->setPressedActionEnabled(true);
-    _closeButton->addClickEventListener([this](Ref*) { onCloseClicked(); });
-
-    _panel->addChild(_closeButton);
+    // --- C. 移动按钮 (蓝色) ---
+    _moveButton = Button::create();
+    _moveButton->setContentSize(Size(btnWidth, btnHeight));
+    _moveButton->setAnchorPoint(Vec2(0.5f, 0.5f));
+    _moveButton->setPosition(Vec2(startX + btnWidth * 2, bottomY)); // 位置3：紧挨着
+    _moveButton->setTitleText("移动");
+    _moveButton->setTitleFontSize(16);
+    _moveButton->setTitleColor(Color3B::WHITE);
+    _moveButton->setTouchEnabled(true);
+    _moveButton->setPressedActionEnabled(true);
+    _moveButton->addClickEventListener([this](Ref*) { onMoveClicked(); });
+    _panel->addChild(_moveButton);
 
     // ============================================================
     // 4. 训练士兵按钮 (仅兵营)
@@ -264,6 +285,27 @@ void BuildingUpgradeUI::setupUI()
         // // trainBg->setTouchEnabled(false);
         // _trainButton->addChild(trainBg, -1);
         _panel->addChild(_trainButton);
+    }
+    
+    // ============================================================
+    // 5. 军队详情按钮 (仅军营)
+    // ============================================================
+    if (isArmyCamp)
+    {
+        // 放置在 Y=100，位于文字和底部按钮中间
+        _armyCampButton = Button::create();
+        _armyCampButton->setTitleText("🪖 军队详情");
+        _armyCampButton->setTitleFontSize(18);
+
+        Size armySize(200, 40);
+        _armyCampButton->setContentSize(armySize);
+        _armyCampButton->setAnchorPoint(Vec2(0.5f, 0.5f));
+        _armyCampButton->setPosition(Vec2(centerX, 100));
+        _armyCampButton->setTouchEnabled(true);
+        _armyCampButton->setPressedActionEnabled(true);
+        _armyCampButton->addClickEventListener([this](Ref*) { onArmyCampClicked(); });
+
+        _panel->addChild(_armyCampButton);
     }
 }
 
@@ -415,6 +457,191 @@ void BuildingUpgradeUI::onTrainClicked()
     }
 
     hide();
+}
+
+void BuildingUpgradeUI::onMoveClicked()
+{
+    if (!_building)
+        return;
+
+    CCLOG("开始移动建筑：%s", _building->getDisplayName().c_str());
+
+    // 获取当前场景
+    auto scene = dynamic_cast<DraggableMapScene*>(Director::getInstance()->getRunningScene());
+    if (!scene)
+    {
+        CCLOG("无法获取场景，移动建筑失败！");
+        return;
+    }
+
+    // 获取 BuildingManager
+    auto manager = scene->getBuildingManager();
+    if (!manager)
+    {
+        CCLOG("无法获取 BuildingManager，移动建筑失败！");
+        return;
+    }
+
+    // 开始移动建筑
+    manager->startMovingBuilding(_building);
+
+    // 关闭升级UI
+    if (_closeCallback)
+        _closeCallback();
+    hide();
+}
+
+void BuildingUpgradeUI::onArmyCampClicked()
+{
+    if (!_building || _building->getBuildingType() != BuildingType::kArmyCamp)
+        return;
+
+    auto armyCamp = dynamic_cast<ArmyCampBuilding*>(_building);
+    if (!armyCamp)
+        return;
+
+    CCLOG("打开军队详情：%s", armyCamp->getDisplayName().c_str());
+
+    // 关闭当前UI
+    if (_closeCallback)
+        _closeCallback();
+    hide();
+
+    // 创建军队详情UI
+    auto scene = Director::getInstance()->getRunningScene();
+    if (!scene)
+        return;
+
+    // 创建半透明背景
+    auto bgLayer = LayerColor::create(Color4B(0, 0, 0, 180));
+    bgLayer->setName("ArmyDetailBG");
+    scene->addChild(bgLayer, 9999);
+
+    // 创建面板
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    auto panel = Layout::create();
+    panel->setContentSize(Size(400, 500));
+    panel->setBackGroundColorType(Layout::BackGroundColorType::SOLID);
+    panel->setBackGroundColor(Color3B(40, 40, 60));
+    panel->setBackGroundColorOpacity(240);
+    panel->setAnchorPoint(Vec2(0.5f, 0.5f));
+    panel->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
+    bgLayer->addChild(panel);
+
+    // 标题
+    auto title = Label::createWithSystemFont("军队详情", "Microsoft YaHei", 24);
+    title->setPosition(Vec2(200, 460));
+    title->setTextColor(Color4B::YELLOW);
+    panel->addChild(title);
+
+    // 关闭按钮
+    auto closeBtn = Button::create("icon/return_button.png");
+    if (closeBtn->getContentSize().equals(Size::ZERO))
+    {
+        closeBtn = Button::create();
+        closeBtn->setContentSize(Size(40, 40));
+        closeBtn->setTitleText("X");
+        closeBtn->setTitleFontSize(20);
+        closeBtn->setTitleColor(Color3B::WHITE);
+    }
+    else
+    {
+        closeBtn->setScale(40.0f / closeBtn->getContentSize().width);
+    }
+    closeBtn->setPosition(Vec2(20, 480));
+    closeBtn->addClickEventListener([bgLayer](Ref*) {
+        bgLayer->removeFromParent();
+    });
+    panel->addChild(closeBtn);
+
+    // 获取士兵库存
+    auto& inventory = TroopInventory::getInstance();
+    const auto& allTroops = inventory.getAllTroops();
+
+    // 显示容量信息
+    int totalPopulation = inventory.getTotalPopulation();
+    int maxCapacity = armyCamp->getHousingSpace();
+    auto capacityLabel = Label::createWithSystemFont(
+        StringUtils::format("容纳人口: %d / %d", totalPopulation, maxCapacity),
+        "Microsoft YaHei", 18);
+    capacityLabel->setPosition(Vec2(200, 410));
+    capacityLabel->setTextColor(totalPopulation > maxCapacity ? Color4B::RED : Color4B::GREEN);
+    panel->addChild(capacityLabel);
+
+    // 兵种名称映射
+    std::map<UnitType, std::string> troopNames = {
+        {UnitType::kBarbarian, "野蛮人"},
+        {UnitType::kArcher, "弓箭手"},
+        {UnitType::kGiant, "巨人"},
+        {UnitType::kGoblin, "哥布林"},
+        {UnitType::kWallBreaker, "炸弹人"}
+    };
+
+    // 显示士兵列表
+    float yPos = 360;
+    int troopIndex = 0;
+    
+    for (const auto& pair : allTroops)
+    {
+        if (pair.second <= 0)
+            continue;
+
+        UnitType type = pair.first;
+        int count = pair.second;
+        
+        std::string troopName = "未知兵种";
+        auto it = troopNames.find(type);
+        if (it != troopNames.end())
+        {
+            troopName = it->second;
+        }
+
+        // 兵种行背景
+        auto rowBg = LayerColor::create(
+            troopIndex % 2 == 0 ? Color4B(60, 60, 80, 200) : Color4B(50, 50, 70, 200),
+            380, 50);
+        rowBg->setPosition(Vec2(10, yPos - 40));
+        panel->addChild(rowBg);
+
+        // 兵种名称
+        auto nameLabel = Label::createWithSystemFont(troopName, "Microsoft YaHei", 18);
+        nameLabel->setAnchorPoint(Vec2(0, 0.5f));
+        nameLabel->setPosition(Vec2(30, yPos - 15));
+        nameLabel->setTextColor(Color4B::WHITE);
+        panel->addChild(nameLabel);
+
+        // 数量
+        auto countLabel = Label::createWithSystemFont(
+            StringUtils::format("x %d", count),
+            "Microsoft YaHei", 20);
+        countLabel->setAnchorPoint(Vec2(1, 0.5f));
+        countLabel->setPosition(Vec2(370, yPos - 15));
+        countLabel->setTextColor(Color4B::YELLOW);
+        panel->addChild(countLabel);
+
+        yPos -= 60;
+        troopIndex++;
+    }
+
+    // 如果没有士兵，显示提示
+    if (allTroops.empty() || troopIndex == 0)
+    {
+        auto emptyLabel = Label::createWithSystemFont(
+            "暂无士兵\n前往兵营训练士兵",
+            "Microsoft YaHei", 20);
+        emptyLabel->setPosition(Vec2(200, 250));
+        emptyLabel->setTextColor(Color4B::GRAY);
+        emptyLabel->setAlignment(TextHAlignment::CENTER);
+        panel->addChild(emptyLabel);
+    }
+
+    // 底部说明
+    auto hintLabel = Label::createWithSystemFont(
+        "提示：前往兵营训练更多士兵",
+        "Microsoft YaHei", 14);
+    hintLabel->setPosition(Vec2(200, 30));
+    hintLabel->setTextColor(Color4B(200, 200, 200, 255));
+    panel->addChild(hintLabel);
 }
 
 std::string BuildingUpgradeUI::getResourceTypeName(ResourceType type) const

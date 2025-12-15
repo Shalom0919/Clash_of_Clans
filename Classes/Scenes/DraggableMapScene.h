@@ -48,6 +48,9 @@ public:
     
     // 供外部调用的升级UI接口
     void closeUpgradeUI();
+    
+    // 供 BuildingUpgradeUI 调用
+    BuildingManager* getBuildingManager() const { return _buildingManager; }
 
 private:
     // ==================== 管理器 ====================

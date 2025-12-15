@@ -242,7 +242,12 @@ bool DraggableMapScene::onTouchBegan(Touch* touch, Event* event)
     }
 
     if (_buildingManager && _buildingManager->isMovingBuilding())
-        return false;
+    {
+        // 🔴 修复：移动建筑模式下，开始拖动幽灵精灵
+        Vec2 touchPos = touch->getLocation();
+        _buildingManager->onBuildingTouchMoved(touchPos);
+        return true;
+    }
 
     if (_buildingManager && _buildingManager->isInBuildingMode())
     {
@@ -336,12 +341,13 @@ void DraggableMapScene::onTouchMoved(Touch* touch, Event* event)
         if (distance > 10.0f)
         {
             _hasMoved = true;
-            if (distance > 30.0f && _buildingManager && !_buildingManager->isMovingBuilding() && !_buildingManager->isInBuildingMode())
-            {
-                _buildingManager->startMovingBuilding(_clickedBuilding);
-                _clickedBuilding = nullptr;
-                return;
-            }
+            // 🔴 已禁用：长按拖动建筑功能（现在通过建筑详情页的"移动"按钮触发）
+            // if (distance > 30.0f && _buildingManager && !_buildingManager->isMovingBuilding() && !_buildingManager->isInBuildingMode())
+            // {
+            //     _buildingManager->startMovingBuilding(_clickedBuilding);
+            //     _clickedBuilding = nullptr;
+            //     return;
+            // }
         }
     }
 
