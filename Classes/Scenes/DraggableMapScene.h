@@ -13,9 +13,11 @@
 #define __DRAGGABLE_MAP_SCENE_H__
 
 #include "cocos2d.h"
+#include "Unit/unit.h""
 #include <string>
 #include <map> // ✅ 新增
 
+using TroopDeploymentMap = std::map<UnitType, int>;
 // 前向声明
 class MapController;
 class SceneUIController;
@@ -53,6 +55,8 @@ public:
     BuildingManager* getBuildingManager() const { return _buildingManager; }
 
 private:
+    // 🆕 暂存待部署的军队数据
+    TroopDeploymentMap _pendingTroops;
     // ==================== 管理器 ====================
     MapController* _mapController = nullptr;
     SceneUIController* _uiController = nullptr;
