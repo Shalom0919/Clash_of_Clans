@@ -22,7 +22,8 @@
 #include <vector>
 #include <string>
 #include <functional>
-
+#include <map>
+using TroopDeploymentMap = std::map<UnitType, int>;
 class BattleManager {
 public:
     enum class BattleState {
@@ -42,7 +43,7 @@ public:
     void update(float dt);
     
     // Actions
-    void startBattle();
+    void startBattle(const TroopDeploymentMap& deployment);
     void endBattle(bool surrender);
     void deployUnit(UnitType type, const cocos2d::Vec2& position);
     

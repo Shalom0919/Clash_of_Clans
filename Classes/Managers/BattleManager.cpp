@@ -98,49 +98,72 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
     }
 }
 
-void BattleManager::startBattle()
+//
+// ... (包含头文件部分不变)
+
+// ... (init, setBuildings 函数保持不变)
+
+// ------------------------------------------------------------------------------------
+// 🆕 修正：startBattle 接受 TroopDeploymentMap
+// ------------------------------------------------------------------------------------
+void BattleManager::startBattle(const TroopDeploymentMap& deployment)
 {
     _state = BattleState::READY;
     _elapsedTime = 0.0f;
-    
+
     // 🎵 Play music
     MusicManager::getInstance().playMusic(MusicType::BATTLE_GOING);
-    
-    // 🔴 修复：启用所有建筑的战斗模式
+
+    // 🔴 启用所有建筑的战斗模式
     for (auto* building : _enemyBuildings)
     {
         if (building)
         {
             building->enableBattleMode();
-            CCLOG("⚔️ 启用 %s 战斗模式", building->getDisplayName().c_str());
         }
     }
-    
+
+    // 🆕 核心：用玩家选择的军队数量初始化本地军队计数
+    _barbarianCount = 0;
+    _archerCount = 0;
+    _giantCount = 0;
+    _goblinCount = 0;
+    _wallBreakerCount = 0;
+
+    for (const auto& pair : deployment)
+    {
+        switch (pair.first)
+        {
+        case UnitType::kBarbarian: _barbarianCount = pair.second; break;
+        case UnitType::kArcher:    _archerCount = pair.second;    break;
+        case UnitType::kGiant:     _giantCount = pair.second;     break;
+        case UnitType::kGoblin:    _goblinCount = pair.second;    break;
+        case UnitType::kWallBreaker: _wallBreakerCount = pair.second; break;
+        }
+    }
+
+    CCLOG("📦 Deployed Troops: Barb=%d, Arch=%d, Giant=%d, Goblin=%d, WallBreaker=%d",
+        _barbarianCount, _archerCount, _giantCount, _goblinCount, _wallBreakerCount);
+
     if (!_isReplayMode)
     {
-        // Load troops from inventory
+        // 🚨 重要：扣除库存中的军队 (因为玩家已经确认部署)
         auto& troopInv = TroopInventory::getInstance();
-        _barbarianCount = troopInv.getTroopCount(UnitType::kBarbarian);
-        _archerCount = troopInv.getTroopCount(UnitType::kArcher);
-        _giantCount = troopInv.getTroopCount(UnitType::kGiant);
-        _goblinCount = troopInv.getTroopCount(UnitType::kGoblin);
-        _wallBreakerCount = troopInv.getTroopCount(UnitType::kWallBreaker);
-        
-        CCLOG("📦 Available Troops: Barb=%d, Arch=%d, Giant=%d, Goblin=%d, WallBreaker=%d", 
-              _barbarianCount, _archerCount, _giantCount, _goblinCount, _wallBreakerCount);
-        
+        for (const auto& pair : deployment)
+        {
+            if (pair.second > 0)
+            {
+                // 注意：这里需要假设 consumeTroops 不会失败，因为 ArmySelectionUI 已经保证了数量有效
+                troopInv.consumeTroops(pair.first, pair.second);
+            }
+        }
+
         // Start recording
         unsigned int seed = static_cast<unsigned int>(time(nullptr));
         srand(seed);
         ReplaySystem::getInstance().startRecording(_enemyUserId, _enemyGameData.toJson(), seed);
     }
-    else
-    {
-        // Replay mode setup handled by ReplaySystem callbacks in Scene usually, 
-        // but here we just ensure state is correct.
-        // ReplaySystem::getInstance().loadReplay(...) should have been called before init.
-    }
-    
+
     if (_onUIUpdate) _onUIUpdate();
 }
 
@@ -287,34 +310,34 @@ void BattleManager::deployUnit(UnitType type, const cocos2d::Vec2& position)
     int* count = nullptr;
     switch (type)
     {
-        case UnitType::kBarbarian: count = &_barbarianCount; break;
-        case UnitType::kArcher: count = &_archerCount; break;
-        case UnitType::kGiant: count = &_giantCount; break;
-        case UnitType::kGoblin: count = &_goblinCount; break;
-        case UnitType::kWallBreaker: count = &_wallBreakerCount; break;
-        default: return;
+    case UnitType::kBarbarian: count = &_barbarianCount; break;
+    case UnitType::kArcher: count = &_archerCount; break;
+    case UnitType::kGiant: count = &_giantCount; break;
+    case UnitType::kGoblin: count = &_goblinCount; break;
+    case UnitType::kWallBreaker: count = &_wallBreakerCount; break;
+    default: return;
     }
-    
+
+    // 逻辑修正：现在库存已经在 startBattle 中转移到 BattleManager 的本地变量了
+    // deployUnit 只需要消耗 BattleManager 的本地计数
+
+    if (*count <= 0) return; // 检查本地计数
+
+    // 无论是回放还是实时模式，本地计数都应该减少
+    (*count)--;
+    if (_onTroopDeploy) _onTroopDeploy(type, *count);
+
     if (!_isReplayMode)
     {
-        // 联网模式下，攻击者下兵也需要消耗（或者无限兵力？这里假设消耗）
-        if (*count <= 0) return;
-        
-        auto& troopInv = TroopInventory::getInstance();
-        if (!troopInv.consumeTroops(type, 1)) return;
-        
-        (*count)--;
-        if (_onTroopDeploy) _onTroopDeploy(type, *count);
-        
         ReplaySystem::getInstance().recordDeployUnit(_currentFrame, type, position);
-        
+
         // 🆕 发送网络包
         if (_isNetworked && _isAttacker && _onNetworkDeploy)
         {
             _onNetworkDeploy(type, position);
         }
     }
-    
+
     spawnUnit(type, position);
 }
 
