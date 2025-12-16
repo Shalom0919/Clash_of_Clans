@@ -1159,6 +1159,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\attack_icon.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\attack_selected_enemy_icon.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\clan_icon.png" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\confirm_button.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\crystal.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\defense_log_icon.png" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\end_battle_button.png" />

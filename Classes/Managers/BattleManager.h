@@ -21,6 +21,16 @@
 #include <string>
 #include <functional>
 
+enum class BattleMode
+{
+    LOCAL,           // 本地测试
+    PVP_ATTACK,      // PVP攻击
+    PVP_DEFEND,      // PVP防守
+    CLAN_WAR_ATTACK, // 部落战攻击
+    CLAN_WAR_DEFEND, // 部落战防守
+    SPECTATE         // 观战模式
+};
+
 class BattleManager {
 public:
     enum class BattleState {
@@ -57,6 +67,11 @@ public:
     // Troop Counts (for UI)
     int getTroopCount(UnitType type) const;
 
+    void  setBattleMode(BattleMode mode, const std::string& warId = "");
+    bool  canDeployUnit() const;
+    int   calculateStars() const;
+    float calculateDestructionRate() const;
+
     // Callbacks
     void setUIUpdateCallback(const std::function<void()>& callback) { _onUIUpdate = callback; }
     void setBattleEndCallback(const std::function<void()>& callback) { _onBattleEnd = callback; }
@@ -77,6 +92,9 @@ private:
     void uploadBattleResult();
     std::string getCurrentTimestamp();
     void updateTroopCounts();
+
+    BattleMode  _battleMode = BattleMode::LOCAL;
+    std::string _currentWarId;
     
     // 🆕 Helper
     void spawnUnit(UnitType type, const cocos2d::Vec2& position);

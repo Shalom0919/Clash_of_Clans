@@ -1008,6 +1008,9 @@
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\clan_icon.png">
       <Filter>Resources\icon</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\confirm_button.png">
+      <Filter>Resources\icon</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Resources\icon\crystal.png">
       <Filter>Resources\icon</Filter>
     </ClInclude>
