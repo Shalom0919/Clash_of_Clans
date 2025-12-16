@@ -12,6 +12,7 @@
 #include "Managers/MusicManager.h"
 #include "Managers/DefenseLogSystem.h"
 #include "ResourceManager.h"
+#include "PathFinder.h"
 #include <ctime>
 
 USING_NS_CC;
@@ -27,12 +28,32 @@ BattleManager::~BattleManager()
 void BattleManager::init(cocos2d::Node* mapLayer, const AccountGameData& enemyData, const std::string& enemyUserId, bool isReplay)
 {
     _mapLayer = mapLayer;
+
+    // 🔍 尝试 1: 直接转换
+    _gridMap = dynamic_cast<GridMap*>(mapLayer);
+
+    // 🔍 尝试 2: 如果 mapLayer 是容器，遍历子节点查找 GridMap
+    if (!_gridMap && mapLayer)
+    {
+        for (auto child : mapLayer->getChildren())
+        {
+            _gridMap = dynamic_cast<GridMap*>(child);
+            if (_gridMap) break;
+        }
+    }
+
+    if (_gridMap) {
+        CCLOG("✅ BattleManager: GridMap successfully linked!");
+    }
+    else {
+        CCLOG("❌ ERROR: BattleManager could not find GridMap! Pathfinding will FAIL.");
+    }
+
     _enemyGameData = enemyData;
     _enemyUserId = enemyUserId;
     _isReplayMode = isReplay;
     _state = BattleState::LOADING;
-    
-    // Reset stats
+
     _elapsedTime = 0.0f;
     _starsEarned = 0;
     _goldLooted = 0;
@@ -44,22 +65,37 @@ void BattleManager::init(cocos2d::Node* mapLayer, const AccountGameData& enemyDa
     _enemyBuildings.clear();
 }
 
+//
 void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
 {
     _enemyBuildings = buildings;
-    
     _totalBuildingHP = 0;
     _destroyedBuildingHP = 0;
-    
+
+    if (!_gridMap) CCLOG("❌ WARNING: setBuildings called but _gridMap is null!");
+
     for (auto* building : _enemyBuildings)
     {
         if (building)
         {
             _totalBuildingHP += building->getMaxHitpoints();
+
+            // 🆕 标记障碍物
+            if (_gridMap) {
+                // 获取建筑的网格坐标和尺寸
+                Vec2 gridPos = building->getGridPosition();
+                Size gridSize = building->getGridSize();
+
+                // 标记为占用 (不可通行)
+                _gridMap->markArea(gridPos, gridSize, true);
+
+                // 🔍 调试日志：确认位置是否正确
+                // Vec2 worldPos = building->getPosition();
+                // CCLOG("🏗️ Building at Grid(%.0f,%.0f) Size(%.0f,%.0f) marked as obstacle.", 
+                //       gridPos.x, gridPos.y, gridSize.width, gridSize.height);
+            }
         }
     }
-    
-    CCLOG("📊 BattleManager: Loaded %zu buildings, Total HP: %d", _enemyBuildings.size(), _totalBuildingHP);
 }
 
 void BattleManager::startBattle()
@@ -292,124 +328,178 @@ void BattleManager::deployUnitRemote(UnitType type, const cocos2d::Vec2& positio
 void BattleManager::spawnUnit(UnitType type, const cocos2d::Vec2& position)
 {
     Unit* unit = Unit::create(type);
-    if (!unit)
-    {
-        // if (!_isReplayMode) TroopInventory::getInstance().addTroops(type, 1); // Revert? Too complex for now
-        return;
-    }
-    
+    if (!unit) return;
+
     unit->setPosition(position);
-    
-    // 🆕 启用单位的战斗模式（显示血条）
     unit->enableBattleMode();
-    
+
     int zOrder = 10000 - static_cast<int>(position.y);
     if (_mapLayer) _mapLayer->addChild(unit, zOrder);
     _deployedUnits.push_back(unit);
-    
-    if (_state == BattleState::READY)
+
+    // 🆕 关键修正：只要放兵，且不是结束状态，就进入战斗状态，确保 tick 被调用
+    if (_state == BattleState::READY || _state == BattleState::LOADING)
     {
+        if (_state == BattleState::LOADING) {
+            CCLOG("Auto-starting battle on unit deploy");
+            // 如果在 loading 阶段就放兵，可能需要手动触发 startBattle 的部分逻辑
+            // 但通常建议 UI 层面控制好。这里强制设为 FIGHTING 确保兵能动
+        }
         _state = BattleState::FIGHTING;
         activateAllBuildings();
     }
 }
 
+//
+
 void BattleManager::updateUnitAI(float dt)
 {
+    // 必须确保 _mapLayer 被正确识别为 GridMap
+    GridMap* gridMap = dynamic_cast<GridMap*>(_mapLayer);
+
     for (auto it = _deployedUnits.begin(); it != _deployedUnits.end();)
     {
         Unit* unit = *it;
         if (!unit || unit->IsDead())
         {
-            it = _deployedUnits.erase(it);
+            // 简单处理：跳过已死亡单位，等待下一帧清理或由容器管理
+            ++it;
             continue;
         }
-        
+
         BaseBuilding* target = unit->getTarget();
+
+        // --------------------------------------------------------
+        // 1. 如果没有目标，或者目标已被摧毁 -> 寻找新目标
+        // --------------------------------------------------------
         if (!target || target->isDestroyed())
         {
-            // Find new target
-            BaseBuilding* closestBuilding = nullptr;
-            BaseBuilding* closestDefenseBuilding = nullptr;
-            BaseBuilding* closestResourceBuilding = nullptr;
-            float closestDistance = 99999.0f;
-            float closestDefenseDistance = 99999.0f;
-            float closestResourceDistance = 99999.0f;
-            
-            Vec2 unitWorldPos = unit->getParent()->convertToWorldSpace(unit->getPosition());
-            
-            for (auto* building : _enemyBuildings)
-            {
-                if (!building || building->isDestroyed()) continue;
-                
-                Vec2 buildingWorldPos = building->getParent()->convertToWorldSpace(building->getPosition());
-                float distance = unitWorldPos.distance(buildingWorldPos);
-                
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestBuilding = building;
-                }
-                
-                if (unit->GetType() == UnitType::kGiant && building->isDefenseBuilding())
-                {
-                    if (distance < closestDefenseDistance)
-                    {
-                        closestDefenseDistance = distance;
-                        closestDefenseBuilding = building;
+            unit->clearTarget();
+
+            BaseBuilding* bestTarget = nullptr;
+            float minDistance = 999999.0f;
+            Vec2 unitPos = unit->getPosition();
+
+            // 辅助 Lambda：寻找符合条件的最近建筑
+            auto findTargetWithFilter = [&](std::function<bool(BaseBuilding*)> filter) -> BaseBuilding* {
+                BaseBuilding* closest = nullptr;
+                float minDist = 999999.0f;
+                for (auto* b : _enemyBuildings) {
+                    if (b && !b->isDestroyed() && filter(b)) {
+                        float dist = unitPos.distance(b->getPosition());
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closest = b;
+                        }
                     }
                 }
-                
-                if (unit->GetType() == UnitType::kGoblin && building->getBuildingType() == BuildingType::kResource)
-                {
-                    if (distance < closestResourceDistance)
-                    {
-                        closestResourceDistance = distance;
-                        closestResourceBuilding = building;
-                    }
-                }
+                return closest;
+                };
+
+            // 根据兵种偏好选择目标
+            if (unit->GetType() == UnitType::kGiant) {
+                // 巨人优先打防御
+                bestTarget = findTargetWithFilter([](BaseBuilding* b) { return b->isDefenseBuilding(); });
             }
-            
-            BaseBuilding* selectedTarget = nullptr;
-            if (unit->GetType() == UnitType::kGiant)
-                selectedTarget = closestDefenseBuilding ? closestDefenseBuilding : closestBuilding;
-            else if (unit->GetType() == UnitType::kGoblin)
-                selectedTarget = closestResourceBuilding ? closestResourceBuilding : closestBuilding;
-            else
-                selectedTarget = closestBuilding;
-            
-            if (selectedTarget)
-            {
-                unit->setTarget(selectedTarget);
-                target = selectedTarget;
+            else if (unit->GetType() == UnitType::kGoblin) {
+                // 哥布林优先打资源
+                bestTarget = findTargetWithFilter([](BaseBuilding* b) { return b->getBuildingType() == BuildingType::kResource; });
+            }
+            else if (unit->GetType() == UnitType::kWallBreaker) {
+                // 炸弹人优先打墙
+                bestTarget = findTargetWithFilter([](BaseBuilding* b) { return b->getBuildingType() == BuildingType::kWall; });
+            }
+
+            // 如果没有找到优先目标（或不是优先兵种），则攻击最近的任意建筑
+            if (!bestTarget) {
+                bestTarget = findTargetWithFilter([](BaseBuilding* b) { return true; });
+            }
+
+            // 锁定目标
+            if (bestTarget) {
+                unit->setTarget(bestTarget);
+                target = bestTarget;
+                // 找到新目标后，立即让单位停止当前动作，准备下一帧的寻路
+                unit->StopMoving();
             }
         }
-        
+
+        // --------------------------------------------------------
+        // 2. 执行攻击或移动逻辑
+        // --------------------------------------------------------
         if (target && !target->isDestroyed())
         {
+            // ✅ 修复点：在这里明确定义 targetPos，供后续逻辑使用
             Vec2 targetPos = target->getPosition();
+
+            // 检查是否在攻击范围内
             if (unit->isInAttackRange(targetPos))
             {
+                // 到达范围，停止移动
+                if (unit->isMoving()) unit->StopMoving();
+
                 unit->updateAttackCooldown(dt);
                 if (unit->isAttackReady())
                 {
-                    unit->Attack(false);
-                    target->takeDamage(unit->getDamage());
-                    unit->resetAttackCooldown();
-                    if (target->isDestroyed()) unit->clearTarget();
+                    // --- 炸弹人自爆逻辑 ---
+                    if (unit->GetType() == UnitType::kWallBreaker) {
+                        unit->Attack(false);
+                        // 炸弹人造成极高伤害（这里简化为直接伤害目标，实际可能是范围AOE）
+                        float damage = unit->getDamage() * 40.0f;
+                        target->takeDamage(damage);
+                        unit->Die(); // 自爆后死亡
+                    }
+                    // --- 普通单位攻击逻辑 ---
+                    else {
+                        unit->Attack(false);
+                        target->takeDamage(unit->getDamage());
+                        unit->resetAttackCooldown();
+                    }
+
+                    // 检查目标是否被摧毁
+                    if (target->isDestroyed()) {
+                        unit->clearTarget();
+                        // 🆕 核心：建筑被摧毁后，释放占用的网格
+                        if (gridMap) {
+                            gridMap->markArea(target->getGridPosition(), target->getGridSize(), false);
+                        }
+                    }
                 }
             }
             else
             {
-                bool needsNewPath = !unit->isMoving();
-                if (unit->isMoving())
+                // 不在攻击范围内，需要移动
+
+                // 优化：仅当单位当前静止（刚生成/刚打完/被阻挡）时才重新计算路径
+                // 或者目标位置发生显著变化时才寻路。避免每帧调用 A*
+                bool needsPathfinding = !unit->isMoving();
+
+                if (needsPathfinding)
                 {
-                    float distToCurrentTarget = unit->getTargetPosition().distance(targetPos);
-                    if (distToCurrentTarget > 10.0f) needsNewPath = true;
+                    if (gridMap) {
+                        // 炸弹人通常要走向城墙，不需要“绕开”作为目标的城墙
+                        // 但对于其他障碍物，炸弹人也需要绕。
+                        // 这里简化：如果兵种是炸弹人，ignoreWalls = false (因为 GridMap 里所有建筑都是障碍)
+                        // PathFinder 会计算到目标（墙）相邻格子的路径
+
+                        std::vector<Vec2> path = PathFinder::getInstance().findPath(
+                            gridMap,
+                            unit->getPosition(),
+                            targetPos, // ✅ 这里使用了上面定义的 targetPos
+                            false // ignoreWalls: false 表示必须绕墙
+                        );
+
+                        // 让单位沿着路径点移动
+                        unit->MoveToPath(path);
+                    }
+                    else {
+                        // 如果没有地图数据，降级为直线移动
+                        unit->MoveTo(targetPos);
+                    }
                 }
-                if (needsNewPath) unit->MoveTo(targetPos);
             }
         }
+
         ++it;
     }
 }

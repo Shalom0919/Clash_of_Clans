@@ -150,7 +150,10 @@ std::vector<Vec2> PathFinder::findPath(GridMap* gridMap, const Vec2& startWorldU
 
             if (!isValid(nx, ny, width, height) || closedSet[nx][ny])
                 continue;
-
+            if (gridMap->isBlocked(nx, ny)) // isBlocked 返回 _collisionMap[nx][ny]
+            {
+                continue; // 跳过这个点，不加入寻路队列
+            }
             // 碰撞检测
             bool isTargetPos = (nx == (int)endGrid.x && ny == (int)endGrid.y);
             if (!ignoreWalls && !isTargetPos && gridMap->isBlocked(nx, ny))

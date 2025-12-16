@@ -17,6 +17,8 @@
 #include "Buildings/BaseBuilding.h"
 #include "Buildings/DefenseBuilding.h"
 #include "Managers/ReplaySystem.h"
+#include "GridMap.h"
+#include "PathFinder.h"
 #include <vector>
 #include <string>
 #include <functional>
@@ -29,7 +31,6 @@ public:
         FIGHTING,
         FINISHED
     };
-
     BattleManager();
     ~BattleManager();
 
@@ -76,13 +77,20 @@ private:
     void calculateBattleResult();
     void uploadBattleResult();
     std::string getCurrentTimestamp();
-    void updateTroopCounts();
+    /**
+     * @brief 计算建筑周围最近的可行走攻击位置
+     * @param unit 当前单位
+     * @param target 目标建筑
+     * @return 最佳的世界坐标位置
+     */
     
+    GridMap* _gridMap = nullptr; // 添加成员变量
     // 🆕 Helper
     void spawnUnit(UnitType type, const cocos2d::Vec2& position);
 
     // Data
     cocos2d::Node* _mapLayer = nullptr;
+    
     AccountGameData _enemyGameData;
     std::string _enemyUserId;
     bool _isReplayMode = false;
