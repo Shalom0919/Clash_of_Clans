@@ -842,6 +842,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingCapacityManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingLimitManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ClanDataCache.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GlobalAudioManager.h" />
@@ -867,10 +868,11 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\DraggableMapScene.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\HelloWorldScene.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\BuildingUpgradeService.h" />
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\ClanService.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\BattleUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\BuildingHealthBarUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ClanPanel.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListItem.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\SettingsPanel.h" />
@@ -899,6 +901,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingCapacityManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingLimitManager.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ClanDataCache.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GlobalAudioManager.cpp" />
@@ -925,10 +928,11 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\DraggableMapScene_New.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Scenes\HelloWorldScene.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\BuildingUpgradeService.cpp" />
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\ClanService.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\BattleUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\BuildingHealthBarUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ClanPanel.cpp" />
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListItem.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ResourceCollectionUI.cpp" />
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\SettingsPanel.cpp" />

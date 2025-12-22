@@ -403,6 +403,9 @@ void BuildingUpgradeUI::onUpgradeClicked()
         case UpgradeError::kNotEnoughElixir:
             hintMsg = "圣水不足，无法升级！";
             break;
+        case UpgradeError::kNotEnoughGem:
+            hintMsg = "宝石不足，无法升级！";
+            break;
         default:
             break;
         }

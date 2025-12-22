@@ -504,11 +504,6 @@ void AccountSelectScene::showDeleteConfirmDialog(const std::string& userId, cons
     confirmBtn->setScale9Enabled(true);
     confirmBtn->setPosition(Vec2(140, 35));
     
-    // 设置红色背景
-    auto confirmBg = LayerColor::create(Color4B(200, 50, 50, 255), 150, 50);
-    confirmBg->setPosition(Vec2(-75, -25));
-    confirmBtn->addChild(confirmBg, -1);
-    
     confirmBtn->addClickEventListener([this, mask, userId, username](Ref*) {
         // 执行删除操作
         auto& mgr = AccountManager::getInstance();

@@ -7,18 +7,10 @@
  * License:       MIT License
  ****************************************************************/
 #pragma once
-
 #include <string>
-
 #include <functional>
-
 #include "cocos2d.h"
-
 #include "cocos/network/HttpClient.h"
-
-
-
-// Very basic networking helper to perform HTTP requests to a backend.
 
 class NetworkManager {
 

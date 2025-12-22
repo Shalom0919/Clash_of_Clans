@@ -81,21 +81,38 @@ UpgradeResult BuildingUpgradeService::tryUpgrade(BaseBuilding* building)
         return UpgradeResult::Failure(UpgradeError::kNoAvailableBuilder, errorMsg);
     }
     
-    // 5. 检查并扣除资源
+        // 5. 检查并扣除资源
     if (!resMgr.consume(costType, cost))
     {
-        std::string resName = (costType == ResourceType::kGold) ? "金币" : "圣水";
-        std::string errorMsg = StringUtils::format(
-            "%s不足！需要：%d，当前：%d",
-            resName.c_str(), cost, resMgr.getResourceCount(costType));
-        
+        std::string  resName;
+        UpgradeError error;
+
+        switch (costType)
+        {
+        case ResourceType::kGold:
+            resName = "金币";
+            error   = UpgradeError::kNotEnoughGold;
+            break;
+        case ResourceType::kElixir:
+            resName = "圣水";
+            error   = UpgradeError::kNotEnoughElixir;
+            break;
+        case ResourceType::kGem:
+            resName = "宝石";
+            error   = UpgradeError::kNotEnoughGem;
+            break;
+        default:
+            resName = "资源";
+            error   = UpgradeError::kUnknownError;
+            break;
+        }
+
+        std::string errorMsg =
+            StringUtils::format("%s不足！需要：%d，当前：%d", resName.c_str(), cost, resMgr.getResourceCount(costType));
+
         CCLOG("❌ 升级失败：%s", errorMsg.c_str());
         CCLOG("   - 建筑：%s", building->getDisplayName().c_str());
-        
-        UpgradeError error = (costType == ResourceType::kGold) 
-            ? UpgradeError::kNotEnoughGold 
-            : UpgradeError::kNotEnoughElixir;
-        
+
         return UpgradeResult::Failure(error, errorMsg);
     }
     

@@ -233,26 +233,43 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
         int maxCount = limitMgr->getLimit(limitKey);
         showHint(StringUtils::format("已达到建造上限！当前: %d/%d", currentCount, maxCount));
         
-        // 🔴 修复：达到上限时，清理虚影和建造状态
         endPlacing();
         return;
     }
     
     // ==================== 检查并扣除建造费用 ====================
-    auto& resMgr = ResourceManager::getInstance();
-    int cost = _selectedBuilding.cost;
+    auto&        resMgr   = ResourceManager::getInstance();
+    int          cost     = _selectedBuilding.cost;
     ResourceType costType = _selectedBuilding.costType;
     if (cost > 0 && !resMgr.consume(costType, cost))
     {
-        std::string resName = (costType == ResourceType::kGold) ? "金币" : "圣水";
+        // 🔴 修复：正确处理所有资源类型的名称
+        std::string resName;
+        switch (costType)
+        {
+        case ResourceType::kGold:
+            resName = "金币";
+            break;
+        case ResourceType::kElixir:
+            resName = "圣水";
+            break;
+        case ResourceType::kGem:
+            resName = "宝石";
+            break;
+        default:
+            resName = "资源";
+            break;
+        }
         showHint(StringUtils::format("%s不足！需要 %d %s", resName.c_str(), cost, resName.c_str()));
-        
-        // 🔴 修复：资源不足时，清理虚影和建造状态，防止卡住
+
+        // 资源不足时，清理虚影和建造状态，防止卡住
         endPlacing();
         return;
     }
+
     // 1. 标记网格被占用
     _gridMap->markArea(gridPos, _selectedBuilding.gridSize, true);
+    
     // 2. 创建建筑实体
 
     BaseBuilding* building = createBuildingEntity(_selectedBuilding);
@@ -302,16 +319,18 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
     // 记录建筑到BuildingLimitManager
     limitMgr->recordBuilding(limitKey);
     
+    // 🆕 为新建造的资源生产建筑创建收集UI
+    auto* resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
+    if (resourceBuilding && resourceBuilding->isProducer())
+    {
+        resourceBuilding->initCollectionUI();
+    }
+    
     auto* resBuilding = dynamic_cast<ResourceBuilding*>(building);
     if (resBuilding && resBuilding->isStorage())
     {
         // 注册新建筑 -> 这会自动触发 recalculateCapacity
         BuildingCapacityManager::getInstance().registerOrUpdateBuilding(resBuilding, true);
-    }
-    auto* resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
-    if (resourceBuilding && resourceBuilding->isStorage())
-    {
-        BuildingCapacityManager::getInstance().registerOrUpdateBuilding(resourceBuilding, true);
     }
     
     // 7. 为建筑添加点击监听器
@@ -895,6 +914,13 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
         // 记录建筑到BuildingLimitManager（只在非只读模式下）
         if (!isReadOnly)
         {
+            // 🆕 非只读模式：为资源建筑创建收集UI
+            auto* resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
+            if (resourceBuilding && resourceBuilding->isProducer())
+            {
+                resourceBuilding->initCollectionUI();
+            }
+            
             // 🔴 关键修复：先移除等级后缀，再进行名称匹配
             std::string rawName = data.name;
             size_t lvPos = rawName.find(" (Lv.");
@@ -950,6 +976,7 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
             
             setupBuildingClickListener(building);
         }
+        // 🆕 只读模式（战斗场景）：不创建收集UI，不注册到 ResourceCollectionManager
     }
     
     CCLOG("✅ Loaded %zu buildings successfully (Mode: %s)", 

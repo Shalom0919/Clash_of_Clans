@@ -56,6 +56,9 @@ public:
     // ✅ 新增：获取收集UI
     ResourceCollectionUI* getCollectionUI() const;
 
+    // 🆕 新增：初始化资源收集UI（仅在非战斗模式下调用）
+    void initCollectionUI();
+
 protected:
     ResourceBuilding() = default;
     virtual bool init(int level) override;

@@ -21,14 +21,15 @@ class UpgradeManager;
  */
 enum class UpgradeError
 {
-    kSuccess,                 // 成功
-    kMaxLevel,                // 已达最高等级
-    kAlreadyUpgrading,        // 已在升级中
-    kNotEnoughGold,           // 金币不足
-    kNotEnoughElixir,         // 圣水不足
-    kNoAvailableBuilder,      // 无空闲工人
-    kStartUpgradeFailed,      // 启动升级失败
-    kUnknownError             // 未知错误
+    kSuccess,            // 成功
+    kMaxLevel,           // 已达最高等级
+    kAlreadyUpgrading,   // 已在升级中
+    kNotEnoughGold,      // 金币不足
+    kNotEnoughElixir,    // 圣水不足
+    kNotEnoughGem,       // 宝石不足（新增）
+    kNoAvailableBuilder, // 无空闲工人
+    kStartUpgradeFailed, // 启动升级失败
+    kUnknownError        // 未知错误
 };
 
 /**

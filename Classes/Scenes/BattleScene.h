@@ -40,7 +40,7 @@ class BaseBuilding;
 class BattleScene : public cocos2d::Scene {
 public:
     /**
-     * @brief 创建战斗场景（传统方式，保留兼容性）
+     * @brief 创建战斗场景
      */
     static cocos2d::Scene* createScene();
     
