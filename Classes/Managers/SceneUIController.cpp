@@ -78,71 +78,88 @@ bool SceneUIController::init()
 
 void SceneUIController::setupMainButtons()
 {
-    float resourceXPos = 30;
-    float buildButtonY = _visibleSize.height - 230;
-    
-    // Shop 按钮
+    float margin = 20.0f; // 边距
+
+    // ==================== 右下角按钮组 ====================
+    // Shop 按钮 - 右下角
     _shopButton = Button::create("icon/shop_icon.png");
-    if (_shopButton->getContentSize().equals(Size::ZERO)) {
-        _shopButton = createFlatButton("Shop", Size(100, 50), Color3B(50, 150, 50), [this](Ref*) {
-            if (_onShopClicked) _onShopClicked();
+    if (_shopButton->getContentSize().equals(Size::ZERO))
+    {
+        _shopButton = createFlatButton("Shop", Size(120, 120), Color3B(50, 150, 50), [this](Ref*) {
+            if (_onShopClicked)
+                _onShopClicked();
         });
-    } else {
+    }
+    else
+    {
         _shopButton->setScale(90.0f / _shopButton->getContentSize().width);
         _shopButton->addClickEventListener([this](Ref*) {
-            if (_onShopClicked) _onShopClicked();
+            if (_onShopClicked)
+                _onShopClicked();
         });
     }
-    _shopButton->setPosition(Vec2(resourceXPos + 70, buildButtonY));
+    _shopButton->setPosition(Vec2(_visibleSize.width - 80, 80)); // 右下角
     this->addChild(_shopButton, 10);
-    
-    // Settings 按钮
+
+    // Settings 按钮 - 右下角（Shop 按钮上方）
     _settingsButton = Button::create("icon/tool_icon.png");
-    if (_settingsButton->getContentSize().equals(Size::ZERO)) {
-        _settingsButton = createFlatButton("\xE2\x9A\x99", Size(60, 60), Color3B(100, 100, 100), [this](Ref*) {
-            onSettingsClicked();
-        });
+    if (_settingsButton->getContentSize().equals(Size::ZERO))
+    {
+        _settingsButton = createFlatButton("\xE2\x9A\x99", Size(60, 60), Color3B(100, 100, 100),
+                                           [this](Ref*) { onSettingsClicked(); });
         _settingsButton->setTitleFontSize(36);
-    } else {
+    }
+    else
+    {
         _settingsButton->setScale(60.0f / _settingsButton->getContentSize().width);
-        _settingsButton->addClickEventListener([this](Ref*) {
-            onSettingsClicked();
+        _settingsButton->addClickEventListener([this](Ref*) { onSettingsClicked(); });
+    }
+    _settingsButton->setPosition(Vec2(_visibleSize.width - 60, 160)); // 右下角，Shop 上方
+    this->addChild(_settingsButton, 10);
+
+    // ==================== 左下角按钮组 ====================
+    // Attack 按钮 - 左下角
+    _attackButton = Button::create("icon/attack_icon.png");
+    if (_attackButton->getContentSize().equals(Size::ZERO))
+    {
+        _attackButton = createFlatButton("Attack!", Size(120, 60), Color3B(200, 80, 0), [this](Ref*) {
+            if (_onAttackClicked)
+                _onAttackClicked();
         });
     }
-    _settingsButton->setPosition(Vec2(_visibleSize.width - 60, _visibleSize.height - 160));
-    this->addChild(_settingsButton, 10);
-    
-    // Attack 按钮
-    _attackButton = Button::create("icon/attack_icon.png");
-    if (_attackButton->getContentSize().equals(Size::ZERO)) {
-        _attackButton = createFlatButton("Attack!", Size(120, 60), Color3B(200, 80, 0), [this](Ref*) {
-            if (_onAttackClicked) _onAttackClicked();
-        });
-    } else {
+    else
+    {
         _attackButton->setScale(110.0f / _attackButton->getContentSize().width);
         _attackButton->addClickEventListener([this](Ref*) {
-            if (_onAttackClicked) _onAttackClicked();
+            if (_onAttackClicked)
+                _onAttackClicked();
         });
     }
-    _attackButton->setPosition(Vec2(100, 100));
+    _attackButton->setPosition(Vec2(70, 90));
     this->addChild(_attackButton, 20);
-    
-    // Clan 按钮
+
+    // ==================== 左侧中间按钮 ====================
+    // Clan 按钮 - 左侧中间
     _clanButton = Button::create("icon/clan_icon.png");
-    if (_clanButton->getContentSize().equals(Size::ZERO)) {
+    if (_clanButton->getContentSize().equals(Size::ZERO))
+    {
         _clanButton = createFlatButton("Clan", Size(100, 50), Color3B(50, 100, 150), [this](Ref*) {
-            if (_onClanClicked) _onClanClicked();
+            if (_onClanClicked)
+                _onClanClicked();
         });
-    } else {
+    }
+    else
+    {
         _clanButton->setScale(90.0f / _clanButton->getContentSize().width);
         _clanButton->addClickEventListener([this](Ref*) {
-            if (_onClanClicked) _onClanClicked();
+            if (_onClanClicked)
+                _onClanClicked();
         });
     }
-    _clanButton->setPosition(Vec2(_visibleSize.width - 80, 100));
+    _clanButton->setPosition(Vec2(60, _visibleSize.height / 2)); // 左侧中间
     this->addChild(_clanButton, 20);
-    
-    // Defense Log 按钮
+
+    // Defense Log 按钮 - 左下角（Attack 按钮上方）
     _defenseLogButton = Button::create("icon/defense_log_icon.png");
     if (_defenseLogButton->getContentSize().equals(Size::ZERO))
     {
@@ -159,7 +176,7 @@ void SceneUIController::setupMainButtons()
                 _onDefenseLogClicked();
         });
     }
-    _defenseLogButton->setPosition(Vec2(100, 200));
+    _defenseLogButton->setPosition(Vec2(60, 180));
     this->addChild(_defenseLogButton, 20);
 }
 
@@ -309,57 +326,60 @@ void SceneUIController::toggleBuildingList()
 void SceneUIController::showConfirmButtons(const Vec2& worldPos)
 {
     hideConfirmButtons();
-    
-    float buttonSize = 45.0f;
-    float offsetX = 60.0f;
-    float offsetY = 80.0f;
-    
+
+    float buttonSize = 36.0f;
+    float offsetX    = 50.0f;
+    float offsetY    = 70.0f;
+
     // 确认按钮（绿色勾 - 使用confirm_button.png）
     _confirmButton = Button::create("icon/confirm_button.png");
-    if (_confirmButton->getContentSize().equals(Size::ZERO)) {
+    float confirmScale =
+        buttonSize / std::max(_confirmButton->getContentSize().width, _confirmButton->getContentSize().height);
+    if (_confirmButton->getContentSize().equals(Size::ZERO))
+    {
         // 如果图片不存在，回退到文本模式
         _confirmButton = Button::create();
-        _confirmButton->setTitleText("\xE2\x9C\x93");  // UTF-8编码的 ✓
-        _confirmButton->setTitleFontSize(30);
+        _confirmButton->setTitleText("\xE2\x9C\x93"); // UTF-8编码的 ✓
+        _confirmButton->setTitleFontSize(24);
         _confirmButton->setTitleColor(Color3B::WHITE);
         _confirmButton->setContentSize(Size(buttonSize, buttonSize));
-    } else {
-        // 使用图片，设置缩放
-        _confirmButton->setScale(buttonSize / _confirmButton->getContentSize().width);
+        confirmScale = 1.0f;
     }
     _confirmButton->setPosition(Vec2(worldPos.x + offsetX, worldPos.y + offsetY));
-    
+
     _confirmButton->addClickEventListener([this](Ref*) {
-        if (_onConfirmBuilding) _onConfirmBuilding();
+        if (_onConfirmBuilding)
+            _onConfirmBuilding();
     });
     this->addChild(_confirmButton, 10000);
-    
+
     // 取消按钮（红色叉 - 使用return_button.png）
     _cancelButton = Button::create("icon/return_button.png");
-    if (_cancelButton->getContentSize().equals(Size::ZERO)) {
+    float cancelScale =
+        buttonSize / std::max(_cancelButton->getContentSize().width, _cancelButton->getContentSize().height);
+    if (_cancelButton->getContentSize().equals(Size::ZERO))
+    {
         // 如果图片不存在，回退到文本模式
         _cancelButton = Button::create();
-        _cancelButton->setTitleText("\xE2\x9C\x97");  // UTF-8编码的 ✗
-        _cancelButton->setTitleFontSize(30);
+        _cancelButton->setTitleText("\xE2\x9C\x97"); // UTF-8编码的 ✗
+        _cancelButton->setTitleFontSize(24);
         _cancelButton->setTitleColor(Color3B::WHITE);
         _cancelButton->setContentSize(Size(buttonSize, buttonSize));
-    } else {
-        // 使用图片，设置缩放
-        _cancelButton->setScale(buttonSize / _cancelButton->getContentSize().width);
+        cancelScale = 1.0f;
     }
     _cancelButton->setPosition(Vec2(worldPos.x - offsetX, worldPos.y + offsetY));
-    
+
     _cancelButton->addClickEventListener([this](Ref*) {
-        if (_onCancelBuilding) _onCancelBuilding();
+        if (_onCancelBuilding)
+            _onCancelBuilding();
     });
     this->addChild(_cancelButton, 10000);
-    
-    // 弹出动画
-    auto scaleIn = ScaleTo::create(0.2f, 1.0f);
+
     _confirmButton->setScale(0.0f);
-    _confirmButton->runAction(EaseBackOut::create(scaleIn->clone()));
+    _confirmButton->runAction(EaseBackOut::create(ScaleTo::create(0.2f, confirmScale)));
+
     _cancelButton->setScale(0.0f);
-    _cancelButton->runAction(EaseBackOut::create(scaleIn->clone()));
+    _cancelButton->runAction(EaseBackOut::create(ScaleTo::create(0.2f, cancelScale)));
 }
 
 void SceneUIController::hideConfirmButtons()

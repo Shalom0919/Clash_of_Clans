@@ -52,6 +52,9 @@
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ClanDataCache.cpp">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.cpp">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClCompile>
@@ -130,8 +133,8 @@
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\BuildingUpgradeService.cpp">
       <Filter>Source Files\Classes\Services</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.cpp">
-      <Filter>Source Files\Classes\UI</Filter>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\ClanService.cpp">
+      <Filter>Source Files\Classes\Services</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\BattleUI.cpp">
       <Filter>Source Files\Classes\UI</Filter>
@@ -140,6 +143,9 @@
       <Filter>Source Files\Classes\UI</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ClanPanel.cpp">
+      <Filter>Source Files\Classes\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListItem.cpp">
       <Filter>Source Files\Classes\UI</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.cpp">
@@ -228,6 +234,9 @@
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\BuildingManager.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ClanDataCache.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
@@ -303,8 +312,8 @@
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\BuildingUpgradeService.h">
       <Filter>Source Files\Classes\Services</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ArmySelectionUI.h">
-      <Filter>Source Files\Classes\UI</Filter>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Services\ClanService.h">
+      <Filter>Source Files\Classes\Services</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\BattleUI.h">
       <Filter>Source Files\Classes\UI</Filter>
@@ -313,6 +322,9 @@
       <Filter>Source Files\Classes\UI</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\ClanPanel.h">
+      <Filter>Source Files\Classes\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListItem.h">
       <Filter>Source Files\Classes\UI</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\UI\PlayerListLayer.h">

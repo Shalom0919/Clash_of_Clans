@@ -259,19 +259,19 @@ Vec2 ArmyCampBuilding::getTroopDisplayPosition(int index) const
 {
     // 在军营周围排列小兵
     // 使用2x2或3x3网格排列
-    float buildingWidth = this->getContentSize().width;
+    float buildingWidth  = this->getContentSize().width;
     float buildingHeight = this->getContentSize().height;
-    
-    // 每行3个小兵
-    int row = index / 3;
-    int col = index % 3;
-    
-    // 小兵站在军营前方（下方）
-    float startX = -buildingWidth * 0.3f;
-    float startY = -buildingHeight * 0.2f;  // 负值表示在建筑下方
-    float spacingX = buildingWidth * 0.3f;
-    float spacingY = buildingHeight * 0.25f;
-    
+
+    // 每行6个小兵
+    int row = index / 6;
+    int col = index % 6;
+
+    // 小兵站在军营内（向右上方调整）
+    float startX   = buildingWidth * 0.1f;
+    float startY   = buildingHeight * 0.25f;
+    float spacingX = buildingWidth * 0.15f;
+    float spacingY = buildingHeight * 0.2f;
+
     return Vec2(startX + col * spacingX, startY - row * spacingY);
 }
 

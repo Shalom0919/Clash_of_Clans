@@ -103,7 +103,8 @@ void DefenseLogSystem::addDefenseLog(const DefenseLog& log)
         AccountGameData gameData = accMgr.getCurrentGameData();
         gameData.gold = resMgr.getResourceCount(ResourceType::kGold);
         gameData.elixir = resMgr.getResourceCount(ResourceType::kElixir);
-        gameData.trophies += log.trophyChange;  // 奖杯可能减少（负数）
+        gameData.trophies        = std::max(0, gameData.trophies + log.trophyChange);
+        
         
         accMgr.updateGameData(gameData);
         

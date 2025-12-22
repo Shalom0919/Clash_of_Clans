@@ -644,9 +644,13 @@ void BattleScene::setupTouchListeners()
             (_battleManager->getState() == BattleManager::BattleState::READY || 
              _battleManager->getState() == BattleManager::BattleState::FIGHTING))
         {
-            Vec2 touchPos = touch->getLocation();
-            Vec2 mapLocalPos = _mapSprite->convertToNodeSpace(touchPos);
-            _battleManager->deployUnit(_selectedUnitType, mapLocalPos);
+            // 🆕 检查是否有选中的兵种
+            if (_battleUI && _battleUI->hasSelectedUnit())
+            {
+                Vec2 touchPos = touch->getLocation();
+                Vec2 mapLocalPos = _mapSprite->convertToNodeSpace(touchPos);
+                _battleManager->deployUnit(_selectedUnitType, mapLocalPos);
+            }
         }
         _isDragging = false;
     };

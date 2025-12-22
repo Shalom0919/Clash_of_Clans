@@ -98,19 +98,10 @@ bool ResourceBuilding::init(int level)
     _storageLabel->setVisible(false);
     this->addChild(_storageLabel, 100);
     
-    // ✅ 为生产型建筑创建收集UI
-    if (isProducer())
-    {
-        auto collectionUI = ResourceCollectionUI::create(const_cast<ResourceBuilding*>(this));
-        if (collectionUI)
-        {
-            collectionUI->setName("collectionUI");
-            this->addChild(collectionUI, 1000);
-            // 🔴 关键修复：必须向管理器注册自己，否则管理器不知道这个建筑的存在！
-            ResourceCollectionManager::getInstance()->registerBuilding(this);
-            CCLOG("✅ 为 %s 创建了收集UI", getDisplayName().c_str());
-        }
-    }
+    // 🔴 修复：不在 init 中创建收集UI
+    // 收集UI 将在 BuildingManager::loadBuildingsFromData 中根据 isReadOnly 参数决定是否创建
+    // 这样战斗场景（isReadOnly=true）就不会显示资源采集框
+    
     // ✅ 【新增】根据建筑类型和等级设置生命值
     int hp = 400; // 默认值
 
@@ -465,4 +456,26 @@ void ResourceBuilding::onLevelUp()
     }
 
     // (可选) 如果是生产型建筑，在这里也可以处理生产效率变化的逻辑
+}
+
+// 🆕 新增：初始化资源收集UI（仅在非战斗模式下调用）
+void ResourceBuilding::initCollectionUI()
+{
+    // 只有生产型建筑需要收集UI
+    if (!isProducer())
+        return;
+    
+    // 避免重复创建
+    if (this->getChildByName("collectionUI"))
+        return;
+    
+    auto collectionUI = ResourceCollectionUI::create(this);
+    if (collectionUI)
+    {
+        collectionUI->setName("collectionUI");
+        this->addChild(collectionUI, 1000);
+        // 向管理器注册
+        ResourceCollectionManager::getInstance()->registerBuilding(this);
+        CCLOG("✅ 为 %s 创建了收集UI", getDisplayName().c_str());
+    }
 }

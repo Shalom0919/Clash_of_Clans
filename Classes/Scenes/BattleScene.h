@@ -40,7 +40,7 @@ class BaseBuilding;
 class BattleScene : public cocos2d::Scene {
 public:
     /**
-     * @brief 创建战斗场景（传统方式，保留兼容性）
+     * @brief 创建战斗场景
      */
     static cocos2d::Scene* createScene();
     
@@ -122,6 +122,7 @@ private:
     
     // ==================== 交互逻辑 ====================
     void onTroopSelected(UnitType type);
+    void onTroopDeselected();  // 🆕 取消选中处理
     void returnToMainScene();
     void toggleSpeed();
 
