@@ -1,30 +1,25 @@
 ﻿/****************************************************************
  * Project Name:  Clash_of_Clans
- * File Name:
- * File Function:
- * Author:        
- * Update Date:   2025/12/14
+ * File Name:     unit.cpp
+ * File Function: 单位类实现（兼容层，逐步废弃）
+ * Author:        赵崇治、薛毓哲
+ * Update Date:   2025/12/22
  * License:       MIT License
  ****************************************************************/
 #include "unit.h"
-#include "UI/UnitHealthBarUI.h"
+#include "UnitFactory.h"
 
-USING_NS_CC; // 使用 Cocos2d 命名空间，免去每次写 cocos2d::
+USING_NS_CC;
 
-// --------------------------------------------------------------------------
-// 标准的 Cocos2d-x "create" 模式实现
-// 作用：new 一个对象 -> init 初始化 -> autorelease 加入自动内存管理池
-// --------------------------------------------------------------------------
+// 兼容旧API：调用新的工厂方法
 Unit* Unit::create(UnitType type)
 {
-    Unit* unit = new (std::nothrow) Unit();
-    if (unit && unit->init(type))
-    {
-        unit->autorelease(); // 关键：交出所有权，防止忘记 delete 导致内存泄漏
-        return unit;
-    }
-    CC_SAFE_DELETE(unit); // 如果初始化失败，安全删除
-    return nullptr;
+    // 使用工厂创建新的单位对象
+    BaseUnit* newUnit = UnitFactory::createUnit(type, 1);
+
+    // 为了保持兼容性，我们需要将 BaseUnit* 转换为 Unit*
+    // 注意：这是临时方案，最终应该移除 Unit 类
+    return dynamic_cast<Unit*>(newUnit);
 }
 
 // --------------------------------------------------------------------------

@@ -338,19 +338,10 @@ void ArmyBuilding::completeCurrentTask()
     auto task = _trainingQueue.front();
     _trainingQueue.pop();
     
-    // 获取兵种名称
-    std::string unitName;
-    switch (task.unitType)
-    {
-    case UnitType::kBarbarian: unitName = "野蛮人"; break;
-    case UnitType::kArcher: unitName = "弓箭手"; break;
-    case UnitType::kGiant: unitName = "巨人"; break;
-    case UnitType::kGoblin: unitName = "哥布林"; break;
-    case UnitType::kWallBreaker: unitName = "炸弹人"; break;
-    default: unitName = "未知兵种"; break;
-    }
+    // 🆕 使用工厂类创建单位
+    std::string unitName = UnitFactory::getUnitName(task.unitType);
     
-    // 🆕 添加士兵到库存（而不是只增加人口）
+    // 添加士兵到库存
     auto& troopInv = TroopInventory::getInstance();
     int addedCount = troopInv.addTroops(task.unitType, 1);
     
@@ -361,13 +352,11 @@ void ArmyBuilding::completeCurrentTask()
               unitName.c_str(), getQueueLength(),
               resMgr.getCurrentTroopCount(), resMgr.getMaxTroopCapacity());
         
-        // 🆕 通知所有军营显示小兵
         notifyArmyCampsToDisplayTroop(task.unitType);
         
-        // 🔴 方案A清理：触发回调（不传递Unit对象，场景只需显示提示）
         if (_onTrainingComplete)
         {
-            _onTrainingComplete(nullptr);  // 传递nullptr，表示不需要Unit对象
+            _onTrainingComplete(nullptr);
         }
     }
     else
