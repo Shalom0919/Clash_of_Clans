@@ -289,20 +289,14 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
     building->setGridSize(_selectedBuilding.gridSize);
     building->setAnchorPoint(Vec2(0.5f, 0.35f));
     
-    // 只有当建筑没有设置缩放时，才使用buildingData的缩放
-    float currentScale = building->getScale();
-    if (currentScale == 1.0f || currentScale == 0.0f) // 默认缩放或未初始化
-    {
-        building->setScale(_selectedBuilding.scaleFactor);
-    }
-    
-    // 🆕 记录目标缩放值（用于动画）
-    float targetScale = building->getScale();
+    // 🔴 修复：强制使用 buildingData 的缩放值，确保与虚影大小一致
+    // 无论建筑自身有什么缩放值，都统一使用虚影的缩放
+    float targetScale = _selectedBuilding.scaleFactor;
     
     Vec2 buildingPos = calculateBuildingPosition(gridPos);
     building->setPosition(buildingPos);
     // 4. 设置动态 Z-Order (Y-Sorting)
-    // 🎨 使用 10000 - Y 作为 Z-Order，确保始终为正数
+    // 使用 10000 - Y 作为 Z-Order，确保始终为正数
     // 例如：Y=100 -> ZOrder=9900, Y=200 -> ZOrder=9800
     // ZOrder 越大越在前面，所以 Y 小的对象会在前面（靠屏幕上方）
     // 这符合 2.5D 游戏的深度逻辑
@@ -310,7 +304,7 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
     _mapSprite->addChild(building);
     // 5. 播放落地动画
     building->setScale(0.0f);
-    auto scaleAction = EaseBackOut::create(ScaleTo::create(0.4f, targetScale));  // 🔴 使用记录的目标缩放值
+    auto scaleAction = EaseBackOut::create(ScaleTo::create(0.4f, targetScale));
     auto fadeIn = FadeIn::create(0.3f);
     building->runAction(Spawn::create(scaleAction, fadeIn, nullptr));
     // 6. 保存到建筑列表
