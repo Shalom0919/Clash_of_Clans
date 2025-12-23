@@ -1,4 +1,4 @@
-﻿/****************************************************************
+﻿
 /****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     CombatStats.h
@@ -11,45 +11,42 @@
 #define COMBAT_STATS_H_
 
 /**
- * @brief 战斗属性结构体
- * 适用于建筑和单位
+ * @struct CombatStats
+ * @brief 战斗属性结构体，适用于建筑和单位
  */
 struct CombatStats
 {
-    // ==================== 生命值 ====================
-    int maxHitpoints     = 100; // 最大生命值
-    int currentHitpoints = 100; // 当前生命值
+    int maxHitpoints     = 100;  ///< 最大生命值
+    int currentHitpoints = 100;  ///< 当前生命值
 
-    // ==================== 攻击属性 ====================
-    float damage      = 0.0f; // 每次攻击伤害（支持小数）
-    float attackSpeed = 1.0f; // 攻击速度（秒/次）
-    float attackRange = 0.0f; // 攻击范围（像素）
+    float damage      = 0.0f;  ///< 每次攻击伤害
+    float attackSpeed = 1.0f;  ///< 攻击速度（秒/次）
+    float attackRange = 0.0f;  ///< 攻击范围（像素）
 
-    // ==================== 防御属性 ====================
-    int armor = 0; // 护甲（减少伤害）
-
-    // ==================== 目标类型 ====================
-    enum class TargetType
-    {
-        kAny,      // 任何目标
-        kGround,   // 仅地面目标
-        kAir,      // 仅空中目标
-        kDefense,  // 优先防御建筑
-        kResource, // 优先资源建筑
-        kWalls     // 仅城墙
-    };
-
-    TargetType preferredTarget = TargetType::kAny; // 优先目标类型
-
-    // ==================== 辅助方法 ====================
+    int armor = 0;  ///< 护甲（减少伤害）
 
     /**
-     * @brief 是否还活着
+     * @enum TargetType
+     * @brief 目标类型枚举
      */
+    enum class TargetType
+    {
+        kAny,      ///< 任何目标
+        kGround,   ///< 仅地面目标
+        kAir,      ///< 仅空中目标
+        kDefense,  ///< 优先防御建筑
+        kResource, ///< 优先资源建筑
+        kWalls     ///< 仅城墙
+    };
+
+    TargetType preferredTarget = TargetType::kAny;  ///< 优先目标类型
+
+    /** @brief 检查是否存活 */
     bool isAlive() const { return currentHitpoints > 0; }
 
     /**
-     * @brief 生命值百分比
+     * @brief 获取生命值百分比
+     * @return float 生命值百分比 (0.0 ~ 1.0)
      */
     float getHealthPercent() const
     {

@@ -18,14 +18,22 @@
 class ArcherUnit : public BaseUnit
 {
 public:
+    /**
+     * @brief 创建弓箭手单位
+     * @param level 单位等级
+     * @return ArcherUnit* 弓箭手指针
+     */
     static ArcherUnit* create(int level = 1);
 
-    UnitType    getUnitType() const override { return UnitType::kArcher; }
+    /** @brief 获取单位类型 */
+    UnitType getUnitType() const override { return UnitType::kArcher; }
+
+    /** @brief 获取显示名称 */
     std::string getDisplayName() const override { return "弓箭手"; }
 
 protected:
-    bool init(int level) override;
-    void loadAnimations() override;
+    virtual bool init(int level) override;
+    virtual void loadAnimations() override;
 };
 
 #endif // ARCHER_UNIT_H_

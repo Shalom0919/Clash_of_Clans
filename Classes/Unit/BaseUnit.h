@@ -1,4 +1,5 @@
 ﻿/****************************************************************
+/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     BaseUnit.h
  * File Function: 单位基类 - 所有士兵的父类
@@ -29,58 +30,120 @@ class BaseUnit : public cocos2d::Node
 public:
     virtual ~BaseUnit();
 
-    // ==================== 生命周期管理 ====================
-
+    /**
+     * @brief 每帧更新
+     * @param dt 帧时间间隔
+     */
     virtual void tick(float dt);
 
-    // ==================== 移动系统 ====================
-
+    /**
+     * @brief 移动到指定位置
+     * @param target_pos 目标位置
+     */
     void moveTo(const cocos2d::Vec2& target_pos);
+
+    /**
+     * @brief 沿路径移动
+     * @param path 路径点列表
+     */
     void moveToPath(const std::vector<cocos2d::Vec2>& path);
+
+    /** @brief 停止移动 */
     void stopMoving();
 
-    virtual float        getMoveSpeed() const { return _moveSpeed; }
-    bool                 isMoving() const { return _isMoving; }
+    /** @brief 获取移动速度 */
+    virtual float getMoveSpeed() const { return _moveSpeed; }
+
+    /** @brief 是否正在移动 */
+    bool isMoving() const { return _isMoving; }
+
+    /** @brief 获取目标位置 */
     const cocos2d::Vec2& getTargetPosition() const { return _targetPos; }
 
-    // ==================== 战斗系统 ====================
-
+    /**
+     * @brief 攻击
+     * @param useSecondAttack 是否使用第二攻击
+     */
     virtual void attack(bool useSecondAttack = false);
+
+    /**
+     * @brief 受到伤害
+     * @param damage 伤害值
+     * @return bool 是否死亡
+     */
     virtual bool takeDamage(float damage);
+
+    /** @brief 死亡 */
     virtual void die();
 
-    bool          isDead() const { return _isDead; }
-    void          setTarget(BaseBuilding* target) { _currentTarget = target; }
-    BaseBuilding* getTarget() const { return _currentTarget; }
-    void          clearTarget() { _currentTarget = nullptr; }
+    /** @brief 是否死亡 */
+    bool isDead() const { return _isDead; }
 
+    /** @brief 设置攻击目标 */
+    void setTarget(BaseBuilding* target) { _currentTarget = target; }
+
+    /** @brief 获取攻击目标 */
+    BaseBuilding* getTarget() const { return _currentTarget; }
+
+    /** @brief 清除攻击目标 */
+    void clearTarget() { _currentTarget = nullptr; }
+
+    /**
+     * @brief 检查是否在攻击范围内
+     * @param targetPos 目标位置
+     * @return bool 是否在范围内
+     */
     bool isInAttackRange(const cocos2d::Vec2& targetPos) const;
+
+    /**
+     * @brief 更新攻击冷却
+     * @param dt 帧时间间隔
+     */
     void updateAttackCooldown(float dt);
+
+    /** @brief 攻击是否就绪 */
     bool isAttackReady() const { return _attackCooldown <= 0.0f; }
+
+    /** @brief 重置攻击冷却 */
     void resetAttackCooldown();
 
-    // ==================== 属性访问 ====================
+    /** @brief 获取单位类型 */
+    virtual UnitType getUnitType() const = 0;
 
-    virtual UnitType    getUnitType() const    = 0;
+    /** @brief 获取显示名称 */
     virtual std::string getDisplayName() const = 0;
 
-    CombatStats&       getCombatStats() { return _combatStats; }
+    /** @brief 获取战斗属性 */
+    CombatStats& getCombatStats() { return _combatStats; }
+
+    /** @brief 获取战斗属性 (const) */
     const CombatStats& getCombatStats() const { return _combatStats; }
 
-    int   getCurrentHP() const { return _combatStats.currentHitpoints; }
-    int   getMaxHP() const { return _combatStats.maxHitpoints; }
+    /** @brief 获取当前生命值 */
+    int getCurrentHP() const { return _combatStats.currentHitpoints; }
+
+    /** @brief 获取最大生命值 */
+    int getMaxHP() const { return _combatStats.maxHitpoints; }
+
+    /** @brief 获取攻击伤害 */
     float getDamage() const { return _combatStats.damage; }
+
+    /** @brief 获取攻击范围 */
     float getAttackRange() const { return _combatStats.attackRange; }
-    int   getLevel() const { return _unitLevel; }
 
-    // ==================== UI系统 ====================
+    /** @brief 获取等级 */
+    int getLevel() const { return _unitLevel; }
 
+    /** @brief 初始化血条UI */
     void initHealthBarUI();
+
+    /** @brief 启用战斗模式 */
     void enableBattleMode();
+
+    /** @brief 禁用战斗模式 */
     void disableBattleMode();
 
-    // ==================== 兼容旧API（大写命名，逐步废弃） ====================
-
+    /** @deprecated 使用小写命名的方法 */
     void     MoveTo(const cocos2d::Vec2& target_pos) { moveTo(target_pos); }
     void     MoveToPath(const std::vector<cocos2d::Vec2>& path) { moveToPath(path); }
     void     StopMoving() { stopMoving(); }
@@ -93,52 +156,74 @@ public:
 
 protected:
     BaseUnit();
+
+    /**
+     * @brief 初始化单位
+     * @param level 单位等级
+     * @return bool 初始化是否成功
+     */
     virtual bool init(int level);
 
-    // ==================== 动画系统（子类实现） ====================
-
+    /** @brief 加载动画（子类实现） */
     virtual void loadAnimations() = 0;
-    void         playAnimation(UnitAction action, UnitDirection dir);
-    void         addAnimation(const std::string& key, cocos2d::Animation* anim);
+
+    /**
+     * @brief 播放动画
+     * @param action 动作类型
+     * @param dir 方向
+     */
+    void playAnimation(UnitAction action, UnitDirection dir);
+
+    /**
+     * @brief 添加动画到缓存
+     * @param key 动画键
+     * @param anim 动画对象
+     */
+    void addAnimation(const std::string& key, cocos2d::Animation* anim);
+
+    /**
+     * @brief 从帧添加动画
+     */
     void addAnimFromFrames(const std::string& unitName, const std::string& key, int start, int end, float delay);
+
+    /**
+     * @brief 从文件添加动画
+     */
     void addAnimFromFiles(const std::string& basePath, const std::string& namePattern, const std::string& key,
                           int start, int end, float delay);
 
-    // ==================== 特殊行为钩子（子类可选实现） ====================
+    virtual void onAttackBefore() {}   ///< 攻击前回调
+    virtual void onAttackAfter() {}    ///< 攻击后回调
+    virtual void onDeathBefore() {}    ///< 死亡前回调
+    virtual void onTakeDamage(float damage) {}  ///< 受伤回调
 
-    virtual void onAttackBefore() {}
-    virtual void onAttackAfter() {}
-    virtual void onDeathBefore() {}
-    virtual void onTakeDamage(float damage) {}
-
-    // ==================== 工具函数 ====================
-
+    /**
+     * @brief 计算移动方向
+     * @param direction 方向向量
+     * @return UnitDirection 单位方向
+     */
     UnitDirection calculateDirection(const cocos2d::Vec2& direction);
 
-    // ==================== 成员变量 ====================
+protected:
+    cocos2d::Sprite* _sprite = nullptr;                      ///< 精灵
+    std::map<std::string, cocos2d::Animation*> _animCache;   ///< 动画缓存
 
-    cocos2d::Sprite*                           _sprite;
-    std::map<std::string, cocos2d::Animation*> _animCache;
+    bool _isMoving = false;                    ///< 是否正在移动
+    cocos2d::Vec2 _targetPos;                  ///< 目标位置
+    cocos2d::Vec2 _moveVelocity;               ///< 移动速度向量
+    float _moveSpeed = 100.0f;                 ///< 移动速度
+    UnitDirection _currentDir = UnitDirection::kRight;  ///< 当前方向
+    std::vector<cocos2d::Vec2> _pathPoints;    ///< 路径点
+    int _currentPathIndex = 0;                 ///< 当前路径索引
 
-    // 移动相关
-    bool                       _isMoving;
-    cocos2d::Vec2              _targetPos;
-    cocos2d::Vec2              _moveVelocity;
-    float                      _moveSpeed;
-    UnitDirection              _currentDir;
-    std::vector<cocos2d::Vec2> _pathPoints;
-    int                        _currentPathIndex;
+    CombatStats _combatStats;                  ///< 战斗属性
+    BaseBuilding* _currentTarget = nullptr;    ///< 当前攻击目标
+    float _attackCooldown = 0.0f;              ///< 攻击冷却
+    int _unitLevel = 1;                        ///< 单位等级
+    bool _isDead = false;                      ///< 是否死亡
 
-    // 战斗相关
-    CombatStats   _combatStats;
-    BaseBuilding* _currentTarget;
-    float         _attackCooldown;
-    int           _unitLevel;
-    bool          _isDead;
-
-    // UI相关
-    UnitHealthBarUI* _healthBarUI;
-    bool             _battleModeEnabled;
+    UnitHealthBarUI* _healthBarUI = nullptr;   ///< 血条UI
+    bool _battleModeEnabled = false;           ///< 战斗模式是否启用
 };
 
 #endif // BASE_UNIT_H_

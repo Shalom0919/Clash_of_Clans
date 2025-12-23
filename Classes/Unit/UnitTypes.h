@@ -14,11 +14,11 @@
  * @brief 单位类型枚举
  */
 enum class UnitType {
-  kBarbarian,    // 野蛮人
-  kArcher,       // 弓箭手
-  kGiant,        // 巨人
-  kGoblin,       // 哥布林
-  kWallBreaker   // 炸弹人
+    kBarbarian,    ///< 野蛮人
+    kArcher,       ///< 弓箭手
+    kGiant,        ///< 巨人
+    kGoblin,       ///< 哥布林
+    kWallBreaker   ///< 炸弹人
 };
 
 /**
@@ -26,11 +26,11 @@ enum class UnitType {
  * @brief 单位动作枚举
  */
 enum class UnitAction {
-  kRun,      // 跑步
-  kIdle,     // 待机
-  kAttack,   // 攻击1
-  kAttack2,  // 攻击2
-  kDeath     // 死亡
+    kRun,      ///< 跑步
+    kIdle,     ///< 待机
+    kAttack,   ///< 攻击1
+    kAttack2,  ///< 攻击2
+    kDeath     ///< 死亡
 };
 
 /**
@@ -38,14 +38,14 @@ enum class UnitAction {
  * @brief 单位朝向枚举（支持8方向）
  */
 enum class UnitDirection {
-  kUp,
-  kUpRight,
-  kRight,
-  kDownRight,
-  kDown,
-  kDownLeft,
-  kLeft,
-  kUpLeft
+    kUp,         ///< 上
+    kUpRight,    ///< 右上
+    kRight,      ///< 右
+    kDownRight,  ///< 右下
+    kDown,       ///< 下
+    kDownLeft,   ///< 左下
+    kLeft,       ///< 左
+    kUpLeft      ///< 左上
 };
 
 #endif  // UNIT_TYPES_H_

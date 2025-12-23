@@ -25,17 +25,21 @@ public:
      * @brief 创建单位
      * @param type 单位类型
      * @param level 单位等级
-     * @return 单位指针
+     * @return BaseUnit* 单位指针
      */
     static BaseUnit* createUnit(UnitType type, int level = 1);
 
     /**
      * @brief 获取兵种人口数
+     * @param type 单位类型
+     * @return int 人口数
      */
     static int getUnitPopulation(UnitType type);
 
     /**
      * @brief 获取兵种名称
+     * @param type 单位类型
+     * @return std::string 兵种名称
      */
     static std::string getUnitName(UnitType type);
 };

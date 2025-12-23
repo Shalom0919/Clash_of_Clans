@@ -13,7 +13,7 @@
 
 /**
  * @class WallBreakerUnit
- * @brief 炸弹人单位类
+ * @brief 炸弹人单位类 - 自杀式攻击，优先攻击城墙
  *
  * 特点：
  * - 优先攻击城墙
@@ -24,21 +24,26 @@
 class WallBreakerUnit : public BaseUnit
 {
 public:
+    /**
+     * @brief 创建炸弹人单位
+     * @param level 单位等级
+     * @return WallBreakerUnit* 炸弹人指针
+     */
     static WallBreakerUnit* create(int level = 1);
 
-    UnitType    getUnitType() const override { return UnitType::kWallBreaker; }
+    /** @brief 获取单位类型 */
+    UnitType getUnitType() const override { return UnitType::kWallBreaker; }
+
+    /** @brief 获取显示名称 */
     std::string getDisplayName() const override { return "炸弹人"; }
 
 protected:
-    bool init(int level) override;
-    void loadAnimations() override;
-
-    // 炸弹人特殊行为：死亡时爆炸
-    void onDeathBefore() override;
+    virtual bool init(int level) override;
+    virtual void loadAnimations() override;
+    virtual void onDeathBefore() override;  ///< 死亡时爆炸
 
 private:
-    // 创建爆炸视觉效果
-    void createExplosionEffect();
+    void createExplosionEffect();  ///< 创建爆炸视觉效果
 };
 
 #endif // WALL_BREAKER_UNIT_H_

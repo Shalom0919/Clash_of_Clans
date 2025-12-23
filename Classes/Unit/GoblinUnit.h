@@ -18,14 +18,22 @@
 class GoblinUnit : public BaseUnit
 {
 public:
+    /**
+     * @brief 创建哥布林单位
+     * @param level 单位等级
+     * @return GoblinUnit* 哥布林指针
+     */
     static GoblinUnit* create(int level = 1);
 
-    UnitType    getUnitType() const override { return UnitType::kGoblin; }
+    /** @brief 获取单位类型 */
+    UnitType getUnitType() const override { return UnitType::kGoblin; }
+
+    /** @brief 获取显示名称 */
     std::string getDisplayName() const override { return "哥布林"; }
 
 protected:
-    bool init(int level) override;
-    void loadAnimations() override;
+    virtual bool init(int level) override;
+    virtual void loadAnimations() override;
 };
 
 #endif // GOBLIN_UNIT_H_
