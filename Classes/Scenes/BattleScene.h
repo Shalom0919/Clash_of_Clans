@@ -122,6 +122,7 @@ private:
     
     // ==================== 交互逻辑 ====================
     void onTroopSelected(UnitType type);
+    void onTroopDeselected();  // 🆕 取消选中处理
     void returnToMainScene();
     void toggleSpeed();
 
