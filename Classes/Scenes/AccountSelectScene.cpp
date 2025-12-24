@@ -144,7 +144,7 @@ void AccountSelectScene::refreshList()
     {
         if (auto cur = mgr.getCurrentAccount())
         {
-            _selectedUserId = cur->userId;
+            _selectedUserId = cur->account.userId;
         }
         else
         {

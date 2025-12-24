@@ -33,13 +33,20 @@ bool BuildingHealthBarUI::init(BaseBuilding* building)
     _building = building;
     _lastHealthValue = building->getHitpoints();
 
-    // 🆕 核心修复 1：根据建筑实际高度计算血条位置，而不是固定 20
-    // 确保血条显示在建筑“头顶”上方 15 像素处
+    // 🔴 修复：根据建筑的锚点和实际高度计算血条位置
+    // 建筑锚点通常是 (0.5, 0.35)，所以需要相应调整
     float buildingHeight = building->getContentSize().height;
-    float posY = buildingHeight + 15.0f;
+    float anchorY = building->getAnchorPoint().y;
+    
+    // 计算建筑顶部相对于锚点的偏移
+    // 如果锚点是 (0.5, 0.35)，则顶部偏移 = height * (1 - 0.35) = height * 0.65
+    float topOffset = buildingHeight * (1.0f - anchorY);
+    
+    // 血条位置：建筑顶部上方 5 像素
+    float posY = topOffset + 5.0f;
 
     // ==================== 创建血条背景（红色 - 已损伤部分） ====================
-    _healthBarBg = LayerColor::create(Color4B(80, 0, 0, 255), BAR_WIDTH, BAR_HEIGHT); // 加深背景色，对比更明显
+    _healthBarBg = LayerColor::create(Color4B(80, 0, 0, 255), BAR_WIDTH, BAR_HEIGHT);
     _healthBarBg->setPosition(Vec2(-BAR_WIDTH / 2.0f, posY));
     _healthBarBg->setAnchorPoint(Vec2(0.0f, 0.5f));
     this->addChild(_healthBarBg, 1);
@@ -53,26 +60,32 @@ bool BuildingHealthBarUI::init(BaseBuilding* building)
     // ==================== 创建血量文字标签 ====================
     int currentHP = building->getHitpoints();
     int maxHP = building->getMaxHitpoints();
-    // 稍微调整文字位置，在血条上方一点点
-    _healthLabel = Label::createWithSystemFont(StringUtils::format("%d/%d", currentHP, maxHP), "Arial", 12); // 字体调小一点，免得遮挡
-    _healthLabel->setPosition(Vec2(0.0f, posY + 10.0f));
+    
+    if (maxHP <= 0)
+    {
+        CCLOG("⚠️ BuildingHealthBarUI: %s 的 maxHP 为 %d，可能存在初始化问题", 
+              building->getDisplayName().c_str(), maxHP);
+        maxHP = 100;
+    }
+    
+    if (currentHP > maxHP)
+    {
+        CCLOG("⚠️ BuildingHealthBarUI: %s 血量异常 (%d > %d)，强制同步", 
+              building->getDisplayName().c_str(), currentHP, maxHP);
+        currentHP = maxHP;
+    }
+    
+    // 血量文字在血条上方
+    _healthLabel = Label::createWithSystemFont(StringUtils::format("%d/%d", currentHP, maxHP), "Arial", 10);
+    _healthLabel->setPosition(Vec2(0.0f, posY + 8.0f));
     _healthLabel->setTextColor(Color4B::WHITE);
-    // 给文字加个描边，防止在浅色背景下看不清
     _healthLabel->enableOutline(Color4B::BLACK, 1);
     this->addChild(_healthLabel, 3);
 
     // ==================== 初始状态设置 ====================
-    // 默认先隐藏，除非开启了 alwaysVisible (虽然 init 时通常还没开启，但逻辑上要严谨)
-    if (_alwaysVisible || currentHP < maxHP)
-    {
-        this->setVisible(true);
-        _isVisible = true;
-    }
-    else
-    {
-        this->setVisible(false);
-        _isVisible = false;
-    }
+    // 默认隐藏，由 BaseBuilding::showHealthBar() 控制显示
+    this->setVisible(false);
+    _isVisible = false;
 
     // 启用每帧更新
     this->scheduleUpdate();
@@ -82,8 +95,19 @@ bool BuildingHealthBarUI::init(BaseBuilding* building)
 
 void BuildingHealthBarUI::update(float dt)
 {
-    if (!_building || isBuildingDestroyed())
+    // 更安全的空指针和销毁检查
+    if (_building == nullptr)
     {
+        this->unscheduleUpdate();
+        this->removeFromParent();
+        return;
+    }
+    
+    // 检查建筑是否已销毁
+    if (_building->isDestroyed())
+    {
+        _building = nullptr;
+        this->unscheduleUpdate();
         this->removeFromParent();
         return;
     }
@@ -172,8 +196,11 @@ void BuildingHealthBarUI::hide()
 
 bool BuildingHealthBarUI::isBuildingDestroyed() const
 {
-    if (!_building) return true;
-    // 增加安全性检查：如果建筑已经被 cleanup 或者引用计数异常，视为销毁
-    if (_building->getReferenceCount() <= 0) return true;
+    // 🔴 修复：只检查空指针和 isDestroyed()，不检查引用计数
+    // 因为当引用计数为0时对象可能已释放，访问它是未定义行为
+    if (_building == nullptr)
+    {
+        return true;
+    }
     return _building->isDestroyed();
 }

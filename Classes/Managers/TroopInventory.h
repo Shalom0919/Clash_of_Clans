@@ -11,7 +11,7 @@
 
 #include "Unit/UnitTypes.h"
 #include "cocos2d.h"
-
+#include "Managers/GameDataSerializer.h"
 #include <functional>
 #include <map>
 

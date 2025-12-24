@@ -122,7 +122,7 @@ void DraggableMapScene::initializeManagers()
     if (currentAccount && !currentAccount->assignedMapName.empty())
     {
         assignedMap = currentAccount->assignedMapName;
-        CCLOG("✅ Loading assigned map for account %s: %s", currentAccount->username.c_str(), assignedMap.c_str());
+        CCLOG("✅ Loading assigned map for account %s: %s", currentAccount->account.username.c_str(), assignedMap.c_str());
     }
 
     _mapController = MapController::create();
@@ -554,6 +554,14 @@ void DraggableMapScene::onCancelBuilding()
 void DraggableMapScene::onMapChanged(const std::string& newMap)
 {
     CCLOG("Map change requested: %s", newMap.c_str());
+
+    // 切换地图前先保存当前游戏状态
+    if (_buildingManager)
+    {
+        _buildingManager->saveCurrentState();
+        CCLOG("✅ Saved game state before map change");
+    }
+
     // Reload scene to apply new map selection
     auto newScene = DraggableMapScene::createScene();
     Director::getInstance()->replaceScene(TransitionFade::create(0.5f, newScene));
@@ -717,8 +725,8 @@ void DraggableMapScene::connectToServer()
             if (currentAccount)
             {
                 // 登录
-                SocketClient::getInstance().login(currentAccount->userId, currentAccount->username, currentAccount->gameData.trophies);
-                CCLOG("[Socket] 📤 Sent login: %s", currentAccount->userId.c_str());
+                SocketClient::getInstance().login(currentAccount->account.userId, currentAccount->account.username, currentAccount->gameData.trophies);
+                CCLOG("[Socket] 📤 Sent login: %s", currentAccount->account.userId.c_str());
                 
                 // 上传地图数据
                 std::string mapData = currentAccount->gameData.toJson();
@@ -767,7 +775,7 @@ void DraggableMapScene::setupNetworkCallbacks()
         if (!cur) return;
 
         // If this client is the defender, record a defense log
-        if (result.defenderId == cur->userId)
+        if (result.defenderId == cur->account.userId)
         {
             DefenseLog log;
             log.attackerId = result.attackerId;
@@ -1044,7 +1052,7 @@ void DraggableMapScene::showLocalPlayerList()
     std::vector<PlayerInfo> players;
     for (const auto& account : allAccounts)
     {
-        if (account.userId != currentAccount->userId)
+        if (account.userId != currentAccount->account.userId)
         {
             auto gameData = accMgr.getPlayerGameData(account.userId);
             PlayerInfo player;

@@ -1,5 +1,4 @@
 ﻿/****************************************************************
-/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     BaseUnit.h
  * File Function: 单位基类 - 所有士兵的父类
@@ -20,6 +19,10 @@
 
 class BaseBuilding;
 class UnitHealthBarUI;
+
+// 动作 Tag 常量，用于区分不同类型的动作以便单独停止
+constexpr int kAnimationTag = 1001;     ///< 动画动作 Tag
+constexpr int kDamageEffectTag = 1002;  ///< 受击颜色效果 Tag
 
 /**
  * @class BaseUnit

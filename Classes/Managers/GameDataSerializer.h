@@ -92,7 +92,6 @@ public:
 
         if (!JsonSerializer::parse(jsonStr, doc))
         {
-            // 返回默认值
             return state;
         }
 
@@ -106,7 +105,6 @@ public:
         state.resources.goldCapacity   = reader.readInt("goldCapacity", 3000);
         state.resources.elixirCapacity = reader.readInt("elixirCapacity", 3000);
 
-        // 容量不能为0
         if (state.resources.goldCapacity <= 0)
             state.resources.goldCapacity = 3000;
         if (state.resources.elixirCapacity <= 0)
@@ -129,6 +127,17 @@ public:
 
     // ==================== 向后兼容方法 ====================
     static GameStateData fromJson(const std::string& jsonStr) { return deserializeGameState(jsonStr); }
-
-    static std::string toJson(const GameStateData& state) { return serializeGameState(state); }
+    static std::string   toJson(const GameStateData& state) { return serializeGameState(state); }
 };
+
+// ==================== GameStateData 成员方法实现 ====================
+
+inline std::string GameStateData::toJson() const
+{
+    return GameDataSerializer::serializeGameState(*this);
+}
+
+inline GameStateData GameStateData::fromJson(const std::string& jsonStr)
+{
+    return GameDataSerializer::deserializeGameState(jsonStr);
+}

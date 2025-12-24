@@ -111,11 +111,17 @@ void AccountManager::upsertAccount(const AccountData& acc)
 
     if (it != _accounts.end())
     {
+        // 🔴 修复：只更新账户数据，不触发游戏状态保存
+        // 游戏状态应该由调用者显式保存（如 BuildingManager::saveCurrentState）
         it->account  = acc;
         _activeIndex = static_cast<int>(std::distance(_accounts.begin(), it));
+        
+        // 只保存账户列表（不保存游戏状态）
+        save();
     }
     else
     {
+        // 新账户：需要初始化游戏状态
         AccountInfo newInfo;
         newInfo.account = acc;
 
@@ -128,10 +134,16 @@ void AccountManager::upsertAccount(const AccountData& acc)
 
         _accounts.push_back(newInfo);
         _activeIndex = static_cast<int>(_accounts.size()) - 1;
+        
+        save();
+        saveCurrentGameState();  // 只有新账户才需要保存初始游戏状态
     }
+}
 
-    save();
-    saveCurrentGameState();
+void AccountManager::upsertAccount(const AccountInfo& info)
+{
+    // 向后兼容：从 AccountInfo 提取 AccountData 并调用主方法
+    upsertAccount(info.account);
 }
 
 const std::vector<AccountInfo>& AccountManager::listAccounts() const

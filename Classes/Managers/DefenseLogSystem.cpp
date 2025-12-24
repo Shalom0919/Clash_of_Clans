@@ -223,7 +223,7 @@ void DefenseLogSystem::save()
         return;
     }
     
-    std::string key = "defense_log_" + currentAccount->userId;
+    std::string key = "defense_log_" + currentAccount->account.userId;
     
     std::ostringstream oss;
     for (size_t i = 0; i < _logs.size(); ++i)
@@ -245,7 +245,7 @@ void DefenseLogSystem::load()
         return;
     }
     
-    std::string key = "defense_log_" + currentAccount->userId;
+    std::string key = "defense_log_" + currentAccount->account.userId;
     std::string data = UserDefault::getInstance()->getStringForKey(key.c_str(), "");
     
     _logs.clear();

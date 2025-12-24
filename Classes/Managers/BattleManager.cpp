@@ -8,7 +8,7 @@
  ****************************************************************/
 
 #include "BattleManager.h"
-
+#include "AccountManager.h"
 #include "Managers/DefenseLogSystem.h"
 #include "Managers/MusicManager.h"
 #include "Managers/TroopInventory.h"
@@ -81,11 +81,40 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
     if (!_gridMap)
         CCLOG("❌ WARNING: setBuildings called but _gridMap is null!");
 
+    CCLOG("📊 ============ 设置战斗建筑 ============");
+    CCLOG("📊 建筑总数: %zu", buildings.size());
+
     for (auto* building : _enemyBuildings)
     {
         if (building)
         {
-            _totalBuildingHP += building->getMaxHitpoints();
+            int maxHP = building->getMaxHitpoints();
+            int curHP = building->getHitpoints();
+            
+            // 确保血量合理，防止初始化问题
+            if (maxHP <= 0)
+            {
+                CCLOG("⚠️ 警告：建筑 %s 的 maxHP 为 %d，使用默认值 100", 
+                      building->getDisplayName().c_str(), maxHP);
+                maxHP = 100;
+            }
+            
+            // 🔴 修复：战斗开始时强制将所有建筑血量重置为满血
+            // 这确保破坏率从0%开始
+            if (curHP != maxHP)
+            {
+                CCLOG("⚠️ 警告：建筑 %s 血量不一致 (%d/%d)，重置为满血", 
+                      building->getDisplayName().c_str(), curHP, maxHP);
+                building->repair(maxHP - curHP);  // 使用repair方法恢复到满血
+            }
+            
+            _totalBuildingHP += maxHP;
+
+            // 🔍 调试日志：显示每个建筑的血量信息
+            CCLOG("📊 建筑: %s, 血量: %d/%d, 类型: %d", 
+                  building->getDisplayName().c_str(), 
+                  curHP, maxHP,
+                  static_cast<int>(building->getBuildingType()));
 
             if (_gridMap)
             {
@@ -95,6 +124,9 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
             }
         }
     }
+
+    CCLOG("📊 总血量: %d", _totalBuildingHP);
+    CCLOG("📊 ========================================");
 }
 
 void BattleManager::startBattle(const TroopDeploymentMap& deployment)
@@ -220,10 +252,13 @@ void BattleManager::updateBattleState(float dt)
     updateUnitAI(dt);
 
     // 在遍历前清理已死亡的单位
+    // 🔴 修复：只检查 isDead()，不检查 getReferenceCount()，
+    // 因为当引用计数为0时对象可能已被释放，访问它是未定义行为
     _deployedUnits.erase(
         std::remove_if(_deployedUnits.begin(), _deployedUnits.end(),
             [](BaseUnit* unit) {
-                return unit == nullptr || !unit->getReferenceCount() || unit->isDead();
+                // 只检查空指针，死亡单位由 RemoveSelf 处理
+                return unit == nullptr;
             }),
         _deployedUnits.end());
 
@@ -711,8 +746,8 @@ void BattleManager::uploadBattleResult()
         return;
 
     DefenseLog defenseLog;
-    defenseLog.attackerId   = currentAccount->userId;
-    defenseLog.attackerName = currentAccount->username;
+    defenseLog.attackerId   = currentAccount->account.userId;
+    defenseLog.attackerName = currentAccount->account.username;
     defenseLog.starsLost    = _starsEarned;
     defenseLog.goldLost     = _goldLooted;
     defenseLog.elixirLost   = _elixirLooted;
@@ -721,7 +756,7 @@ void BattleManager::uploadBattleResult()
     defenseLog.isViewed     = false;
     defenseLog.replayData   = ReplaySystem::getInstance().stopRecording();
 
-    std::string attackerUserId = currentAccount->userId;
+    std::string attackerUserId = currentAccount->account.userId;
     if (accMgr.switchAccount(_enemyUserId, true))
     {
         DefenseLogSystem::getInstance().load();

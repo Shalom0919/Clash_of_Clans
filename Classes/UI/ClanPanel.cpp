@@ -1027,7 +1027,7 @@ void ClanPanel::onAttackPlayer(const std::string& playerId)
     auto& accMgr = AccountManager::getInstance();
     if (auto cur = accMgr.getCurrentAccount())
     {
-        if (cur->userId == playerId)
+        if (cur->account.userId == playerId)
         {
             showToast("不能攻击自己", Color4B::YELLOW);
             return;

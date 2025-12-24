@@ -256,7 +256,7 @@ void TroopInventory::save(const std::string& forceUserId)
     }
     else if (account)
     {
-        userId = account->userId;
+        userId = account->account.userId;
     }
     else
     {
@@ -292,7 +292,7 @@ void TroopInventory::load()
         return;
     }
     
-    std::string filename = "troop_inv_" + account->userId + ".json";
+    std::string filename = "troop_inv_" + account->account.userId + ".json";
     std::string path = FileUtils::getInstance()->getWritablePath() + filename;
     
     if (!FileUtils::getInstance()->isFileExist(path))

@@ -164,12 +164,18 @@ bool BaseUnit::takeDamage(float damage)
     onTakeDamage(actualDamage);
 
     // 播放受击效果
+    // 🔴 修复：使用带 tag 的动作，避免被 stopAllActions 中断
+    // 同时在动作开始前先恢复颜色，确保状态一致
     if (_sprite)
     {
-        auto tint    = TintTo::create(0.1f, 255, 0, 0);
-        auto restore = TintTo::create(0.1f, 255, 255, 255);
-        auto seq     = Sequence::create(tint, restore, nullptr);
-        _sprite->runAction(seq);
+        // 先停止之前的受击动画（如果有）
+        _sprite->stopActionByTag(kDamageEffectTag);
+        
+        // 立即设置为红色，然后渐变恢复
+        _sprite->setColor(Color3B(255, 100, 100));
+        auto restore = TintTo::create(0.15f, 255, 255, 255);
+        restore->setTag(kDamageEffectTag);
+        _sprite->runAction(restore);
     }
 
     if (_combatStats.currentHitpoints <= 0)
@@ -296,7 +302,8 @@ void BaseUnit::playAnimation(UnitAction action, UnitDirection dir)
     // 播放动画
     if (_animCache.count(final_key))
     {
-        _sprite->stopAllActions();
+        // 🔴 修复：停止动画动作但保留受击颜色动作
+        _sprite->stopActionByTag(kAnimationTag);
         _sprite->setFlippedX(flip_x);
 
         if (action == UnitAction::kAttack || action == UnitAction::kAttack2)
@@ -309,12 +316,16 @@ void BaseUnit::playAnimation(UnitAction action, UnitDirection dir)
                     playAnimation(UnitAction::kIdle, _currentDir);
                 }
             });
-            _sprite->runAction(Sequence::create(animate, callback, nullptr));
+            auto seq = Sequence::create(animate, callback, nullptr);
+            seq->setTag(kAnimationTag);
+            _sprite->runAction(seq);
         }
         else
         {
             // 其他动画循环播放
-            _sprite->runAction(RepeatForever::create(Animate::create(_animCache[final_key])));
+            auto repeatAnim = RepeatForever::create(Animate::create(_animCache[final_key]));
+            repeatAnim->setTag(kAnimationTag);
+            _sprite->runAction(repeatAnim);
         }
     }
 }

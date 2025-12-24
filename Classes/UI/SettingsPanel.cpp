@@ -423,68 +423,56 @@ void SettingsPanel::showMapSelectionPanel()
     for (size_t i = 0; i < maps.size(); ++i)
     {
         const auto& mapOption = maps[i];
-        
+
         auto itemLayout = Layout::create();
         itemLayout->setContentSize(Size(460, 70));
         itemLayout->setPosition(Vec2(20, startY - 70 - i * 80));
-        
-        bool isCurrent = (mapOption.path == currentMap);
-        Color3B bgColor = isCurrent ? Color3B(60, 100, 60) : Color3B(50, 50, 60);
-        auto bg = LayerColor::create(Color4B(bgColor.r, bgColor.g, bgColor.b, 255), 460, 70);
+
+        bool    isCurrent = (mapOption.path == currentMap);
+        Color3B bgColor   = isCurrent ? Color3B(60, 100, 60) : Color3B(50, 50, 60);
+        auto    bg        = LayerColor::create(Color4B(bgColor.r, bgColor.g, bgColor.b, 255), 460, 70);
         itemLayout->addChild(bg);
-        
+
+        // 🔴 修复：创建地图名称标签并添加到界面
         std::string labelText = mapOption.name + " - " + mapOption.description;
         if (isCurrent)
         {
             labelText += " (当前)";
         }
-        
+
         auto nameLabel = Label::createWithSystemFont(labelText, "Microsoft YaHei", 20);
         nameLabel->setPosition(Vec2(230, 45));
         itemLayout->addChild(nameLabel);
-        
+
         auto descLabel = Label::createWithSystemFont(mapOption.path, "Arial", 14);
         descLabel->setPosition(Vec2(230, 20));
         descLabel->setTextColor(Color4B(200, 200, 200, 255));
         itemLayout->addChild(descLabel);
-        
+
         if (!isCurrent)
         {
             itemLayout->setTouchEnabled(true);
             itemLayout->addClickEventListener([this, mapOption, mapPanel](Ref*) {
                 CCLOG("✅ Switching to map: %s", mapOption.path.c_str());
-                
-                auto& accMgr = AccountManager::getInstance();
+
+                auto&       accMgr  = AccountManager::getInstance();
                 const auto* account = accMgr.getCurrentAccount();
                 if (account)
                 {
-                    // 更新账号的地图设置
-                    AccountInfo updatedAccount = *account;
-                    updatedAccount.assignedMapName = mapOption.path;
-                    accMgr.upsertAccount(updatedAccount);
-                    
-                    // 关闭面板
+                    AccountData updatedAccountData     = account->account;
+                    updatedAccountData.assignedMapName = mapOption.path;
+                    accMgr.upsertAccount(updatedAccountData);
+
                     mapPanel->removeFromParent();
-                    
-                    // 显示提示
-                    auto hint = Label::createWithSystemFont(
-                        "地图已切换！请重新进入游戏生效", 
-                        "Microsoft YaHei", 
-                        24
-                    );
+
+                    auto hint = Label::createWithSystemFont("地图已切换！正在重新加载...", "Microsoft YaHei", 24);
                     hint->setPosition(Vec2(300, 50));
                     hint->setTextColor(Color4B::GREEN);
                     _panel->addChild(hint);
-                    
-                    hint->runAction(Sequence::create(
-                        FadeIn::create(0.2f),
-                        DelayTime::create(2.0f),
-                        FadeOut::create(0.3f),
-                        RemoveSelf::create(),
-                        nullptr
-                    ));
-                    
-                    // 触发场景重新加载（通过账号切换逻辑）
+
+                    hint->runAction(Sequence::create(FadeIn::create(0.2f), DelayTime::create(1.0f),
+                                                     FadeOut::create(0.3f), RemoveSelf::create(), nullptr));
+
                     if (_onMapChanged)
                     {
                         _onMapChanged(mapOption.path);
@@ -492,7 +480,7 @@ void SettingsPanel::showMapSelectionPanel()
                 }
             });
         }
-        
+
         mapPanel->addChild(itemLayout);
     }
 }
@@ -605,7 +593,7 @@ void SettingsPanel::showAccountList()
         auto itemLayout = Layout::create();
         itemLayout->setContentSize(Size(340, 60));
         
-        bool isCurrent = currentAccount && (account.userId == currentAccount->userId);
+        bool isCurrent = currentAccount && (account.userId == currentAccount->account.userId);
         Color3B bgColor = isCurrent ? Color3B(60, 100, 60) : Color3B(50, 50, 60);
         auto bg = LayerColor::create(Color4B(bgColor.r, bgColor.g, bgColor.b, 255), 340, 60);
         itemLayout->addChild(bg);

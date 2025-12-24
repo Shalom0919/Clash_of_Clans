@@ -22,6 +22,60 @@ struct AccountInfo
 {
     AccountData   account;
     GameStateData gameState;
+
+    // ==================== 向后兼容引用（用于旧代码）====================
+    // 这些引用提供对旧代码的兼容性，使 info.userId 等价于 info.account.userId
+
+    std::string& userId          = account.userId;
+    std::string& username        = account.username;
+    std::string& password        = account.password;
+    std::string& token           = account.token;
+    std::string& assignedMapName = account.assignedMapName;
+
+    // gameData 别名（向后兼容）
+    GameStateData& gameData = gameState;
+
+    // 默认构造函数
+    AccountInfo()
+        : userId(account.userId), username(account.username), password(account.password), token(account.token),
+          assignedMapName(account.assignedMapName), gameData(gameState)
+    {}
+
+    // 拷贝构造函数
+    AccountInfo(const AccountInfo& other)
+        : account(other.account), gameState(other.gameState), userId(account.userId), username(account.username),
+          password(account.password), token(account.token), assignedMapName(account.assignedMapName),
+          gameData(gameState)
+    {}
+
+    // 拷贝赋值运算符
+    AccountInfo& operator=(const AccountInfo& other)
+    {
+        if (this != &other)
+        {
+            account   = other.account;
+            gameState = other.gameState;
+        }
+        return *this;
+    }
+
+    // 移动构造函数
+    AccountInfo(AccountInfo&& other) noexcept
+        : account(std::move(other.account)), gameState(std::move(other.gameState)), userId(account.userId),
+          username(account.username), password(account.password), token(account.token),
+          assignedMapName(account.assignedMapName), gameData(gameState)
+    {}
+
+    // 移动赋值运算符
+    AccountInfo& operator=(AccountInfo&& other) noexcept
+    {
+        if (this != &other)
+        {
+            account   = std::move(other.account);
+            gameState = std::move(other.gameState);
+        }
+        return *this;
+    }
 };
 
 /**
@@ -38,11 +92,13 @@ public:
     const AccountInfo*              getCurrentAccount() const;
     bool                            switchAccount(const std::string& userId, bool silent = false);
     void                            upsertAccount(const AccountData& acc);
+    void                            upsertAccount(const AccountInfo& info); // 向后兼容重载
     const std::vector<AccountInfo>& listAccounts() const;
     void                            signOut();
     bool                            verifyPassword(const std::string& userId, const std::string& password) const;
     bool                            deleteAccount(const std::string& userId);
 
+    // ==================== 游戏状态管理（新 API）====================
     void          updateGameState(const GameStateData& state);
     GameStateData getCurrentGameState() const;
     bool          saveCurrentGameState();
@@ -53,6 +109,12 @@ public:
     bool        importGameStateJson(const std::string& userId, const std::string& jsonData);
 
     void save();
+
+    // ==================== 向后兼容方法（旧 API）====================
+    GameStateData getCurrentGameData() const { return getCurrentGameState(); }
+    void          updateGameData(const GameStateData& state) { updateGameState(state); }
+    GameStateData getPlayerGameData(const std::string& userId) const { return getPlayerGameState(userId); }
+    bool          saveGameStateToFile() { return saveCurrentGameState(); }
 
 private:
     AccountManager()                                 = default;

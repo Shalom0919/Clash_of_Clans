@@ -654,8 +654,8 @@ void SocketClient::endClanWarAttack(const std::string& warId, int stars, float d
     // TODO: 从AccountManager获取实际玩家信息
     // auto& accMgr = AccountManager::getInstance();
     // if (auto cur = accMgr.getCurrentAccount()) {
-    //     attackerId = cur->userId;
-    //     attackerName = cur->username;
+    //     attackerId = cur->account.userId;
+    //     attackerName = cur->account.username;
     // }
     
     std::ostringstream oss;
