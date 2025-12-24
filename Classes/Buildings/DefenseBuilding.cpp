@@ -48,11 +48,12 @@ bool DefenseBuilding::init(DefenseType defenseType, int level)
     if (!BaseBuilding::init(level))
         return false;
 
+    _type        = BuildingType::kDefense;  
     _defenseType = defenseType;
     _level       = level;
 
     initCombatStats();
-    initHealthBarUI(); // ✅ 添加血条初始化
+    initHealthBarUI();
 
     return true;
 }
@@ -62,6 +63,7 @@ bool DefenseBuilding::init(DefenseType defenseType, int level, const std::string
     if (!BaseBuilding::init(level, imageFile))
         return false;
 
+    _type            = BuildingType::kDefense;  
     _defenseType     = defenseType;
     _customImagePath = imageFile;
     _level           = level;
@@ -77,29 +79,25 @@ void DefenseBuilding::initCombatStats()
     switch (_defenseType)
     {
     case DefenseType::kCannon:
-        _combatStats      = DefenseConfig::getCannon(_level);
-        _maxHitpoints     = _combatStats.maxHitpoints;
-        _currentHitpoints = _maxHitpoints;
+        _combatStats = DefenseConfig::getCannon(_level);
         break;
 
     case DefenseType::kArcherTower:
-        _combatStats      = DefenseConfig::getArcherTower(_level);
-        _maxHitpoints     = _combatStats.maxHitpoints;
-        _currentHitpoints = _maxHitpoints;
+        _combatStats = DefenseConfig::getArcherTower(_level);
         break;
 
     case DefenseType::kWizardTower:
-        _combatStats      = DefenseConfig::getWizardTower(_level);
-        _maxHitpoints     = _combatStats.maxHitpoints;
-        _currentHitpoints = _maxHitpoints;
+        _combatStats = DefenseConfig::getWizardTower(_level);
         break;
 
     default:
-        _combatStats      = DefenseConfig::getCannon(_level);
-        _maxHitpoints     = _combatStats.maxHitpoints;
-        _currentHitpoints = _maxHitpoints;
+        _combatStats = DefenseConfig::getCannon(_level);
         break;
     }
+
+    _maxHitpoints = _combatStats.maxHitpoints;
+    _currentHitpoints = _maxHitpoints;
+    _config.maxHitpoints = _maxHitpoints;
 
     CCLOG("🏹 %s 初始化：攻击力=%d, 攻击范围=%.1f, 血量=%d", getDisplayName().c_str(), _combatStats.damage,
           _combatStats.attackRange, _maxHitpoints);
@@ -244,14 +242,19 @@ void DefenseBuilding::tick(float dt)
 void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
 {
     if (!_battleModeEnabled || isDestroyed())
+    {
         return;
+    }
 
+    // 如果已有有效目标，不重新选择
     if (_currentTarget && !_currentTarget->isDead())
+    {
         return;
+    }
 
     Vec2      myPos           = this->getPosition();
     BaseUnit* closestUnit     = nullptr;
-    float     closestDistance = _combatStats.attackRange;
+    float     closestDistance = _combatStats.attackRange + 1.0f;  // 🔴 修复：初始值应大于攻击范围
 
     for (auto* unit : units)
     {
@@ -261,6 +264,7 @@ void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
         Vec2  unitPos  = unit->getPosition();
         float distance = myPos.distance(unitPos);
 
+        // 检查是否在攻击范围内，并且比当前最近目标更近
         if (distance <= _combatStats.attackRange && distance < closestDistance)
         {
             closestUnit     = unit;
@@ -271,6 +275,8 @@ void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
     if (closestUnit)
     {
         setTarget(closestUnit);
+        CCLOG("🎯 %s 发现目标，距离 %.1f（范围 %.1f）", 
+              getDisplayName().c_str(), closestDistance, _combatStats.attackRange);
     }
 }
 
@@ -290,7 +296,6 @@ void DefenseBuilding::fireProjectile(BaseUnit* target)
     if (!target)
         return;
 
-    // ==================== 🚀 不再旋转建筑本身，只让炮弹飞向目标 ====================
 
     // ==================== 💥 创建炮弹/箭矢视觉效果 ====================
     Sprite* projectile      = nullptr;

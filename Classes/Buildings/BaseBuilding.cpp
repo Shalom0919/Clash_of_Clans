@@ -375,12 +375,21 @@ void BaseBuilding::updateProperties()
         _config = getStaticConfig(_type, _level);
     }
 
+    // 保存旧的最大血量用于判断
+    int oldMaxHitpoints = _maxHitpoints;
+
     // 更新基础属性
     _maxHitpoints = _config.maxHitpoints;
 
-    // 如果当前血量是满的（或者刚初始化），则更新为新的最大血量
-    // 如果是受伤状态升级，通常保持当前血量或按比例提升，这里简化为补满
-    if (_currentHitpoints >= _maxHitpoints || _currentHitpoints <= 0)
+    // 🔴 修复：当最大血量变化时，或当前血量未初始化/为默认值时，更新当前血量
+    // 情况1：当前血量为默认初始值（100或0）
+    // 情况2：当前血量等于旧的最大血量（满血升级）
+    // 情况3：当前血量超过新的最大血量
+    bool isDefaultValue = (_currentHitpoints == 100 && _maxHitpoints != 100) || _currentHitpoints <= 0;
+    bool wasFullHealth = (oldMaxHitpoints > 0 && _currentHitpoints >= oldMaxHitpoints);
+    bool exceedsMax = (_currentHitpoints > _maxHitpoints);
+    
+    if (isDefaultValue || wasFullHealth || exceedsMax)
     {
         _currentHitpoints = _maxHitpoints;
     }

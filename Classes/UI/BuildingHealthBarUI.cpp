@@ -53,6 +53,23 @@ bool BuildingHealthBarUI::init(BaseBuilding* building)
     // ==================== 创建血量文字标签 ====================
     int currentHP = building->getHitpoints();
     int maxHP = building->getMaxHitpoints();
+    
+    // 🔴 修复：确保 maxHP 有效，防止显示 100/500 这样的错误
+    if (maxHP <= 0)
+    {
+        CCLOG("⚠️ BuildingHealthBarUI: %s 的 maxHP 为 %d，可能存在初始化问题", 
+              building->getDisplayName().c_str(), maxHP);
+        maxHP = 100;
+    }
+    
+    // 🔴 修复：如果当前血量超过最大血量，说明初始化顺序有问题，强制同步
+    if (currentHP > maxHP)
+    {
+        CCLOG("⚠️ BuildingHealthBarUI: %s 血量异常 (%d > %d)，强制同步", 
+              building->getDisplayName().c_str(), currentHP, maxHP);
+        currentHP = maxHP;
+    }
+    
     // 稍微调整文字位置，在血条上方一点点
     _healthLabel = Label::createWithSystemFont(StringUtils::format("%d/%d", currentHP, maxHP), "Arial", 12); // 字体调小一点，免得遮挡
     _healthLabel->setPosition(Vec2(0.0f, posY + 10.0f));

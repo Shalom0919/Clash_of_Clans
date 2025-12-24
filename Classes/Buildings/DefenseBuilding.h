@@ -65,6 +65,9 @@ public:
     /** @brief 获取升级费用 */
     virtual int getUpgradeCost() const override;
 
+    /** @brief 获取最大生命值 */
+    virtual int getMaxHitpoints() const override { return _maxHitpoints; }
+
     /** @brief 获取升级资源类型 */
     virtual ResourceType getUpgradeCostType() const override { return ResourceType::kGold; }
 
