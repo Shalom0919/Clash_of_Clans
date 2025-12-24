@@ -3,6 +3,8 @@
  * @brief 主场景实现 - 重构后的精简版本
  */
 
+#include "DraggableMapScene.h"
+
 #include "AccountManager.h"
 #include "BaseBuilding.h"
 #include "BattleScene.h"
@@ -13,10 +15,10 @@
 #include "Buildings/ArmyCampBuilding.h"
 #include "Buildings/ResourceBuilding.h"
 #include "BuildingUpgradeUI.h"
-#include "DraggableMapScene.h"
 #include "HUDLayer.h"
 #include "InputController.h"
 #include "Managers/DefenseLogSystem.h"
+#include "Managers/MusicManager.h"
 #include "Managers/ResourceCollectionManager.h"
 #include "Managers/TroopInventory.h"
 #include "Managers/UpgradeManager.h"
@@ -25,13 +27,15 @@
 #include "SceneUIController.h"
 #include "ShopLayer.h"
 #include "SocketClient.h"
-#include "UI/ArmySelectionUI.h"
+#include "UI/ClanPanel.h"
 #include "UI/PlayerListLayer.h"
-#include "UI/ClanPanel.h" // 🆕 Include ClanPanel
-#include "Unit/unit.h"
+#include "Unit/UnitTypes.h"
 #include "ui/CocosGUI.h"
-#include "Managers/MusicManager.h" // ✅ 新增
+
 #include <ctime>
+
+// Forward declaration for callback
+class BaseUnit;
 
 USING_NS_CC;
 using namespace ui;
@@ -482,33 +486,25 @@ void DraggableMapScene::onAttackClicked()
         CCLOG("✅ Saved current base before attacking");
     }
 
-    auto armyUI = ArmySelectionUI::create();
-    if (!armyUI)
+    // 🆕 直接显示玩家列表，跳过军队选择界面
+    auto& client = SocketClient::getInstance();
+    if (client.isConnected())
     {
-        _uiController->showHint("创建军队选择UI失败！");
-        return;
+        // 🔴 修复：重新注册回调，防止被ClanPanel覆盖
+        client.setOnUserListReceived([this](const std::string& data){
+            CCLOG("[Socket] User list received, len=%zu", data.size());
+            // Ensure UI update runs on main thread
+            Director::getInstance()->getScheduler()->performFunctionInCocosThread([this, data](){
+                showPlayerListFromServerData(data);
+            });
+        });
+
+        client.requestUserList();
     }
-
-    this->addChild(armyUI, 200);
-
-    armyUI->setOnConfirmed([this]() {
-        auto& client = SocketClient::getInstance();
-        if (client.isConnected())
-        {
-            client.requestUserList();
-        }
-        else
-        {
-            showLocalPlayerList();
-        }
-    });
-
-    armyUI->setOnCancelled([this]() {
-        CCLOG("❌ 取消攻击");
-        _uiController->showHint("已取消攻击");
-    });
-
-    armyUI->show();
+    else
+    {
+        showLocalPlayerList();
+    }
 }
 
 void DraggableMapScene::onClanClicked()
@@ -581,9 +577,9 @@ void DraggableMapScene::onBuildingPlaced(BaseBuilding* building)
         auto barracks = dynamic_cast<ArmyBuilding*>(building);
         if (barracks)
         {
-            // 🔴 方案A优化：训练完成时只显示提示，不在地图上创建独立 Unit
+            // 训练完成时只显示提示，不在地图上创建独立单位
             // 小兵会自动显示在军营中（由 ArmyBuilding::notifyArmyCampsToDisplayTroop 处理）
-            barracks->setOnTrainingComplete([this](Unit* unit) {
+            barracks->setOnTrainingComplete([this](BaseUnit* unit) {
                 // unit 参数现在总是 nullptr，不需要检查
                 // 只显示提示信息
                 CCLOG("🎉 Unit training complete!");
@@ -905,39 +901,48 @@ DraggableMapScene::~DraggableMapScene()
 void DraggableMapScene::onSceneResume()
 {
     CCLOG("🔄 Scene resumed, refreshing ArmyCamp displays...");
-    
+
     // 重置触摸状态
     _activeTouches.clear();
-    _isPinching = false;
+    _isPinching        = false;
     _prevPinchDistance = 0.0f;
-    
+
     // 🎵 恢复背景音乐
     MusicManager::getInstance().playMusic(MusicType::BATTLE_PREPARING);
-    
+
+    // 🔧 修复：清除所有PVP相关回调，确保状态重置
+    auto& client = SocketClient::getInstance();
+    client.setOnPvpStart(nullptr);
+    client.setOnPvpAction(nullptr);
+    client.setOnPvpEnd(nullptr);
+    client.setOnSpectateJoin(nullptr);
+
+    // 🔧 修复：重新设置DraggableMapScene的网络回调，防止被ClanPanel的回调覆盖
+    setupNetworkCallbacks();
+
+    CCLOG("🔴 [DraggableMapScene] PVP callbacks cleared and network callbacks restored on scene resume");
+
     // 重新加载士兵库存
     TroopInventory::getInstance().load();
-    
+
     if (_buildingManager)
     {
         const auto& buildings = _buildingManager->getBuildings();
         for (auto* building : buildings)
         {
-            // 刷新军营的小兵显示
             auto armyCamp = dynamic_cast<ArmyCampBuilding*>(building);
             if (armyCamp)
             {
                 armyCamp->refreshDisplayFromInventory();
                 CCLOG("✅ Refreshed ArmyCamp display from inventory");
             }
-            
-            // 重新注册资源建筑
+
             auto resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
             if (resourceBuilding && resourceBuilding->isProducer())
                 ResourceCollectionManager::getInstance()->registerBuilding(resourceBuilding);
         }
     }
-    
-    // 刷新HUD显示
+
     if (_hudLayer)
     {
         _hudLayer->updateDisplay();
