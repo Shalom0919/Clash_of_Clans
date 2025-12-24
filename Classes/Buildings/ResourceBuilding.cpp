@@ -1,49 +1,43 @@
-﻿/**
-* @file ResourceBuilding.cpp
-* @brief 资源生产/存储建筑实现
-* @author 赵崇治、薛毓哲
-* @date 2025/12/24
-*/
+﻿/****************************************************************
+ * Project Name:  Clash_of_Clans
+ * File Name:     ResourceBuilding.cpp
+ * File Function: 资源生产/存储建筑实现
+ * Author:        赵崇治、薛毓哲
+ * Update Date:   2025/12/24
+ * License:       MIT License
+ ****************************************************************/
 #include "ResourceBuilding.h"
-#include "../Managers/ResourceManager.h"
-#include "../UI/ResourceCollectionUI.h"
-#include "../Managers/BuildingCapacityManager.h"
-#include "cocos2d.h"
-#include "../Managers/ResourceCollectionManager.h"
+#include "Managers/ResourceManager.h"
+#include "UI/ResourceCollectionUI.h"
+#include "Managers/BuildingCapacityManager.h"
+#include "Managers/ResourceCollectionManager.h"
+
 USING_NS_CC;
 
-// ==================== 生产型建筑数据表 ====================
-// 金矿/圣水收集器每10秒产量（15级）
-// 产量公式：200 + (等级-1)*100
-// 1级: 200，2级: 300，3级: 400，...，15级: 1600
+// 生产型建筑数据表
 static const int PRODUCTION_PER_CYCLE[] = {0,    200,  300,  400,  500,  600,  700,  800,
                                        900,  1000, 1100, 1200, 1300, 1400, 1500, 1600};
 
-// 生产型建筑内部存储容量（15级）
 static const int PRODUCER_CAPACITIES[] = {0,    500,   1000,  1500,  2000,  3000,  4000,  5000,
                                           7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000};
 
-// ==================== 存储型建筑数据表 ====================
-// 金币仓库/圣水仓库存储容量（14-17级，根据实际素材调整）
+// 存储型建筑数据表
 static const int STORAGE_CAPACITIES[] = {0,      1500,   3000,   6000,   12000,  25000,  45000,  100000,
                                          150000, 200000, 250000, 300000, 400000, 500000, 750000, 1000000,
                                          1500000, 2000000};
 
-// ==================== 升级费用表 ====================
+// 升级费用表
 static const int UPGRADE_COSTS[] = {0,     150,   300,    700,    1400,   3000,   7000,    14000,
                                     28000, 56000, 100000, 200000, 400000, 800000, 1500000, 3000000,
                                     6000000, 0};
-// 在文件顶部的常量区域添加 HP 数据表
-// ==================== 生命值数据表 ====================
-// 生产设施 (金矿/圣水收集器) 生命值 (1-15级)
-static const int PRODUCER_HP[] = {0, 400, 450, 500, 550, 600, 640, 680, 720, 780, 840, 900, 960, 1020, 1080, 1180};
 
-// 存储设施 (金库/圣水瓶) 生命值 (1-17级)
+// 生命值数据表
+static const int PRODUCER_HP[] = {0, 400, 450, 500, 550, 600, 640, 680, 720, 780, 840, 900, 960, 1020, 1080, 1180};
 static const int STORAGE_HP[] = {0,    600,  700,  800,  900,  1000, 1200, 1300, 1400,
                                  1600, 1800, 2100, 2400, 2700, 3000, 3400, 3800, 4200};
 ResourceBuilding::~ResourceBuilding()
 {
-    // ✅ 析构时自动从 ResourceCollectionManager 注销
+    // 析构时从管理器注销
     if (isProducer())
     {
         ResourceCollectionManager::getInstance()->unregisterBuilding(this);
@@ -86,9 +80,11 @@ bool ResourceBuilding::init(int level)
     _gridSize = cocos2d::Size(3, 3);
     _currentStorage = 0;
     _productionAccumulator = 0.0f;
+    
     std::string imageFile = getImageFile();
     if (!Sprite::initWithFile(imageFile))
         return false;
+        
     this->setAnchorPoint(Vec2(0.5f, 0.35f));
     this->setScale(0.8f);
     this->setName(getDisplayName());
@@ -100,29 +96,21 @@ bool ResourceBuilding::init(int level)
     _storageLabel->setVisible(false);
     this->addChild(_storageLabel, 100);
     
-    // 🔴 修复：不在 init 中创建收集UI
-    // 收集UI 将在 BuildingManager::loadBuildingsFromData 中根据 isReadOnly 参数决定是否创建
-    // 这样战斗场景（isReadOnly=true）就不会显示资源采集框
-    
-    // ✅ 【新增】根据建筑类型和等级设置生命值
-    int hp = 400; // 默认值
-
+    // 设置生命值
+    int hp = 400;
     if (isProducer())
     {
         int idx = std::min(_level, (int)(sizeof(PRODUCER_HP) / sizeof(int) - 1));
-        hp      = PRODUCER_HP[idx];
+        hp = PRODUCER_HP[idx];
     }
     else if (isStorage())
     {
         int idx = std::min(_level, (int)(sizeof(STORAGE_HP) / sizeof(int) - 1));
-        hp      = STORAGE_HP[idx];
+        hp = STORAGE_HP[idx];
     }
-
-    // 设置最大生命值（这会自动将当前生命值也设为满血）
     setMaxHitpoints(hp);
-
-    CCLOG("🏗️ %s 初始化完成，HP: %d", getDisplayName().c_str(), hp);
     initHealthBarUI();
+    
     return true;
 }
 
@@ -213,23 +201,19 @@ int ResourceBuilding::getProductionRate() const
 
 int ResourceBuilding::getStorageCapacity() const
 {
-    // 🔴 关键修复1：将生产型建筑的内部存储容量设置为当前等级的单次产量
     if (isProducer())
     {
-        // 确保数组不越界
+        // 生产型建筑的内部存储容量等于单次产量
         int maxIndex = sizeof(PRODUCTION_PER_CYCLE) / sizeof(int) - 1;
         int index = std::min(_level, maxIndex);
         return PRODUCTION_PER_CYCLE[index];
     }
 
-    // 存储型建筑：保持原有逻辑，读取 STORAGE_CAPACITIES (如果定义了的话)
     if (isStorage())
     {
         int maxIndex = sizeof(STORAGE_CAPACITIES) / sizeof(int) - 1;
         int index = std::min(_level, maxIndex);
-
         if (index < 1) return 0;
-
         return STORAGE_CAPACITIES[index];
     }
 
@@ -300,13 +284,12 @@ bool ResourceBuilding::upgrade()
 
 void ResourceBuilding::tick(float dt)
 {
-    // 只有生产型建筑需要生产资源
-    if (!isProducer()) return;
+    if (!isProducer()) 
+        return;
 
-    // 🔴 修复点1：如果存储已满，立即返回，不累加时间，停止生产。
+    // 存储已满时停止生产
     if (isStorageFull())
     {
-        // 确保 UI 显示满仓状态
         auto collectionUI = getCollectionUI();
         if (collectionUI)
         {
@@ -315,31 +298,20 @@ void ResourceBuilding::tick(float dt)
         return;
     }
 
-    // 累加时间
     _productionAccumulator += dt;
-
-    // 每 15 秒生成一次资源
     const float PRODUCTION_INTERVAL = 15.0f;
 
     if (_productionAccumulator >= PRODUCTION_INTERVAL)
     {
-        // 🔴 修复点2：扣除周期时间（保留多余时间，防止误差累积）
         _productionAccumulator -= PRODUCTION_INTERVAL;
 
-        // 获取当前等级的单次产量
         int productionAmount = getProductionRate();
         int capacity = getStorageCapacity();
-
-        // 增加资源，不超过容量
         int prevStorage = _currentStorage;
         _currentStorage = std::min(_currentStorage + productionAmount, capacity);
 
-        // 如果资源增加了，更新UI显示
         if (_currentStorage > prevStorage)
         {
-            CCLOG("💰 %s 产出资源：%d (当前库存: %d)", getDisplayName().c_str(), productionAmount, _currentStorage);
-
-            // 获取并更新收集UI
             auto collectionUI = getCollectionUI();
             if (collectionUI)
             {
@@ -347,44 +319,27 @@ void ResourceBuilding::tick(float dt)
             }
         }
 
-        // 🔴 修复点3：如果这次生产导致满仓，重置累加器并停止计时，等待收集。
         if (isStorageFull())
         {
             _productionAccumulator = 0.0f;
-            CCLOG("⚠️ %s 已满仓，停止生产。", getDisplayName().c_str());
         }
     }
 }
 
 int ResourceBuilding::collect()
 {
-    // 如果没有资源可收集
-    if (_currentStorage <= 0) return 0;
+    if (_currentStorage <= 0) 
+        return 0;
 
-    int buildingCapacity = getStorageCapacity();  // 建筑内部容量
-    int collected = _currentStorage;              // 默认收集当前积累的资源
-
-    // ========== 关键改动：点击后增加生成数量，而不是直接填满 =========
-    // 无论是否满仓，都只收集建筑当前储存的资源
-    // 这样每次点击都能获得增量，符合《部落冲突》的游戏逻辑
-    
-    CCLOG("💰 %s 收集资源：获得 %d", 
-          getDisplayName().c_str(), collected);
-
-    // 清空库存（准备下一个生产周期）
+    int collected = _currentStorage;
     _currentStorage = 0;
     _productionAccumulator = 0.0f;
 
-    // 更新 UI 状态
     auto collectionUI = getCollectionUI();
     if (collectionUI)
     {
-        collectionUI->updateReadyStatus(0);  // 隐藏收集图标
+        collectionUI->updateReadyStatus(0);
     }
-
-    // 记录日志
-    CCLOG("✅ %s 收集完成，返回给玩家：%d 资源", 
-          getDisplayName().c_str(), collected);
 
     return collected;
 }
@@ -401,7 +356,6 @@ void ResourceBuilding::updateAppearance()
 
 void ResourceBuilding::showCollectHint()
 {
-    // ✅ 新的实现：使用 ResourceCollectionUI 显示提示
     auto collectionUI = this->getChildByName<ResourceCollectionUI*>("collectionUI");
     if (collectionUI)
     {
@@ -409,7 +363,7 @@ void ResourceBuilding::showCollectHint()
     }
     else
     {
-        // 降级方案：显示简单的黄色感叹号
+        // 降级方案：显示黄色感叹号
         auto hint = this->getChildByName("collectHint");
         if (!hint)
         {
@@ -433,48 +387,32 @@ void ResourceBuilding::hideCollectHint()
     }
 }
 
-// ==================== 新增方法 ====================
-
 ResourceCollectionUI* ResourceBuilding::getCollectionUI() const
 {
     if (!isProducer())
         return nullptr;
-    
     return this->getChildByName<ResourceCollectionUI*>("collectionUI");
 }
+
 void ResourceBuilding::onLevelUp()
 {
-    // 1. 不调用基类 onLevelUp()，避免 getStaticConfig 返回错误的图片路径
-    //    ResourceBuilding 有自己的图片路径逻辑
+    // 不调用基类 onLevelUp()，ResourceBuilding 有自己的图片路径逻辑
     
-    // 2. 强制更新纹理，确保外观改变
+    // 更新纹理
     std::string newImageFile = getImageForLevel(_level);
-    CCLOG("🔍 %s 尝试更新外观: level=%d, path=%s", 
-          getDisplayName().c_str(), _level, newImageFile.c_str());
-    
     if (!newImageFile.empty())
     {
-        // 先移除旧纹理缓存，确保加载最新的
         auto textureCache = Director::getInstance()->getTextureCache();
         auto texture = textureCache->addImage(newImageFile);
         if (texture)
         {
             this->setTexture(texture);
-            // 重新设置纹理后需要更新内容大小
             this->setTextureRect(Rect(0, 0, texture->getContentSize().width, 
                                             texture->getContentSize().height));
-            CCLOG("🖼️ %s 外观更新成功: %s (size: %.0fx%.0f)", 
-                  getDisplayName().c_str(), newImageFile.c_str(),
-                  texture->getContentSize().width, texture->getContentSize().height);
-        }
-        else
-        {
-            CCLOG("❌ %s 外观更新失败：无法加载纹理 %s", 
-                  getDisplayName().c_str(), newImageFile.c_str());
         }
     }
     
-    // 3. 更新生命值（根据新等级）
+    // 更新生命值
     int hp = 400;
     if (isProducer())
     {
@@ -490,49 +428,32 @@ void ResourceBuilding::onLevelUp()
     }
     setMaxHitpoints(hp);
 
-    // 4. 如果是存储型建筑，通知 Capacity Manager 重新计算容量
-    //    使用 this 指针的弱引用模式确保安全
+    // 存储型建筑通知容量管理器
     if (isStorage())
     {
-        // 保存 this 指针用于延迟回调
         ResourceBuilding* self = this;
-        ResourceType resType = _resourceType;  // 保存资源类型
+        ResourceType resType = _resourceType;
         
         this->scheduleOnce([self, resType](float) {
-            // 验证建筑仍然有效
             if (self && self->getReferenceCount() > 0 && !self->isDestroyed())
             {
-                // 双重验证资源类型
                 if (self->getResourceType() == resType)
                 {
                     BuildingCapacityManager::getInstance().registerOrUpdateBuilding(self, true);
-                    CCLOG("🎉 %s 升级到 Lv.%d 完成，资源类型: %s，已更新容量",
-                          self->getDisplayName().c_str(), self->getLevel(),
-                          resType == ResourceType::kGold ? "金币" : "圣水");
                 }
             }
         }, 0.0f, "capacity_update");
     }
-
-    // 5. 如果是生产型建筑，更新生产效率
-    if (isProducer())
-    {
-        CCLOG("📈 %s 升级到 Lv.%d，产量提升至: %d/周期",
-              getDisplayName().c_str(), _level, getProductionRate());
-    }
     
-    // 6. 更新名称
     this->setName(getDisplayName());
+    CCLOG("[ResourceBuilding] %s upgraded to Lv.%d", getDisplayName().c_str(), _level);
 }
 
-// 🆕 新增：初始化资源收集UI（仅在非战斗模式下调用）
 void ResourceBuilding::initCollectionUI()
 {
-    // 只有生产型建筑需要收集UI
     if (!isProducer())
         return;
     
-    // 避免重复创建
     if (this->getChildByName("collectionUI"))
         return;
     
@@ -541,8 +462,6 @@ void ResourceBuilding::initCollectionUI()
     {
         collectionUI->setName("collectionUI");
         this->addChild(collectionUI, 1000);
-        // 向管理器注册
         ResourceCollectionManager::getInstance()->registerBuilding(this);
-        CCLOG("✅ 为 %s 创建了收集UI", getDisplayName().c_str());
     }
 }

@@ -1,11 +1,11 @@
 ﻿/****************************************************************
- * Project Name:  Clash_of_Clans
- * File Name:     DefenseBuilding.h
- * File Function: 防御建筑类
- * Author:        薛毓哲
- * Update Date:   2025/01/10
- * License:       MIT License
- ****************************************************************/
+* Project Name:  Clash_of_Clans
+* File Name:     DefenseBuilding.h
+* File Function: 防御建筑类
+* Author:        薛毓哲
+* Update Date:   2025/12/24
+* License:       MIT License
+****************************************************************/
 #ifndef DEFENSE_BUILDING_H_
 #define DEFENSE_BUILDING_H_
 

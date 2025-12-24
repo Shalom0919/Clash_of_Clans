@@ -81,15 +81,12 @@ void DefenseBuilding::initCombatStats()
     case DefenseType::kCannon:
         _combatStats = DefenseConfig::getCannon(_level);
         break;
-
     case DefenseType::kArcherTower:
         _combatStats = DefenseConfig::getArcherTower(_level);
         break;
-
     case DefenseType::kWizardTower:
         _combatStats = DefenseConfig::getWizardTower(_level);
         break;
-
     default:
         _combatStats = DefenseConfig::getCannon(_level);
         break;
@@ -98,9 +95,6 @@ void DefenseBuilding::initCombatStats()
     _maxHitpoints = _combatStats.maxHitpoints;
     _currentHitpoints = _maxHitpoints;
     _config.maxHitpoints = _maxHitpoints;
-
-    CCLOG("🏹 %s 初始化：攻击力=%d, 攻击范围=%.1f, 血量=%d", getDisplayName().c_str(), _combatStats.damage,
-          _combatStats.attackRange, _maxHitpoints);
 }
 
 std::string DefenseBuilding::getDisplayName() const
@@ -180,8 +174,7 @@ std::string DefenseBuilding::getBuildingDescription() const
 
 std::string DefenseBuilding::getImageForLevel(int level) const
 {
-    // 🔴 修复：不再使用 _customImagePath，始终根据等级生成正确的路径
-    // 这样升级后图片才会正确更新
+    // 始终根据等级生成路径，确保升级后图片正确更新
     switch (_defenseType)
     {
     case DefenseType::kCannon:
@@ -241,19 +234,15 @@ void DefenseBuilding::tick(float dt)
 void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
 {
     if (!_battleModeEnabled || isDestroyed())
-    {
         return;
-    }
 
     // 如果已有有效目标，不重新选择
     if (_currentTarget && !_currentTarget->isDead())
-    {
         return;
-    }
 
     Vec2      myPos           = this->getPosition();
     BaseUnit* closestUnit     = nullptr;
-    float     closestDistance = _combatStats.attackRange + 1.0f;  // 🔴 修复：初始值应大于攻击范围
+    float     closestDistance = _combatStats.attackRange + 1.0f;
 
     for (auto* unit : units)
     {
@@ -263,7 +252,6 @@ void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
         Vec2  unitPos  = unit->getPosition();
         float distance = myPos.distance(unitPos);
 
-        // 检查是否在攻击范围内，并且比当前最近目标更近
         if (distance <= _combatStats.attackRange && distance < closestDistance)
         {
             closestUnit     = unit;
@@ -274,8 +262,6 @@ void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
     if (closestUnit)
     {
         setTarget(closestUnit);
-        CCLOG("🎯 %s 发现目标，距离 %.1f（范围 %.1f）", 
-              getDisplayName().c_str(), closestDistance, _combatStats.attackRange);
     }
 }
 
@@ -295,29 +281,24 @@ void DefenseBuilding::fireProjectile(BaseUnit* target)
     if (!target)
         return;
 
-
-    // ==================== 💥 创建炮弹/箭矢视觉效果 ====================
+    // 创建炮弹/箭矢视觉效果
     Sprite* projectile      = nullptr;
-    float   projectileSpeed = 0.0f; // 飞行速度（像素/秒）
+    float   projectileSpeed = 0.0f;
 
     switch (_defenseType)
     {
     case DefenseType::kCannon:
         projectile      = createCannonballSprite();
-        projectileSpeed = 600.0f; // 炮弹较快
+        projectileSpeed = 600.0f;
         break;
-
     case DefenseType::kArcherTower:
         projectile      = createArrowSprite();
-        projectileSpeed = 800.0f; // 箭矢最快
+        projectileSpeed = 800.0f;
         break;
-
     case DefenseType::kWizardTower:
-        // 法师塔可以用粒子效果或魔法球
-        projectile      = createCannonballSprite(); // 临时用炮弹代替
+        projectile      = createCannonballSprite();
         projectileSpeed = 500.0f;
         break;
-
     default:
         projectile      = createCannonballSprite();
         projectileSpeed = 600.0f;
@@ -326,24 +307,22 @@ void DefenseBuilding::fireProjectile(BaseUnit* target)
 
     if (!projectile || !this->getParent())
     {
-        // 如果创建失败，直接造成伤害（无视觉效果）
+        // 创建失败时直接造成伤害
         target->takeDamage(_combatStats.damage);
-        CCLOG("💥 %s 击中目标，造成 %d 点伤害", getDisplayName().c_str(), _combatStats.damage);
         return;
     }
 
-    // ==================== 🚀 炮弹飞行动画 ====================
+    // 炮弹飞行动画
     Vec2 startPos = this->getPosition();
     Vec2 endPos   = target->getPosition();
 
     projectile->setPosition(startPos);
-    this->getParent()->addChild(projectile, 5000); // 高Z-order，显示在最前面
+    this->getParent()->addChild(projectile, 5000);
 
-    // 计算飞行时间
     float distance = startPos.distance(endPos);
     float duration = distance / projectileSpeed;
 
-    // 箭矢需要旋转朝向目标（只旋转箭矢，不旋转建筑！）
+    // 箭矢旋转朝向目标
     if (_defenseType == DefenseType::kArcherTower)
     {
         Vec2  direction = endPos - startPos;
@@ -351,22 +330,15 @@ void DefenseBuilding::fireProjectile(BaseUnit* target)
         projectile->setRotation(-angle);
     }
 
-    // 移动到目标位置
     auto moveTo = MoveTo::create(duration, endPos);
-
-    // 命中回调：造成伤害并移除炮弹
     auto hitCallback = CallFunc::create([this, target, projectile]() {
         if (target && !target->isDead())
         {
             target->takeDamage(_combatStats.damage);
-            CCLOG("💥 %s 击中目标，造成 %.1f 点伤害", getDisplayName().c_str(), _combatStats.damage);
         }
-
-        // 移除炮弹
         projectile->removeFromParent();
     });
 
-    // 执行动画序列
     auto sequence = Sequence::create(moveTo, hitCallback, nullptr);
     projectile->runAction(sequence);
 }
@@ -389,7 +361,6 @@ void DefenseBuilding::showAttackRange()
         return;
     }
 
-    // 创建半透明圆圈显示攻击范围
     _rangeCircle = DrawNode::create();
 
     // 根据建筑类型选择不同的颜色
@@ -397,26 +368,21 @@ void DefenseBuilding::showAttackRange()
     switch (_defenseType)
     {
     case DefenseType::kCannon:
-        circleColor = Color4F(1.0f, 0.0f, 0.0f, 0.3f); // 红色 - 加农炮
+        circleColor = Color4F(1.0f, 0.0f, 0.0f, 0.3f);
         break;
     case DefenseType::kArcherTower:
-        circleColor = Color4F(0.0f, 1.0f, 0.0f, 0.3f); // 绿色 - 箭塔
+        circleColor = Color4F(0.0f, 1.0f, 0.0f, 0.3f);
         break;
     case DefenseType::kWizardTower:
-        circleColor = Color4F(0.5f, 0.0f, 1.0f, 0.3f); // 紫色 - 法师塔
+        circleColor = Color4F(0.5f, 0.0f, 1.0f, 0.3f);
         break;
     default:
-        circleColor = Color4F(1.0f, 1.0f, 0.0f, 0.3f); // 黄色
+        circleColor = Color4F(1.0f, 1.0f, 0.0f, 0.3f);
         break;
     }
 
-    // 绘制圆圈（中心在建筑位置，半径为攻击范围）
     _rangeCircle->drawCircle(Vec2::ZERO, _combatStats.attackRange, 0, 100, false, 2.0f, 2.0f, circleColor);
-
-    // 添加到建筑节点
-    this->addChild(_rangeCircle, -1); // Z-order为-1，显示在建筑下方
-
-    CCLOG("🎯 %s 显示攻击范围：%.1f 像素", getDisplayName().c_str(), _combatStats.attackRange);
+    this->addChild(_rangeCircle, -1);
 }
 
 void DefenseBuilding::hideAttackRange()
@@ -429,43 +395,33 @@ void DefenseBuilding::hideAttackRange()
 
 void DefenseBuilding::rotateToTarget(const cocos2d::Vec2& targetPos)
 {
-    // 🔴 已废弃：防御建筑不再自己旋转，保持静止即可
-    // 只有炮弹/箭矢会朝向目标飞行
+    // 已废弃：防御建筑保持静止，只有投射物朝向目标
 }
 
 // ==================== 炮弹/箭矢创建 ====================
 
 Sprite* DefenseBuilding::createCannonballSprite()
 {
-    // 创建一个简单的圆形炮弹（黑色）
     auto cannonball = Sprite::create();
     if (!cannonball)
     {
-        // 如果没有图片资源，用DrawNode画一个黑色圆球
         auto drawNode = DrawNode::create();
         drawNode->drawSolidCircle(Vec2::ZERO, 8.0f, 0, 20, Color4F::BLACK);
-        return (Sprite*)drawNode; // 临时方案
+        return (Sprite*)drawNode;
     }
-
     cannonball->setScale(0.5f);
     return cannonball;
 }
 
 Sprite* DefenseBuilding::createArrowSprite()
 {
-    // 创建一个简单的箭矢（棕色长条）
     auto arrow = Sprite::create();
     if (!arrow)
     {
-        // 如果没有图片资源，用DrawNode画一个箭头
         auto drawNode      = DrawNode::create();
-        Vec2 arrowPoints[] = {
-            Vec2(-15, 0), // 尾部
-            Vec2(15, 0),  // 尖端
-        };
+        Vec2 arrowPoints[] = { Vec2(-15, 0), Vec2(15, 0) };
         drawNode->drawSegment(arrowPoints[0], arrowPoints[1], 2.0f, Color4F(0.6f, 0.3f, 0.0f, 1.0f));
-        return (Sprite*)drawNode; // 临时方案
+        return (Sprite*)drawNode;
     }
-
     return arrow;
 }

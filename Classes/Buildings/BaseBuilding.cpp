@@ -369,22 +369,16 @@ bool BaseBuilding::init(int level, const std::string& imageFile)
 
 void BaseBuilding::updateProperties()
 {
-    // 重新加载配置（防止升级后数据未更新）
+    // 重新加载配置
     if (_type != BuildingType::kUnknown)
     {
         _config = getStaticConfig(_type, _level);
     }
 
-    // 保存旧的最大血量用于判断
     int oldMaxHitpoints = _maxHitpoints;
-
-    // 更新基础属性
     _maxHitpoints = _config.maxHitpoints;
 
-    // 🔴 修复：当最大血量变化时，或当前血量未初始化/为默认值时，更新当前血量
-    // 情况1：当前血量为默认初始值（100或0）
-    // 情况2：当前血量等于旧的最大血量（满血升级）
-    // 情况3：当前血量超过新的最大血量
+    // 智能更新当前血量：默认值、满血升级、或超限时同步为最大值
     bool isDefaultValue = (_currentHitpoints == 100 && _maxHitpoints != 100) || _currentHitpoints <= 0;
     bool wasFullHealth = (oldMaxHitpoints > 0 && _currentHitpoints >= oldMaxHitpoints);
     bool exceedsMax = (_currentHitpoints > _maxHitpoints);
@@ -394,19 +388,19 @@ void BaseBuilding::updateProperties()
         _currentHitpoints = _maxHitpoints;
     }
 
-    // 更新网格大小
+    // 更新网格大小（仅首次）
     if (_gridSize.width == 0 && _gridSize.height == 0)
     {
         _gridSize = _config.gridSize;
     }
 
-    // 更新战斗属性
+    // 同步战斗属性
     _combatStats.damage       = _config.damage;
     _combatStats.attackRange  = _config.attackRange;
     _combatStats.attackSpeed  = _config.attackSpeed;
     _combatStats.maxHitpoints = _config.maxHitpoints;
 
-    // 更新外观
+    // 更新纹理
     if (getTexture() == nullptr || _config.imageFile != getImageFile())
     {
         if (!_config.imageFile.empty())
@@ -589,17 +583,12 @@ void BaseBuilding::onUpgradeComplete()
 
 void BaseBuilding::onLevelUp()
 {
-    // 🔴 修复：升级后重新加载配置数据
+    // 重新加载配置
     _config = getStaticConfig(_type, _level);
-    
-    // 升级后重新加载属性和外观
     updateProperties();
     
-    // 🔴 修复：强制更新纹理，确保外观改变
+    // 强制更新纹理
     std::string newImageFile = getImageForLevel(_level);
-    CCLOG("🔍 %s 尝试更新外观: level=%d, path=%s", 
-          getDisplayName().c_str(), _level, newImageFile.c_str());
-    
     if (!newImageFile.empty())
     {
         auto textureCache = Director::getInstance()->getTextureCache();
@@ -607,21 +596,13 @@ void BaseBuilding::onLevelUp()
         if (texture)
         {
             this->setTexture(texture);
-            // 🔴 关键修复：必须同时设置 TextureRect，否则纹理不会正确显示
+            // 必须同时设置 TextureRect，否则纹理不会正确显示
             this->setTextureRect(Rect(0, 0, texture->getContentSize().width, 
                                             texture->getContentSize().height));
-            CCLOG("🖼️ %s 外观更新成功: %s (size: %.0fx%.0f)", 
-                  getDisplayName().c_str(), newImageFile.c_str(),
-                  texture->getContentSize().width, texture->getContentSize().height);
-        }
-        else
-        {
-            CCLOG("❌ %s 外观更新失败：无法加载纹理 %s", 
-                  getDisplayName().c_str(), newImageFile.c_str());
         }
     }
     
-    CCLOG("✨ %s 升级到了 Lv.%d", getDisplayName().c_str(), _level);
+    CCLOG("[Building] %s upgraded to Lv.%d", getDisplayName().c_str(), _level);
 }
 
 float BaseBuilding::getUpgradeProgress() const
@@ -667,10 +648,7 @@ void BaseBuilding::takeDamage(int damage)
     if (_currentHitpoints < 0)
         _currentHitpoints = 0;
 
-    CCLOG("🔨 %s 受到 %d 点伤害！剩余生命值：%d/%d", getDisplayName().c_str(), damage, _currentHitpoints,
-          _maxHitpoints);
-
-    // 🔴 修复：首次受伤时显示血条
+    // 首次受伤时显示血条
     if (_battleModeEnabled && !_hasBeenAttacked)
     {
         _hasBeenAttacked = true;
@@ -679,7 +657,6 @@ void BaseBuilding::takeDamage(int damage)
 
     if (isDestroyed())
     {
-        CCLOG("💥 %s 已被摧毁！", getDisplayName().c_str());
         this->setVisible(false);
     }
 }
@@ -696,10 +673,6 @@ void BaseBuilding::repair(int amount)
 void BaseBuilding::setTarget(BaseUnit* target)
 {
     _currentTarget = target;
-    if (target)
-    {
-        CCLOG("🎯 %s 锁定目标", getDisplayName().c_str());
-    }
 }
 
 void BaseBuilding::attackTarget(BaseUnit* target)
@@ -707,21 +680,13 @@ void BaseBuilding::attackTarget(BaseUnit* target)
     if (!target || !isDefenseBuilding())
         return;
     // 基础攻击逻辑，子类可重写以实现发射投射物
-    CCLOG("⚔️ %s 攻击目标，造成 %d 点伤害", getDisplayName().c_str(), _combatStats.damage);
 }
 
 // ==================== UI与显示 ====================
 
 void BaseBuilding::initHealthBarUI()
 {
-    // 🔴 修复：如果血条已存在，不重复创建
-    if (_healthBarUI != nullptr)
-    {
-        return;
-    }
-    
-    // 🔴 修复：只在战斗模式下创建血条
-    if (!_battleModeEnabled)
+    if (_healthBarUI != nullptr || !_battleModeEnabled)
     {
         return;
     }
@@ -729,14 +694,11 @@ void BaseBuilding::initHealthBarUI()
     auto* healthBarUI = BuildingHealthBarUI::create(this);
     if (healthBarUI)
     {
-        // 🔴 修复：初始时隐藏血条，等待首次受伤后再显示
+        // 初始隐藏，首次受伤后再显示
         healthBarUI->setVisible(false);
         healthBarUI->setAlwaysVisible(false);
-        
         this->addChild(healthBarUI, 1000);
         _healthBarUI = healthBarUI;
-        
-        CCLOG("🎯 %s 血条UI已创建（初始隐藏）", getDisplayName().c_str());
     }
 }
 
@@ -746,35 +708,22 @@ void BaseBuilding::showHealthBar()
     {
         _healthBarUI->setAlwaysVisible(true);
         _healthBarUI->show();
-        CCLOG("💔 %s 血条显示", getDisplayName().c_str());
     }
 }
 
 void BaseBuilding::enableBattleMode()
 {
     _battleModeEnabled = true;
-    _hasBeenAttacked = false;  // 重置攻击状态
-    
-    // 🔴 修复：进入战斗模式时创建血条UI（如果还没有）
+    _hasBeenAttacked = false;
     initHealthBarUI();
-    
-    // 🔴 修复：不要立即显示血条，等待首次受伤
-    // 移除以下代码：
-    // if (_healthBarUI)
-    // {
-    //     _healthBarUI->setAlwaysVisible(true);
-    //     _healthBarUI->show();
-    // }
-    
-    CCLOG("⚔️ %s 进入战斗模式", getDisplayName().c_str());
 }
 
 void BaseBuilding::disableBattleMode()
 {
     _battleModeEnabled = false;
-    _hasBeenAttacked = false;  // 重置攻击状态
+    _hasBeenAttacked = false;
     
-    // 🔴 修复：退出战斗模式时移除血条UI
+    // 移除血条UI
     if (_healthBarUI)
     {
         _healthBarUI->removeFromParent();
@@ -786,8 +735,6 @@ void BaseBuilding::disableBattleMode()
     {
         _currentHitpoints = _maxHitpoints;
     }
-    
-    CCLOG("🏠 %s 退出战斗模式", getDisplayName().c_str());
 }
 
 // ==================== 生命值管理 ====================

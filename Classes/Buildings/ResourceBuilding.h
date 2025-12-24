@@ -1,11 +1,11 @@
 ﻿/****************************************************************
- * Project Name:  Clash_of_Clans
- * File Name:     ResourceBuilding.h
- * File Function: 资源生产建筑类（金矿、圣水收集器等）
- * Author:        赵崇治
- * Update Date:   2025/01/10
- * License:       MIT License
- ****************************************************************/
+* Project Name:  Clash_of_Clans
+* File Name:     ResourceBuilding.h
+* File Function: 资源生产建筑类（金矿、圣水收集器等）
+* Author:        赵崇治
+* Update Date:   2025/12/24
+* License:       MIT License
+****************************************************************/
 #ifndef RESOURCE_BUILDING_H_
 #define RESOURCE_BUILDING_H_
 

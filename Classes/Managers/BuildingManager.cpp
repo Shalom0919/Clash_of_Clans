@@ -1,28 +1,29 @@
 ﻿/****************************************************************
-* Project Name:  Clash_of_Clans
-* File Name:     BuildingManager.cpp
-* File Function: 建筑管理器实现
-* Author:        赵崇治、薛毓哲
-* Update Date:   2025/12/24
-* License:       MIT License
-****************************************************************/
+ * Project Name:  Clash_of_Clans
+ * File Name:     BuildingManager.cpp
+ * File Function: 建筑管理器实现
+ * Author:        赵崇治、薛毓哲
+ * Update Date:   2025/12/24
+ * License:       MIT License
+ ****************************************************************/
 #include "BuildingManager.h"
-#include "Managers/UpgradeManager.h" // 引入头文件
-#include "Managers/TroopInventory.h"  // 🆕 引入士兵库存管理
-#include "Managers/BuildingLimitManager.h"  // 🆕 引入建筑数量限制管理
-#include "Managers/OccupiedGridOverlay.h"  // 🆕 引入占用网格覆盖层
+#include "Managers/UpgradeManager.h"
+#include "Managers/TroopInventory.h"
+#include "Managers/BuildingLimitManager.h"
+#include "Managers/OccupiedGridOverlay.h"
 #include "ArmyBuilding.h"
 #include "ArmyCampBuilding.h"
 #include "BuildersHutBuilding.h"
 #include "ResourceBuilding.h"
 #include "TownHallBuilding.h"
 #include "WallBuilding.h"
-#include "DefenseBuilding.h"  // ✅ 添加防御建筑头文件
+#include "DefenseBuilding.h"
 #include "GameConfig.h"
 #include "BuildingCapacityManager.h"
-#include "UpgradeTimerUI.h"  // 🆕 引入升级倒计时 UI
+#include "UpgradeTimerUI.h"
+#include "Managers/ResourceCollectionManager.h"
 #include <map>
-#include "../Managers/ResourceCollectionManager.h"
+
 USING_NS_CC;
 bool BuildingManager::init()
 {
@@ -37,14 +38,13 @@ void BuildingManager::setup(cocos2d::Sprite* mapSprite, GridMap* gridMap)
     _mapSprite = mapSprite;
     _gridMap = gridMap;
     
-    // 🆕 创建占用网格覆盖层
+    // 创建占用网格覆盖层
     if (_gridMap && !_occupiedGridOverlay)
     {
         _occupiedGridOverlay = OccupiedGridOverlay::create(_gridMap);
         if (_occupiedGridOverlay)
         {
-            _occupiedGridOverlay->setVisible(true); // 默认可见以显示草坪层
-            // 🔴 修复：Z-Order设为500，在建筑之下（建筑Z-Order约9000-10000），但在网格之上（999）
+            _occupiedGridOverlay->setVisible(true);
             _mapSprite->addChild(_occupiedGridOverlay, 500);
         }
     }
@@ -243,7 +243,7 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
     ResourceType costType = _selectedBuilding.costType;
     if (cost > 0 && !resMgr.consume(costType, cost))
     {
-        // 🔴 修复：正确处理所有资源类型的名称
+        // 正确处理所有资源类型的名称
         std::string resName;
         switch (costType)
         {
@@ -289,8 +289,7 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
     building->setGridSize(_selectedBuilding.gridSize);
     building->setAnchorPoint(Vec2(0.5f, 0.35f));
     
-    // 🔴 修复：强制使用 buildingData 的缩放值，确保与虚影大小一致
-    // 无论建筑自身有什么缩放值，都统一使用虚影的缩放
+    // 强制使用 buildingData 的缩放值
     float targetScale = _selectedBuilding.scaleFactor;
     
     Vec2 buildingPos = calculateBuildingPosition(gridPos);
@@ -313,7 +312,7 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
     // 记录建筑到BuildingLimitManager
     limitMgr->recordBuilding(limitKey);
     
-    // 🆕 为新建造的资源生产建筑创建收集UI
+    // 为新建造的资源生产建筑创建收集UI
     auto* resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
     if (resourceBuilding && resourceBuilding->isProducer())
     {
@@ -336,7 +335,7 @@ void BuildingManager::placeBuilding(const cocos2d::Vec2& gridPos)
         _onBuildingPlaced(building);
     }
     
-    // 🆕 更新占用网格覆盖层（草坪图层）
+    // 更新占用网格覆盖层（草坪图层）
     updateGrassLayer();
     
     // 9. 🆕 检查是否为城墙且可以继续放置
@@ -438,7 +437,7 @@ BaseBuilding* BuildingManager::createBuildingEntity(const BuildingData& building
     {
         return BuildersHutBuilding::create(1);
     }
-    // 🔴 修复：防御建筑创建逻辑
+    // 防御建筑
     else if (buildingData.name == "ArcherTower" || buildingData.name == "Archer Tower" || buildingData.name == "箭塔")
     {
         return DefenseBuilding::create(DefenseType::kArcherTower, 1, buildingData.imageFile);
@@ -570,13 +569,6 @@ void BuildingManager::setupBuildingClickListener(BaseBuilding* building)
 
 void BuildingManager::startMovingBuilding(BaseBuilding* building)
 {
-    /**
-     * 进入建筑移动模式
-     * 流程：
-     * 1. 清除原网格占用
-     * 2. 创建幽灵精灵显示预览
-     * 3. 显示提示信息
-     */
     if (!building || !_gridMap || _isMovingBuilding)
         return;
 
@@ -584,13 +576,10 @@ void BuildingManager::startMovingBuilding(BaseBuilding* building)
     _movingBuilding = building;
     _buildingOriginalGridPos = building->getGridPosition();
 
-    // 清除原位置的网格占用
     _gridMap->markArea(_buildingOriginalGridPos, building->getGridSize(), false);
     _gridMap->showWholeGrid(true);
 
-    // 创建幽灵精灵（显示建筑预览）
     _movingGhostSprite = Sprite::createWithTexture(building->getTexture());
-    
     if (_movingGhostSprite)
     {
         _movingGhostSprite->setOpacity(150);
@@ -600,22 +589,15 @@ void BuildingManager::startMovingBuilding(BaseBuilding* building)
         _mapSprite->addChild(_movingGhostSprite, 2000);
     }
 
-    // 隐藏原建筑
     building->setVisible(false);
-
     showHint("拖动调整建筑位置，松开鼠标后确认");
 }
 
 void BuildingManager::cancelMovingBuilding()
 {
-    /**
-     * 取消建筑移动
-     * 恢复原位置和网格占用
-     */
     if (!_isMovingBuilding || !_movingBuilding)
         return;
 
-    // 恢复原位置的网格占用
     if (_gridMap)
     {
         _gridMap->markArea(_buildingOriginalGridPos, _movingBuilding->getGridSize(), true);
@@ -623,10 +605,8 @@ void BuildingManager::cancelMovingBuilding()
         _gridMap->hideBuildingBase();
     }
 
-    // 显示原建筑
     _movingBuilding->setVisible(true);
 
-    // 移除幽灵精灵
     if (_movingGhostSprite)
     {
         _movingGhostSprite->removeFromParent();
@@ -642,87 +622,56 @@ void BuildingManager::cancelMovingBuilding()
 
 void BuildingManager::onBuildingTouchMoved(const cocos2d::Vec2& touchPos)
 {
-    /**
-     * 处理建筑移动时的触摸移动事件
-     */
     if (!_isMovingBuilding || !_movingBuilding || !_movingGhostSprite || !_gridMap)
         return;
 
-    // 获取新的网格位置
     Vec2 rawGridPos = _gridMap->getGridPosition(touchPos);
-    
-    // 计算中心对齐的网格位置
     int offsetX = static_cast<int>((_movingBuilding->getGridSize().width - 1.0f) / 2.0f);
     int offsetY = static_cast<int>((_movingBuilding->getGridSize().height - 1.0f) / 2.0f);
     Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
     Vec2 centerAlignedGridPos = rawGridPos - offset;
 
-    // 检查新位置是否可用（原位置除外）
-    bool canPlace = false;
-    if (_gridMap->checkArea(centerAlignedGridPos, _movingBuilding->getGridSize()))
-    {
-        canPlace = true;
-    }
+    bool canPlace = _gridMap->checkArea(centerAlignedGridPos, _movingBuilding->getGridSize());
 
-    // 更新幽灵精灵位置
     Vec2 buildingPos = calculateBuildingPositionForMoving(centerAlignedGridPos);
     _movingGhostSprite->setPosition(buildingPos);
     _movingGhostSprite->setColor(canPlace ? Color3B::WHITE : Color3B(255, 100, 100));
 
-    // 更新网格显示
     _gridMap->updateBuildingBase(centerAlignedGridPos, _movingBuilding->getGridSize(), canPlace);
 }
 
 void BuildingManager::onBuildingTouchEnded(const cocos2d::Vec2& touchPos, BaseBuilding* building)
 {
-    /**
-     * 处理建筑移动时的触摸结束事件
-     */
     if (!_isMovingBuilding || !building || !_gridMap || _movingBuilding != building)
         return;
 
-    // 获取最终的网格位置
     Vec2 rawGridPos = _gridMap->getGridPosition(touchPos);
     int offsetX = static_cast<int>((building->getGridSize().width - 1.0f) / 2.0f);
     int offsetY = static_cast<int>((building->getGridSize().height - 1.0f) / 2.0f);
     Vec2 offset = Vec2(static_cast<float>(offsetX), static_cast<float>(offsetY));
     Vec2 newGridPos = rawGridPos - offset;
 
-    // 检查位置是否有效
     bool canPlace = _gridMap->checkArea(newGridPos, building->getGridSize());
 
     if (canPlace)
     {
-        // 位置有效，确认移动
         building->setGridPosition(newGridPos);
-        
-        // 更新建筑的世界位置
         Vec2 newPos = calculateBuildingPositionForMoving(newGridPos);
         building->setPosition(newPos);
-        
-        // 更新 Z-Order
         building->setLocalZOrder(10000 - static_cast<int>(newPos.y));
 
-        // 标记新位置为被占用
         _gridMap->markArea(newGridPos, building->getGridSize(), true);
 
         showHint(StringUtils::format("%s 已移动到新位置", building->getDisplayName().c_str()));
 
-        // 触发回调
         if (_onBuildingMoved)
-        {
             _onBuildingMoved(building, newGridPos);
-        }
         
-        // 🆕 更新草坪图层
         updateGrassLayer();
-
-        // 清理移动模式状态
         confirmBuildingMove();
     }
     else
     {
-        // 位置无效，取消移动
         cancelMovingBuilding();
         showHint("无法在该位置放置建筑，已恢复原位置");
     }
@@ -759,50 +708,24 @@ void BuildingManager::confirmBuildingMove()
 
 void BuildingManager::showOccupiedGrids(bool autoFadeOut)
 {
-    /**
-     * 显示所有已有建筑的占用网格（含周围一格）
-     * @param autoFadeOut 此参数已废弃，保留用于兼容性
-     */
     if (!_occupiedGridOverlay)
-    {
-        CCLOG("⚠️ OccupiedGridOverlay is null!");
         return;
-    }
     
-    CCLOG("🎨 Showing occupied grids for %zu buildings", _buildings.size());
-    
-    // 停止之前的自动淡出动作
     this->stopAllActions();
-    
     _occupiedGridOverlay->showOccupiedGrids(_buildings);
-    
-    // 🔴 移除自动淡出逻辑，由外部控制淡出时机
-    // 淡出应该在建筑升级UI关闭时调用
 }
 
 void BuildingManager::hideOccupiedGrids()
 {
-    /**
-     * 淡出并隐藏占用网格覆盖层
-     */
     if (!_occupiedGridOverlay)
         return;
-    
     _occupiedGridOverlay->fadeOutAndHide(0.5f);
 }
 
 void BuildingManager::updateGrassLayer()
 {
-    /**
-     * 更新草坪图层
-     */
     if (!_occupiedGridOverlay)
-    {
-        CCLOG("⚠️ OccupiedGridOverlay is null in updateGrassLayer!");
         return;
-    }
-    
-    CCLOG("🌱 Updating grass layer for %zu buildings", _buildings.size());
     _occupiedGridOverlay->updateGrassLayer(_buildings);
 }
 
@@ -827,9 +750,6 @@ cocos2d::Vec2 BuildingManager::calculateBuildingPositionForMoving(const cocos2d:
 
 std::vector<BuildingSerialData> BuildingManager::serializeBuildings() const
 {
-    /**
-     * 将所有建筑序列化为数据列表
-     */
     std::vector<BuildingSerialData> result;
     
     for (auto* building : _buildings)
@@ -848,28 +768,17 @@ std::vector<BuildingSerialData> BuildingManager::serializeBuildings() const
         result.push_back(data);
     }
     
-    CCLOG("✅ Serialized %zu buildings", result.size());
     return result;
 }
 
 void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData>& buildingsData, bool isReadOnly)
 {
-    /**
-     * 从序列化数据快速加载建筑
-     */
     if (!_mapSprite || !_gridMap)
-    {
-        CCLOG("❌ BuildingManager: Map or grid not set, cannot load buildings");
         return;
-    }
     
-    // 先清空现有建筑
-    // 🔴 关键修复：如果是只读模式（攻击别人），不要清空士兵库存!
+    // 先清空现有建筑，只读模式不清空士兵库存
     clearAllBuildings(!isReadOnly);
-    
     _isReadOnlyMode = isReadOnly;
-    
-    CCLOG("🔄 Loading %zu buildings (ReadOnly=%d)...", buildingsData.size(), isReadOnly);
     
     for (const auto& data : buildingsData)
     {
@@ -908,7 +817,7 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
         // 记录建筑到BuildingLimitManager（只在非只读模式下）
         if (!isReadOnly)
         {
-            // 🆕 非只读模式：为资源建筑创建收集UI
+            // 非只读模式：为资源建筑创建收集UI
             auto* resourceBuilding = dynamic_cast<ResourceBuilding*>(building);
             if (resourceBuilding)
             {
@@ -916,15 +825,13 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
                 {
                     resourceBuilding->initCollectionUI();
                 }
-                // 🔴 修复：存储型建筑注册到容量管理器
                 else if (resourceBuilding->isStorage())
                 {
                     BuildingCapacityManager::getInstance().registerOrUpdateBuilding(resourceBuilding, true);
-                    CCLOG("📦 注册存储建筑到容量管理器: %s", resourceBuilding->getDisplayName().c_str());
                 }
             }
             
-            // 🔴 关键修复：先移除等级后缀，再进行名称匹配
+            // 移除等级后缀
             std::string rawName = data.name;
             size_t lvPos = rawName.find(" (Lv.");
             if (lvPos == std::string::npos)
@@ -972,9 +879,6 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
                 limitKey = "ArmyCamp";
             }
             
-            CCLOG("📝 记录建筑到 LimitManager: 原始名=%s, 处理后=%s, 键=%s", 
-                  data.name.c_str(), rawName.c_str(), limitKey.c_str());
-            
             BuildingLimitManager::getInstance()->recordBuilding(limitKey);
             
             setupBuildingClickListener(building);
@@ -982,10 +886,7 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
         // 🆕 只读模式（战斗场景）：不创建收集UI，不注册到 ResourceCollectionManager
     }
     
-    CCLOG("✅ Loaded %zu buildings successfully (Mode: %s)", 
-          _buildings.size(), isReadOnly ? "Attack" : "Edit");
-    
-    // 🆕 加载完建筑后，更新草坪图层
+    // 加载完建筑后更新草坪图层
     if (!isReadOnly)
     {
         updateGrassLayer();
@@ -994,14 +895,10 @@ void BuildingManager::loadBuildingsFromData(const std::vector<BuildingSerialData
 
 void BuildingManager::clearAllBuildings(bool clearTroops)
 {
-    /**
-     * 清空所有建筑
-     */
     if (!_gridMap)
         return;
     
-    // 🔴 关键修复：在清除建筑前，先清理 UpgradeManager 中的所有升级任务
-    // 防止任务中的建筑指针在场景切换后变成野指针
+    // 清除升级任务，防止野指针
     UpgradeManager::getInstance()->clearAllUpgradeTasks();
     
     // 清除网格占用
@@ -1012,65 +909,42 @@ void BuildingManager::clearAllBuildings(bool clearTroops)
             _gridMap->markArea(building->getGridPosition(), building->getGridSize(), false);
         }
     }
-    // 🔴 关键修复：清除所有建筑后，通知资源收集管理器清除其引用。
+    
+    // 清除管理器引用
     ResourceCollectionManager::getInstance()->clearRegisteredBuildings();
-    
-    // 🔴 关键修复：清除容量管理器中的建筑引用，防止悬空指针
     BuildingCapacityManager::getInstance().clearAllBuildings();
-    
-    // 重置BuildingLimitManager的建筑计数
     BuildingLimitManager::getInstance()->reset();
     
     if (clearTroops)
     {
-        // 清空士兵库存（因为没有军营了）
         TroopInventory::getInstance().clearAll();
-        
-        // 重置军队人口容量为0（因为没有军营了）
         auto& resMgr = ResourceManager::getInstance();
         resMgr.setResourceCapacity(ResourceType::kTroopPopulation, 0);
         resMgr.setResourceCount(ResourceType::kTroopPopulation, 0);
-        
-        CCLOG("🗑️ Cleared all buildings, reset building limits, and cleared troop inventory");
-    }
-    else
-    {
-        CCLOG("🗑️ Cleared all buildings and reset building limits (Troops preserved)");
     }
     
-    // 移除所有建筑节点
     _buildings.clear();
-    
     _isReadOnlyMode = false;
 }
 
 void BuildingManager::saveCurrentState()
 {
-    /**
-     * 保存当前建筑状态到当前账号
-     */
     auto& accMgr = AccountManager::getInstance();
     auto gameData = accMgr.getCurrentGameData();
     
-    // 序列化建筑
     gameData.buildings = serializeBuildings();
     
-    // 同步资源数据
     auto& resMgr = ResourceManager::getInstance();
     gameData.gold = resMgr.getResourceCount(ResourceType::kGold);
     gameData.elixir = resMgr.getResourceCount(ResourceType::kElixir);
     gameData.darkElixir = 0;
     gameData.gems = resMgr.getResourceCount(ResourceType::kGem);
-    
-    // 🆕 同步资源容量
     gameData.goldCapacity = resMgr.getResourceCapacity(ResourceType::kGold);
     gameData.elixirCapacity = resMgr.getResourceCapacity(ResourceType::kElixir);
     
-    // 🆕 同步士兵库存
     auto& troopInv = TroopInventory::getInstance();
     gameData.troopInventory = troopInv.toJson();
     
-    // 获取大本营等级
     for (auto* building : _buildings)
     {
         if (building && building->getBuildingType() == BuildingType::kTownHall)
@@ -1080,12 +954,7 @@ void BuildingManager::saveCurrentState()
         }
     }
     
-    // 更新并保存
     accMgr.updateGameData(gameData);
-    
-    CCLOG("💾 Current state saved: %zu buildings, Gold=%d/%d, Elixir=%d/%d", 
-          gameData.buildings.size(), gameData.gold, gameData.goldCapacity,
-          gameData.elixir, gameData.elixirCapacity);
 }
 
 void BuildingManager::loadCurrentAccountState()
@@ -1093,128 +962,70 @@ void BuildingManager::loadCurrentAccountState()
     auto& accMgr = AccountManager::getInstance();
     auto gameData = accMgr.getCurrentGameData();
     auto& resMgr = ResourceManager::getInstance();
-    
-    // 🔍 调试：显示加载前的军队人口状态
-    CCLOG("📊 [Before Loading] TroopPopulation: %d / %d", 
-          resMgr.getResourceCount(ResourceType::kTroopPopulation),
-          resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
 
-    // 1. 加载建筑 (建筑实体被创建，并向 CapacityManager 注册)
+    // 1. 加载建筑
     loadBuildingsFromData(gameData.buildings, false);
-    
-    // 🔍 调试：显示加载建筑后的军队人口容量
-    CCLOG("📊 [After Loading Buildings] TroopPopulation Capacity: %d", 
-          resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
 
-    // 2. 🆕 先恢复保存的容量
-    //    如果存档中有容量数据，直接使用；否则通过 CapacityManager 重新计算
+    // 2. 恢复保存的容量
     if (gameData.goldCapacity > 0 || gameData.elixirCapacity > 0)
     {
-        // 使用保存的容量数据
         resMgr.setResourceCapacity(ResourceType::kGold, gameData.goldCapacity);
         resMgr.setResourceCapacity(ResourceType::kElixir, gameData.elixirCapacity);
-        
-        CCLOG("📂 从存档恢复容量: 金币=%d, 圣水=%d", 
-              gameData.goldCapacity, gameData.elixirCapacity);
     }
     else
     {
-        // 旧存档没有容量数据，通过建筑重新计算
         BuildingCapacityManager::getInstance().recalculateCapacity();
-        
-        CCLOG("📂 旧存档：通过建筑重新计算容量");
     }
 
     // 3. 加载士兵库存
     auto& troopInv = TroopInventory::getInstance();
     if (!gameData.troopInventory.empty())
     {
-        CCLOG("📦 准备恢复士兵库存，当前容量: %d", 
-              resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
         troopInv.fromJson(gameData.troopInventory);
-        CCLOG("📂 从存档恢复士兵库存，当前人口: %d / %d",
-              resMgr.getResourceCount(ResourceType::kTroopPopulation),
-              resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
-        
-        // 🆕 恢复军营的小兵显示
         restoreArmyCampTroopDisplays();
     }
     else
     {
-        // 新账号或没有士兵数据，清空士兵库存
         troopInv.clearAll();
-        CCLOG("📂 新账号：清空士兵库存，当前人口: %d / %d",
-              resMgr.getResourceCount(ResourceType::kTroopPopulation),
-              resMgr.getResourceCapacity(ResourceType::kTroopPopulation));
     }
     
-    // 4. 最后加载资源数量（此时容量已正确设置）
+    // 4. 加载资源数量
     resMgr.setResourceCount(ResourceType::kGold, gameData.gold);
     resMgr.setResourceCount(ResourceType::kElixir, gameData.elixir);
     resMgr.setResourceCount(ResourceType::kGem, gameData.gems);
-
-    CCLOG("📂 Loaded account state: Gold=%d/%d, Elixir=%d/%d, Buildings=%zu",
-          gameData.gold, resMgr.getResourceCapacity(ResourceType::kGold),
-          gameData.elixir, resMgr.getResourceCapacity(ResourceType::kElixir),
-          gameData.buildings.size());
 }
 
 bool BuildingManager::loadPlayerBase(const std::string& userId)
 {
-    /**
-     * 加载指定玩家的建筑布局（用于攻击）
-     */
     auto& accMgr = AccountManager::getInstance();
     auto gameData = accMgr.getPlayerGameData(userId);
     
     if (gameData.buildings.empty())
-    {
-        CCLOG("❌ Failed to load base for player: %s", userId.c_str());
         return false;
-    }
     
-    // 以只读模式加载建筑
     loadBuildingsFromData(gameData.buildings, false);
-    
-    CCLOG("⚔️ Loaded player base: %s (%zu buildings, TH Level=%d)",
-          userId.c_str(), gameData.buildings.size(), gameData.townHallLevel);
-    
     return true;
 }
 
 void BuildingManager::restoreArmyCampTroopDisplays()
 {
-    /**
-     * 恢复军营的小兵显示
-     * 根据TroopInventory中的士兵数量，在军营中显示对应的小兵
-     */
     auto& troopInv = TroopInventory::getInstance();
     
-    // 获取所有军营建筑
     std::vector<ArmyCampBuilding*> armyCamps;
     for (auto* building : _buildings)
     {
         auto* armyCamp = dynamic_cast<ArmyCampBuilding*>(building);
         if (armyCamp)
-        {
             armyCamps.push_back(armyCamp);
-        }
     }
     
     if (armyCamps.empty())
-    {
-        CCLOG("⚠️ No Army Camps found to restore troop displays");
         return;
-    }
     
-    // 🔴 方案A修复：先清空所有军营的旧显示，避免重复
-    CCLOG("🧹 Clearing existing troop displays from %zu Army Camps before restore", armyCamps.size());
+    // 清空旧显示
     for (auto* armyCamp : armyCamps)
-    {
         armyCamp->clearTroopDisplays();
-    }
     
-    // 获取所有兵种
     const std::vector<UnitType> unitTypes = {
         UnitType::kBarbarian,
         UnitType::kArcher,
@@ -1225,7 +1036,6 @@ void BuildingManager::restoreArmyCampTroopDisplays()
     
     int armyCampIndex = 0;
     
-    // 遍历每个兵种，将小兵显示在军营中
     for (auto unitType : unitTypes)
     {
         int count = troopInv.getTroopCount(unitType);
@@ -1233,50 +1043,32 @@ void BuildingManager::restoreArmyCampTroopDisplays()
         for (int i = 0; i < count; ++i)
         {
             if (armyCampIndex >= armyCamps.size())
-                armyCampIndex = 0;  // 循环使用军营
+                armyCampIndex = 0;
             
-            // 在军营中添加小兵显示
             armyCamps[armyCampIndex]->addTroopDisplay(unitType);
             
-            // 简单分配：每个军营最多显示一定数量后切换到下一个
-            // 这里可以根据需要调整分配策略
-            if ((i + 1) % 5 == 0)  // 每5个小兵换一个军营
+            if ((i + 1) % 5 == 0)
                 armyCampIndex = (armyCampIndex + 1) % armyCamps.size();
         }
     }
-    
-    CCLOG("✅ Restored troop displays in %zu Army Camps", armyCamps.size());
 }
 
 BaseBuilding* BuildingManager::createBuildingFromSerialData(const BuildingSerialData& data)
 {
-    /**
-     * 从序列化数据创建建筑实体
-     */
     std::string name = data.name;
     int level = data.level;
     
-    // 🔴 修复：移除等级后缀（支持多种格式）
-    // 格式1: "加农炮 (Lv.1)" -> "加农炮"
-    // 格式2: "Gold Mine Lv.2" -> "Gold Mine"
+    // 移除等级后缀
     size_t lvPos = name.find(" (Lv.");
     if (lvPos == std::string::npos)
-    {
         lvPos = name.find(" Lv.");
-    }
     if (lvPos != std::string::npos)
-    {
         name = name.substr(0, lvPos);
-    }
     
-    // 额外移除可能的括号残留
+    // 移除括号残留
     size_t bracketPos = name.find(" (");
     if (bracketPos != std::string::npos)
-    {
         name = name.substr(0, bracketPos);
-    }
-    
-    CCLOG("🔍 反序列化建筑：原始名=%s, 处理后=%s, 等级=%d", data.name.c_str(), name.c_str(), level);
     
     // 根据名称创建建筑
     if (name.find("Town Hall") != std::string::npos || name.find("大本营") != std::string::npos)
@@ -1317,19 +1109,16 @@ BaseBuilding* BuildingManager::createBuildingFromSerialData(const BuildingSerial
     }
     else if (name.find("Archer Tower") != std::string::npos || name.find("箭塔") != std::string::npos)
     {
-        CCLOG("✅ 创建箭塔：等级=%d", level);
         std::string imagePath = StringUtils::format("buildings/ArcherTower/Archer_Tower%d.png", level);
         return DefenseBuilding::create(DefenseType::kArcherTower, level, imagePath);
     }
     else if (name.find("Cannon") != std::string::npos || name.find("加农炮") != std::string::npos)
     {
-        CCLOG("✅ 创建加农炮：等级=%d", level);
         std::string imagePath = StringUtils::format("buildings/Cannon_Static/Cannon%d.png", level);
         return DefenseBuilding::create(DefenseType::kCannon, level, imagePath);
     }
     else
     {
-        CCLOG("⚠️ Unknown building type: %s", name.c_str());
         return nullptr;
     }
 }
