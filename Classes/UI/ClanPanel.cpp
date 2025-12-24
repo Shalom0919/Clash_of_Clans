@@ -884,7 +884,7 @@ void ClanPanel::registerPvpCallbacks()
     // 先清除旧回调
     client.setOnPvpStart(nullptr);
     client.setOnSpectateJoin(nullptr);
-    client.setOnPvpEnd(nullptr);
+    // 注意：不在这里清除 OnPvpEnd，因为 BattleScene 可能需要它
 
     // PVP 开始回调
     client.setOnPvpStart([this](const std::string& role, const std::string& opponentId, const std::string& mapData) {
@@ -908,21 +908,27 @@ void ClanPanel::registerPvpCallbacks()
                     showToast("目标玩家没有地图数据", Color4B::RED);
                 else if (reason == "ALREADY_IN_BATTLE")
                     showToast("你或目标正在战斗中", Color4B::RED);
+                else if (reason == "TARGET_IN_BATTLE")
+                    showToast("目标玩家正在战斗中", Color4B::RED);
+                else if (reason == "CANNOT_ATTACK_SELF")
+                    showToast("不能攻击自己", Color4B::RED);
                 else
                     showToast("发起战斗失败: " + reason, Color4B::RED);
             }
         });
     });
 
-    // 观战回调
+    // 观战回调 - 更新签名以包含 elapsedMs
     client.setOnSpectateJoin(
-        [this](bool success, const std::string& attackerId, const std::string& defenderId, const std::string& mapData, const std::vector<std::string>& history) {
+        [this](bool success, const std::string& attackerId, const std::string& defenderId, 
+               const std::string& mapData, int64_t elapsedMs, const std::vector<std::string>& history) {
             Director::getInstance()->getScheduler()->performFunctionInCocosThread(
-                [this, success, attackerId, defenderId, mapData, history]() {
+                [this, success, attackerId, defenderId, mapData, elapsedMs, history]() {
                     if (success)
                     {
-                        CCLOG("[ClanPanel] 观战加入成功: %s vs %s (History: %zu actions)", attackerId.c_str(), defenderId.c_str(), history.size());
-                        enterSpectateScene(attackerId, defenderId, mapData, history);
+                        CCLOG("[ClanPanel] 观战加入成功: %s vs %s (已进行: %lldms, 历史: %zu 操作)", 
+                              attackerId.c_str(), defenderId.c_str(), (long long)elapsedMs, history.size());
+                        enterSpectateScene(attackerId, defenderId, mapData, elapsedMs, history);
                     }
                     else
                     {
@@ -931,12 +937,16 @@ void ClanPanel::registerPvpCallbacks()
                 });
         });
 
-    // PVP 结束回调
+    // PVP 结束回调 - 仅在 ClanPanel 可见时处理
     client.setOnPvpEnd([this](const std::string& result) {
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([this, result]() {
-            CCLOG("[ClanPanel] PVP结束: %s", result.c_str());
-            showToast("战斗已结束");
-            this->scheduleOnce([this](float) { safeRefreshCurrentTab(); }, 0.5f, "delayed_refresh_after_pvp");
+            // 只有当 ClanPanel 可见时才处理
+            if (this->isVisible())
+            {
+                CCLOG("[ClanPanel] PVP结束: %s", result.c_str());
+                showToast("战斗已结束");
+                this->scheduleOnce([this](float) { safeRefreshCurrentTab(); }, 0.5f, "delayed_refresh_after_pvp");
+            }
         });
     });
 
@@ -1094,30 +1104,37 @@ void ClanPanel::onLeaveClanClicked()
 
 void ClanPanel::enterBattleScene(const std::string& targetId, const std::string& mapData)
 {
-    _isTransitioningToBattle = true; // 🆕 Set flag before transition
+    _isTransitioningToBattle = true;
+    
     AccountGameData enemyData   = AccountGameData::fromJson(mapData);
     auto            scene       = BattleScene::createWithEnemyData(enemyData, targetId);
     auto            battleScene = dynamic_cast<BattleScene*>(scene);
     if (battleScene)
+    {
         battleScene->setPvpMode(true);
+    }
 
-    Director::getInstance()->replaceScene(TransitionFade::create(0.5f, scene));
+    // 使用 pushScene 而不是 replaceScene，以便返回时能恢复 ClanPanel
+    Director::getInstance()->pushScene(TransitionFade::create(0.5f, scene));
 }
 
 void ClanPanel::enterSpectateScene(const std::string& attackerId, const std::string& defenderId,
-                                   const std::string& mapData, const std::vector<std::string>& history)
+                                   const std::string& mapData, int64_t elapsedMs,
+                                   const std::vector<std::string>& history)
 {
-    _isTransitioningToBattle = true; // 🆕 Set flag before transition
+    _isTransitioningToBattle = true;
+    
     AccountGameData enemyData   = AccountGameData::fromJson(mapData);
     auto            scene       = BattleScene::createWithEnemyData(enemyData, defenderId);
     auto            battleScene = dynamic_cast<BattleScene*>(scene);
     if (battleScene)
     {
-        battleScene->setPvpMode(false);
-        battleScene->setSpectateHistory(history); // 🆕 Pass history to BattleScene
+        // 使用新的观战模式设置方法
+        battleScene->setSpectateMode(attackerId, defenderId, elapsedMs, history);
     }
 
-    Director::getInstance()->replaceScene(TransitionFade::create(0.5f, scene));
+    // 使用 pushScene
+    Director::getInstance()->pushScene(TransitionFade::create(0.5f, scene));
 }
 
 // ============================================================================

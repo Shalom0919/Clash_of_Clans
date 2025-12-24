@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-// Forward declarations
+// 前向声明
 class BuildingManager;
 class GridMap;
 class BaseBuilding;
@@ -32,22 +32,19 @@ class BaseBuilding;
  * @brief 战斗场景 - 异步多人游戏攻击场景
  *
  * 功能：
- * 1. 加载敌方基地布局（从 GameStateData）
+ * 1. 加载敌方基地布局
  * 2. 部署己方士兵进行攻击
  * 3. 计算战斗结果（星数、掠夺资源）
- * 4. 上传战斗结果到服务器（可选）
+ * 4. 支持PVP模式和观战模式
  */
 class BattleScene : public cocos2d::Scene
 {
 public:
     /**
-     * @brief 创建战斗场景（传统方式，保留兼容性）
+     * @brief 创建战斗场景
      */
     static cocos2d::Scene* createScene();
 
-    /**
-     * @brief Cocos2d-x 标准创建宏
-     */
     CREATE_FUNC(BattleScene);
 
     /**
@@ -57,7 +54,7 @@ public:
     static BattleScene* createWithEnemyData(const GameStateData& enemyData);
 
     /**
-     * @brief 创建战斗场景（带敌方数据）
+     * @brief 创建战斗场景（带敌方数据和用户ID）
      * @param enemyData 敌方玩家的基地数据
      * @param enemyUserId 敌方玩家ID
      */
@@ -70,35 +67,35 @@ public:
     static BattleScene* createWithReplayData(const std::string& replayDataStr);
 
     virtual bool init() override;
-
-    /**
-     * @brief 初始化战斗场景（带敌方数据）
-     * @param enemyData 敌方玩家的基地数据
-     */
     virtual bool initWithEnemyData(const GameStateData& enemyData);
-
-    /**
-     * @brief 初始化战斗场景（带敌方数据）
-     * @param enemyData 敌方玩家的基地数据
-     * @param enemyUserId 敌方玩家ID
-     */
     virtual bool initWithEnemyData(const GameStateData& enemyData, const std::string& enemyUserId);
-
-    /**
-     * @brief 初始化战斗回放场景
-     */
     virtual bool initWithReplayData(const std::string& replayDataStr);
 
     virtual void update(float dt) override;
     virtual void onEnter() override;
     virtual void onExit() override;
 
-    // 🆕 PVP Configuration
+    /**
+     * @brief 设置PVP模式
+     * @param isAttacker 是否为攻击方
+     */
     void setPvpMode(bool isAttacker);
 
     /**
-     * @brief 设置观战历史记录
-     * @param history 历史操作记录 (格式: "type,x,y")
+     * @brief 设置观战模式
+     * @param attackerId 攻击方ID
+     * @param defenderId 防守方ID
+     * @param elapsedMs 已经过的时间（毫秒）
+     * @param history 历史操作记录
+     */
+    void setSpectateMode(const std::string& attackerId, 
+                         const std::string& defenderId,
+                         int64_t elapsedMs,
+                         const std::vector<std::string>& history);
+
+    /**
+     * @brief 设置观战历史记录（向后兼容）
+     * @param history 历史操作记录
      */
     void setSpectateHistory(const std::vector<std::string>& history);
 
@@ -119,7 +116,7 @@ private:
     bool          _isDragging = false;
     float         _timeScale  = 1.0f;
 
-    // 🆕 多点触控缩放
+    // 多点触控缩放
     std::map<int, cocos2d::Vec2> _activeTouches;
     bool                         _isPinching        = false;
     float                        _prevPinchDistance = 0.0f;
@@ -142,20 +139,22 @@ private:
     void          updateBoundary();
     void          ensureMapInBoundary();
 
-    // ==================== 🆕 战斗模式血条管理 ====================
-    /**
-     * @brief 启用所有防御建筑的战斗模式和血条显示
-     */
+    // ==================== 战斗模式血条管理 ====================
     void enableAllBuildingsBattleMode();
-
-    /**
-     * @brief 禁用所有防御建筑的战斗模式并重置血量
-     */
     void disableAllBuildingsBattleMode();
 
-    // 🆕 PVP State
-    bool _isPvpMode  = false;
-    bool _isAttacker = false;
+    // ==================== 观战历史回放 ====================
+    void replaySpectateHistory();
+
+    // ==================== PVP/观战状态 ====================
+    bool        _isPvpMode      = false;    ///< 是否为PVP模式
+    bool        _isAttacker     = false;    ///< 是否为攻击方
+    bool        _isSpectateMode = false;    ///< 是否为观战模式
+    std::string _spectateAttackerId;        ///< 观战时的攻击方ID
+    std::string _spectateDefenderId;        ///< 观战时的防守方ID
+    int64_t     _spectateElapsedMs = 0;     ///< 观战时已经过的时间
+    std::vector<std::string> _spectateHistory;  ///< 观战历史操作
+    bool        _historyReplayed = false;   ///< 历史是否已回放
 };
 
-#endif // __BATTLE_SCENE_H__
+#endif // __BATTLE_SCENE_H__#endif // __BATTLE_SCENE_H__

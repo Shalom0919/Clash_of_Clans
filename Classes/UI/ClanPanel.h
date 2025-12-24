@@ -3,7 +3,7 @@
  * File Name:     ClanPanel.h
  * File Function: 部落面板主容器 - 负责UI布局和协调
  * Author:        赵崇治
- * Update Date:   2025/12/21
+ * Update Date:   2025/12/24
  * License:       MIT License
  ****************************************************************/
 #pragma once
@@ -85,8 +85,26 @@ private:
     void onJoinClanClicked(const std::string& clanId);  ///< 加入部落
     void onLeaveClanClicked();  ///< 退出部落
 
+    /**
+     * @brief 进入战斗场景
+     * @param targetId 目标玩家ID
+     * @param mapData 地图数据JSON
+     */
     void enterBattleScene(const std::string& targetId, const std::string& mapData);
-    void enterSpectateScene(const std::string& attackerId, const std::string& defenderId, const std::string& mapData, const std::vector<std::string>& history = {});
+
+    /**
+     * @brief 进入观战场景
+     * @param attackerId 攻击方ID
+     * @param defenderId 防守方ID
+     * @param mapData 地图数据JSON
+     * @param elapsedMs 已经过的时间（毫秒）
+     * @param history 历史操作记录
+     */
+    void enterSpectateScene(const std::string& attackerId, 
+                            const std::string& defenderId, 
+                            const std::string& mapData, 
+                            int64_t elapsedMs,
+                            const std::vector<std::string>& history);
 
     void showToast(const std::string& msg, const cocos2d::Color4B& color = cocos2d::Color4B::WHITE);
     void scheduleRefresh();    ///< 调度刷新
@@ -106,11 +124,11 @@ private:
     cocos2d::ui::Button* _joinClanBtn = nullptr;   ///< 加入部落按钮
     cocos2d::ui::Button* _leaveClanBtn = nullptr;  ///< 退出部落按钮
 
-    // ========== 状态 ==========
-    TabType     _currentTab   = TabType::ONLINE_PLAYERS;
-    bool        _isRefreshing = false;
-    std::string _currentWarId;
-    bool        _isTransitioningToBattle = false; // 🆕 Flag to prevent clearing callbacks on transition
+    // ==================== 状态 ====================
+    TabType     _currentTab   = TabType::ONLINE_PLAYERS;  ///< 当前标签页
+    bool        _isRefreshing = false;                    ///< 是否正在刷新
+    std::string _currentWarId;                            ///< 当前战争ID
+    bool        _isTransitioningToBattle = false;         ///< 是否正在切换到战斗场景
 };
 
 #endif // __CLAN_PANEL_H__

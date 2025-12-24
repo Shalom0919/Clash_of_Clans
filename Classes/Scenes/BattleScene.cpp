@@ -19,38 +19,23 @@
 #include "ResourceManager.h"
 #include "Unit/UnitTypes.h"
 #include <ctime>
-#include <sstream> // 🆕 用于解析历史记录
+#include <sstream>
 
 USING_NS_CC;
 using namespace ui;
 
 // ==================== 创建场景 ====================
 
-/**
- * @brief 创建默认战斗场景
- * @return Scene* 场景指针
- */
 Scene* BattleScene::createScene()
 {
     return BattleScene::create();
 }
 
-/**
- * @brief 创建带有敌方数据的战斗场景
- * @param enemyData 敌方游戏数据
- * @return BattleScene* 战斗场景指针
- */
 BattleScene* BattleScene::createWithEnemyData(const AccountGameData& enemyData)
 {
     return createWithEnemyData(enemyData, "Enemy");
 }
 
-/**
- * @brief 创建带有敌方数据和ID的战斗场景
- * @param enemyData 敌方游戏数据
- * @param enemyUserId 敌方用户ID
- * @return BattleScene* 战斗场景指针
- */
 BattleScene* BattleScene::createWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId)
 {
     BattleScene* scene = new (std::nothrow) BattleScene();
@@ -63,11 +48,6 @@ BattleScene* BattleScene::createWithEnemyData(const AccountGameData& enemyData, 
     return nullptr;
 }
 
-/**
- * @brief 创建回放模式的战斗场景
- * @param replayDataStr 回放数据字符串
- * @return BattleScene* 战斗场景指针
- */
 BattleScene* BattleScene::createWithReplayData(const std::string& replayDataStr)
 {
     BattleScene* scene = new (std::nothrow) BattleScene();
@@ -92,10 +72,6 @@ BattleScene::~BattleScene()
 
 // ==================== 初始化 ====================
 
-/**
- * @brief 初始化场景
- * @return bool 是否成功
- */
 bool BattleScene::init()
 {
     if (!Scene::init())
@@ -116,22 +92,11 @@ bool BattleScene::init()
     return true;
 }
 
-/**
- * @brief 使用敌方数据初始化
- * @param enemyData 敌方数据
- * @return bool 是否成功
- */
 bool BattleScene::initWithEnemyData(const AccountGameData& enemyData)
 {
     return initWithEnemyData(enemyData, "Enemy");
 }
 
-/**
- * @brief 使用敌方数据和ID初始化
- * @param enemyData 敌方数据
- * @param enemyUserId 敌方ID
- * @return bool 是否成功
- */
 bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId)
 {
     if (!Scene::init())
@@ -145,12 +110,12 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
     setupUI();
     setupTouchListeners();
 
-    // Initialize Manager
+    // 初始化战斗管理器
     if (_battleManager)
     {
         _battleManager->init(_mapSprite, enemyData, enemyUserId, false);
 
-        // Setup callbacks
+        // 设置UI更新回调
         _battleManager->setUIUpdateCallback([this]() {
             if (_battleUI && _battleManager)
             {
@@ -160,22 +125,25 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
             }
         });
 
+        // 设置战斗结束回调
         _battleManager->setBattleEndCallback([this]() {
             if (_battleUI && _battleManager)
             {
                 int trophyChange = _battleManager->getStars() * 10 - (3 - _battleManager->getStars()) * 3;
                 _battleUI->showResultPanel(_battleManager->getStars(), _battleManager->getDestructionPercent(),
                                            _battleManager->getGoldLooted(), _battleManager->getElixirLooted(),
-                                           trophyChange, _battleManager->isReplayMode());
+                                           trophyChange, _battleManager->isReplayMode() || _isSpectateMode);
 
-                // 🆕 PVP End
+                // PVP结束通知
                 if (_isPvpMode && _isAttacker)
                 {
+                    CCLOG("📡 发送PVP结束通知");
                     SocketClient::getInstance().endPvp();
                 }
             }
         });
 
+        // 设置部队部署回调
         _battleManager->setTroopDeployCallback([this](UnitType type, int count) {
             if (_battleUI && _battleManager)
             {
@@ -188,17 +156,16 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
         });
     }
 
-    // Load Buildings
+    // 加载建筑
     if (_buildingManager && !enemyData.buildings.empty())
     {
-        CCLOG("🏰 Loading enemy base with %zu buildings...", enemyData.buildings.size());
+        CCLOG("🏰 加载敌方基地 %zu 个建筑...", enemyData.buildings.size());
         _buildingManager->loadBuildingsFromData(enemyData.buildings, true);
 
-        // Pass buildings to manager
+        // 传递建筑给战斗管理器
         if (_battleManager)
         {
             const auto& buildings = _buildingManager->getBuildings();
-            // Convert list<BaseBuilding*> to vector<BaseBuilding*>
             std::vector<BaseBuilding*> buildingVec(buildings.begin(), buildings.end());
             _battleManager->setBuildings(buildingVec);
         }
@@ -214,13 +181,13 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
     {
         if (_battleUI)
             _battleUI->updateStatus("错误：无法加载敌方基地！", Color4B::RED);
-        CCLOG("❌ Failed to load enemy base: no buildings data");
+        CCLOG("❌ 无法加载敌方基地：没有建筑数据");
     }
 
-    // 🎵 播放准备音乐
+    // 播放准备音乐
     MusicManager::getInstance().playMusic(MusicType::BATTLE_PREPARING);
 
-    // Delay start battle
+    // 延迟开始战斗
     this->scheduleOnce(
         [this](float dt) {
             if (_battleManager)
@@ -235,7 +202,7 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
                 _battleUI->updateStatus("部署你的士兵进行攻击！", Color4B::YELLOW);
                 _battleUI->showBattleHUD(true);
                 _battleUI->showTroopButtons(true);
-                // Initial troop counts update
+                
                 if (_battleManager)
                 {
                     _battleUI->updateTroopCounts(_battleManager->getTroopCount(UnitType::kBarbarian),
@@ -253,11 +220,6 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
     return true;
 }
 
-/**
- * @brief 使用回放数据初始化
- * @param replayDataStr 回放数据
- * @return bool 是否成功
- */
 bool BattleScene::initWithReplayData(const std::string& replayDataStr)
 {
     if (!Scene::init())
@@ -276,7 +238,7 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
 
     if (enemyJson.empty())
     {
-        CCLOG("❌ Replay data missing enemy game data!");
+        CCLOG("❌ 回放数据缺少敌方游戏数据！");
         return false;
     }
 
@@ -289,12 +251,11 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
     setupUI();
     setupTouchListeners();
 
-    // Initialize Manager
+    // 初始化战斗管理器
     if (_battleManager)
     {
         _battleManager->init(_mapSprite, enemyData, enemyUserId, true);
 
-        // Setup callbacks (same as above)
         _battleManager->setUIUpdateCallback([this]() {
             if (_battleUI && _battleManager)
             {
@@ -315,7 +276,7 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
         });
     }
 
-    // Load Buildings
+    // 加载建筑
     if (_buildingManager && !enemyData.buildings.empty())
     {
         _buildingManager->loadBuildingsFromData(enemyData.buildings, true);
@@ -328,7 +289,7 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
         }
     }
 
-    // 🎵 回放模式直接播放战斗音乐
+    // 回放模式直接播放战斗音乐
     MusicManager::getInstance().playMusic(MusicType::BATTLE_GOING);
 
     scheduleUpdate();
@@ -344,7 +305,7 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
             _battleManager->endBattle(false);
     });
 
-    // UI Setup for Replay
+    // UI设置
     if (_battleUI)
     {
         _battleUI->showTroopButtons(false);
@@ -354,11 +315,10 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
         _battleUI->showBattleHUD(true);
     }
 
-    // Start Battle immediately for replay
+    // 立即开始战斗
     if (_battleManager)
     {
-        // 🆕 计算回放所需的兵力
-        // 必须统计回放事件中使用的所有兵力，否则 BattleManager 会因为兵力为0而拒绝部署
+        // 计算回放所需的兵力
         std::map<UnitType, int> neededTroops;
         const auto&             replayData = replaySystem.getCurrentReplayData();
         for (const auto& evt : replayData.events)
@@ -377,9 +337,6 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
 
 // ==================== 场景设置 ====================
 
-/**
- * @brief 设置地图和相关组件
- */
 void BattleScene::setupMap()
 {
     // 创建地图背景
@@ -387,7 +344,7 @@ void BattleScene::setupMap()
     this->addChild(background, -1);
 
     // 创建地图精灵
-    _mapSprite = Sprite::create("map/Map1.png"); // 使用默认地图
+    _mapSprite = Sprite::create("map/Map1.png");
     if (_mapSprite)
     {
         _mapSprite->setPosition(_visibleSize.width / 2, _visibleSize.height / 2);
@@ -405,16 +362,12 @@ void BattleScene::setupMap()
         this->addChild(_buildingManager);
         _buildingManager->setup(_mapSprite, _gridMap);
 
-        updateBoundary(); // 初始化边界
+        updateBoundary();
     }
 }
 
-/**
- * @brief 禁用所有建筑的战斗模式
- */
 void BattleScene::disableAllBuildingsBattleMode()
 {
-    // 战斗结束时禁用战斗模式
     if (!_mapSprite)
         return;
 
@@ -429,17 +382,11 @@ void BattleScene::disableAllBuildingsBattleMode()
     }
 }
 
-/**
- * @brief 启用所有建筑的战斗模式
- */
 void BattleScene::enableAllBuildingsBattleMode()
 {
-    // 遍历所有建筑
     if (!_buildingManager)
         return;
 
-    // 需要在 BuildingManager 中实现此方法
-    // 或者直接遍历场景中的建筑
     auto buildingSprite = _mapSprite;
     if (!buildingSprite)
         return;
@@ -455,28 +402,24 @@ void BattleScene::enableAllBuildingsBattleMode()
     }
 }
 
-/**
- * @brief 设置UI界面
- */
 void BattleScene::setupUI()
 {
-    // 启用所有防御建筑的战斗模式
     if (_buildingManager)
     {
-        // 这需要在 BuildingManager 中添加一个方法来启用所有建筑的战斗模式
         enableAllBuildingsBattleMode();
     }
+    
     _battleUI = BattleUI::create();
     this->addChild(_battleUI, 100);
 
     _battleUI->setEndBattleCallback([this]() {
-        if (_battleManager && _battleManager->isReplayMode())
+        if (_battleManager && (_battleManager->isReplayMode() || _isSpectateMode))
         {
             returnToMainScene();
         }
         else if (_battleManager)
         {
-            _battleManager->endBattle(true); // 投降
+            _battleManager->endBattle(true);
         }
     });
 
@@ -485,10 +428,6 @@ void BattleScene::setupUI()
     _battleUI->setTroopSelectionCallback([this](UnitType type) { onTroopSelected(type); });
 }
 
-/**
- * @brief 处理兵种选择事件
- * @param type 选中的兵种类型
- */
 void BattleScene::onTroopSelected(UnitType type)
 {
     _selectedUnitType = type;
@@ -498,14 +437,17 @@ void BattleScene::onTroopSelected(UnitType type)
 
 // ==================== 战斗逻辑 ====================
 
-/**
- * @brief 每帧更新
- * @param dt 时间间隔
- */
 void BattleScene::update(float dt)
 {
-    // Process network callbacks in main thread
+    // 主线程处理网络回调
     SocketClient::getInstance().processCallbacks();
+
+    // 观战模式下的历史回放
+    if (_isSpectateMode && !_historyReplayed)
+    {
+        replaySpectateHistory();
+        _historyReplayed = true;
+    }
 
     float scaledDt = dt * _timeScale;
     if (_battleManager)
@@ -514,9 +456,6 @@ void BattleScene::update(float dt)
     }
 }
 
-/**
- * @brief 切换游戏速度
- */
 void BattleScene::toggleSpeed()
 {
     if (_timeScale >= 4.0f)
@@ -529,11 +468,8 @@ void BattleScene::toggleSpeed()
     }
 }
 
-// 🆕 PVP Implementation
-/**
- * @brief 设置PVP模式
- * @param isAttacker 是否为攻击方
- */
+// ==================== PVP/观战模式 ====================
+
 void BattleScene::setPvpMode(bool isAttacker)
 {
     _isPvpMode  = true;
@@ -547,24 +483,60 @@ void BattleScene::setPvpMode(bool isAttacker)
     if (!_isAttacker && _battleUI)
     {
         _battleUI->showTroopButtons(false);
-        _battleUI->updateStatus("Defending against attacker...", Color4B::RED);
+        _battleUI->updateStatus("正在防守攻击者...", Color4B::RED);
     }
 }
 
-/**
- * @brief 设置观战历史记录
- * @param history 历史操作记录
- */
+void BattleScene::setSpectateMode(const std::string& attackerId, 
+                                  const std::string& defenderId,
+                                  int64_t elapsedMs,
+                                  const std::vector<std::string>& history)
+{
+    _isSpectateMode       = true;
+    _isPvpMode            = false;
+    _isAttacker           = false;
+    _spectateAttackerId   = attackerId;
+    _spectateDefenderId   = defenderId;
+    _spectateElapsedMs    = elapsedMs;
+    _spectateHistory      = history;
+    _historyReplayed      = false;
+
+    CCLOG("📺 观战模式设置: %s vs %s, 已进行 %lldms, 历史操作 %zu 个",
+          attackerId.c_str(), defenderId.c_str(), (long long)elapsedMs, history.size());
+
+    if (_battleManager)
+    {
+        _battleManager->setNetworkMode(true, false);
+    }
+
+    if (_battleUI)
+    {
+        _battleUI->showTroopButtons(false);
+        _battleUI->updateStatus(StringUtils::format("📺 观战中: %s vs %s", 
+                                                    attackerId.c_str(), defenderId.c_str()), Color4B::ORANGE);
+        _battleUI->setEndBattleButtonText("退出观战");
+        _battleUI->setReplayMode(true);
+    }
+}
+
 void BattleScene::setSpectateHistory(const std::vector<std::string>& history)
 {
-    if (!_battleManager)
+    _spectateHistory = history;
+    _historyReplayed = false;
+    
+    CCLOG("📺 设置观战历史: %zu 个操作", history.size());
+}
+
+void BattleScene::replaySpectateHistory()
+{
+    if (!_battleManager || _spectateHistory.empty())
         return;
 
-    CCLOG("📺 Replaying spectate history: %zu actions", history.size());
+    CCLOG("📺 回放观战历史: %zu 个操作", _spectateHistory.size());
 
-    for (const auto& action : history)
+    for (const auto& action : _spectateHistory)
     {
-        // 格式解析: "type,x,y"
+        // 格式解析: "unitType,x,y"
         std::vector<std::string> parts;
         std::stringstream        ss(action);
         std::string              item;
@@ -581,24 +553,28 @@ void BattleScene::setSpectateHistory(const std::vector<std::string>& history)
                 float x    = std::stof(parts[1]);
                 float y    = std::stof(parts[2]);
 
+                CCLOG("📺 回放操作: type=%d, pos=(%.1f,%.1f)", type, x, y);
                 _battleManager->deployUnitRemote(static_cast<UnitType>(type), Vec2(x, y));
             }
             catch (const std::exception& e)
             {
-                CCLOG("❌ Failed to parse history action: %s (%s)", action.c_str(), e.what());
+                CCLOG("❌ 解析历史操作失败: %s (%s)", action.c_str(), e.what());
             }
+        }
+        else
+        {
+            CCLOG("⚠️ 历史操作格式错误: %s", action.c_str());
         }
     }
 }
 
-/**
- * @brief 场景进入回调
- */
+// ==================== 场景生命周期 ====================
+
 void BattleScene::onEnter()
 {
     Scene::onEnter();
 
-    if (_isPvpMode)
+    if (_isPvpMode || _isSpectateMode)
     {
         auto& client = SocketClient::getInstance();
 
@@ -606,40 +582,55 @@ void BattleScene::onEnter()
         client.setOnPvpAction([this](int unitType, float x, float y) {
             if (_battleManager)
             {
-                // 确保在主线程执行
                 Director::getInstance()->getScheduler()->performFunctionInCocosThread([this, unitType, x, y]() {
                     if (_battleManager)
+                    {
+                        CCLOG("📥 收到远程部署: type=%d, pos=(%.1f,%.1f)", unitType, x, y);
                         _battleManager->deployUnitRemote((UnitType)unitType, Vec2(x, y));
+                    }
                 });
             }
         });
 
         // 接收结束通知
         client.setOnPvpEnd([this](const std::string& result) {
-            Director::getInstance()->getScheduler()->performFunctionInCocosThread([this]() {
-                if (_battleManager)
+            Director::getInstance()->getScheduler()->performFunctionInCocosThread([this, result]() {
+                CCLOG("📥 收到战斗结束通知: %s", result.c_str());
+                
+                if (_isSpectateMode)
                 {
-                    _battleManager->endBattle(false);
+                    // 观战模式下收到结束通知，显示结果面板
+                    if (_battleManager)
+                    {
+                        _battleManager->endBattle(false);
+                    }
+                }
+                else if (!_isAttacker)
+                {
+                    // 防守方收到结束通知
+                    if (_battleManager)
+                    {
+                        _battleManager->endBattle(false);
+                    }
                 }
             });
         });
 
-        // 发送本地操作
-        if (_battleManager && _isAttacker)
+        // 发送本地操作（仅攻击方）
+        if (_battleManager && _isAttacker && !_isSpectateMode)
         {
             _battleManager->setNetworkDeployCallback([this](UnitType type, const Vec2& pos) {
+                CCLOG("📤 发送远程部署: type=%d, pos=(%.1f,%.1f)", (int)type, pos.x, pos.y);
                 SocketClient::getInstance().sendPvpAction((int)type, pos.x, pos.y);
             });
         }
     }
 }
 
-/**
- * @brief 场景退出回调
- */
 void BattleScene::onExit()
 {
-    if (_isPvpMode)
+    // 清理网络回调
+    if (_isPvpMode || _isSpectateMode)
     {
         auto& client = SocketClient::getInstance();
         client.setOnPvpAction(nullptr);
@@ -650,7 +641,8 @@ void BattleScene::onExit()
             _battleManager->setNetworkDeployCallback(nullptr);
         }
 
-        if (_isAttacker)
+        // 攻击方在退出时发送结束通知
+        if (_isAttacker && !_isSpectateMode)
         {
             client.endPvp();
         }
@@ -661,9 +653,6 @@ void BattleScene::onExit()
 
 // ==================== 触摸监听器设置 ====================
 
-/**
- * @brief 设置触摸监听器
- */
 void BattleScene::setupTouchListeners()
 {
     auto touchListener = EventListenerTouchOneByOne::create();
@@ -673,7 +662,7 @@ void BattleScene::setupTouchListeners()
         if (_battleManager && _battleManager->getState() == BattleManager::BattleState::FINISHED)
             return false;
 
-        _activeTouches[touch->getID()] = touch->getLocation(); // ✅ 提前记录触摸点
+        _activeTouches[touch->getID()] = touch->getLocation();
 
         _lastTouchPos = touch->getLocation();
         _isDragging   = false;
@@ -686,11 +675,11 @@ void BattleScene::setupTouchListeners()
             _activeTouches[touch->getID()] = touch->getLocation();
         }
 
-        // 🆕 多点触控缩放
+        // 多点触控缩放
         if (_activeTouches.size() >= 2)
         {
             _isPinching = true;
-            _isDragging = false; // 取消拖动标记
+            _isDragging = false;
 
             auto it = _activeTouches.begin();
             Vec2 p1 = it->second;
@@ -708,7 +697,6 @@ void BattleScene::setupTouchListeners()
                 if (currentDist > 10.0f && _mapSprite)
                 {
                     float zoomFactor = currentDist / _prevPinchDistance;
-                    // 限制单帧缩放
                     zoomFactor = std::max(0.9f, std::min(zoomFactor, 1.1f));
 
                     float newScale = _mapSprite->getScale() * zoomFactor;
@@ -760,6 +748,13 @@ void BattleScene::setupTouchListeners()
             return;
         }
 
+        // 观战模式不允许部署
+        if (_isSpectateMode)
+        {
+            _isDragging = false;
+            return;
+        }
+
         if (!_isDragging && _battleManager &&
             (_battleManager->getState() == BattleManager::BattleState::READY ||
              _battleManager->getState() == BattleManager::BattleState::FIGHTING))
@@ -804,22 +799,22 @@ void BattleScene::setupTouchListeners()
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 }
 
-/**
- * @brief 返回主场景
- */
 void BattleScene::returnToMainScene()
 {
+    CCLOG("🚪 返回主场景");
+    
     MusicManager::getInstance().stopMusic();
-    // 禁用所有建筑的战斗模式
     disableAllBuildingsBattleMode();
+    
+    // 使用 popScene 而不是 end()
     Director::getInstance()->popScene();
-    Director::getInstance()->getScheduler()->performFunctionInCocosThread(
-        []() { Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("scene_resume"); });
+    
+    // 通知主场景恢复
+    Director::getInstance()->getScheduler()->performFunctionInCocosThread([]() {
+        Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("scene_resume");
+    });
 }
 
-/**
- * @brief 更新地图边界
- */
 void BattleScene::updateBoundary()
 {
     if (!_mapSprite)
@@ -836,9 +831,6 @@ void BattleScene::updateBoundary()
     _mapBoundary = Rect(minX, minY, maxX - minX, maxY - minY);
 }
 
-/**
- * @brief 确保地图在边界内
- */
 void BattleScene::ensureMapInBoundary()
 {
     if (!_mapSprite)
