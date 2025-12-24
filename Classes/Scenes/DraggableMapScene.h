@@ -94,6 +94,9 @@ private:
     bool _isPinching = false;         ///< 是否在缩放
     float _prevPinchDistance = 0.0f;  ///< 上次缩放距离
 
+    // 🆕 新增标志位：防止切换账号时析构函数错误保存数据
+    bool _isSwitchingAccount = false; 
+
     void initializeManagers();           ///< 初始化管理器
     void setupCallbacks();               ///< 设置回调
     void setupUpgradeManagerCallbacks(); ///< 设置升级管理器回调

@@ -9,9 +9,9 @@
 #ifndef BATTLE_MANAGER_H_
 #define BATTLE_MANAGER_H_
 
-#include "AccountManager.h"
 #include "Buildings/BaseBuilding.h"
 #include "Buildings/DefenseBuilding.h"
+#include "GameDataModels.h"
 #include "GridMap.h"
 #include "Managers/ReplaySystem.h"
 #include "PathFinder.h"
@@ -66,10 +66,10 @@ public:
      */
     enum class BattleState
     {
-        LOADING,   ///< 加载中
-        READY,     ///< 准备就绪
-        FIGHTING,  ///< 战斗中
-        FINISHED   ///< 已结束
+        LOADING,  ///< 加载中
+        READY,    ///< 准备就绪
+        FIGHTING, ///< 战斗中
+        FINISHED  ///< 已结束
     };
 
     BattleManager();
@@ -82,7 +82,7 @@ public:
      * @param enemyUserId 敌方用户ID
      * @param isReplay 是否为回放模式
      */
-    void init(cocos2d::Node* mapLayer, const AccountGameData& enemyData, const std::string& enemyUserId, bool isReplay);
+    void init(cocos2d::Node* mapLayer, const GameStateData& enemyData, const std::string& enemyUserId, bool isReplay);
 
     /**
      * @brief 设置建筑列表
@@ -195,66 +195,66 @@ public:
     void setNetworkDeployCallback(const std::function<void(UnitType, const cocos2d::Vec2&)>& callback);
 
 private:
-    void fixedUpdate();
-    void updateBattleState(float dt);
-    void updateUnitAI(float dt);
-    void activateAllBuildings();
-    void calculateBattleResult();
-    void uploadBattleResult();
+    void        fixedUpdate();
+    void        updateBattleState(float dt);
+    void        updateUnitAI(float dt);
+    void        activateAllBuildings();
+    void        calculateBattleResult();
+    void        uploadBattleResult();
     std::string getCurrentTimestamp();
 
     void updateStarsAndDestruction();
     void checkBattleEndConditions();
     bool checkAllUnitsDeadOrDeployed() const;
-    int countAliveUnits() const;
+    int  countAliveUnits() const;
 
     GridMap* _gridMap = nullptr;
-    void updateTroopCounts();
+    void     updateTroopCounts();
 
-    BattleMode _battleMode = BattleMode::LOCAL;
+    BattleMode  _battleMode = BattleMode::LOCAL;
     std::string _currentWarId;
 
     void spawnUnit(UnitType type, const cocos2d::Vec2& position);
 
-    cocos2d::Node* _mapLayer = nullptr;        ///< 地图层
-    AccountGameData _enemyGameData;            ///< 敌方游戏数据
-    std::string _enemyUserId;                  ///< 敌方用户ID
-    bool _isReplayMode = false;                ///< 是否为回放模式
-    BattleState _state = BattleState::LOADING; ///< 战斗状态
+    cocos2d::Node* _mapLayer = nullptr;                  ///< 地图层
+    GameStateData  _enemyGameData;                       ///< 敌方游戏数据
+    std::string    _enemyUserId;                         ///< 敌方用户ID
+    bool           _isReplayMode = false;                ///< 是否为回放模式
+    BattleState    _state        = BattleState::LOADING; ///< 战斗状态
 
-    float _battleTime = 180.0f;       ///< 战斗总时间
-    float _elapsedTime = 0.0f;        ///< 已用时间
-    int _starsEarned = 0;             ///< 获得星星数
-    int _goldLooted = 0;              ///< 掠夺金币
-    int _elixirLooted = 0;            ///< 掠夺圣水
-    int _destructionPercent = 0;      ///< 摧毁百分比
+    float _battleTime         = 180.0f; ///< 战斗总时间
+    float _elapsedTime        = 0.0f;   ///< 已用时间
+    int   _starsEarned        = 0;      ///< 获得星星数
+    int   _goldLooted         = 0;      ///< 掠夺金币
+    int   _elixirLooted       = 0;      ///< 掠夺圣水
+    int   _destructionPercent = 0;      ///< 摧毁百分比
 
-    BattleEndReason _endReason = BattleEndReason::TIMEOUT;  ///< 战斗结束原因
-    bool _townHallDestroyed = false;   ///< 大本营是否被摧毁
-    bool _hasDeployedAnyUnit = false;  ///< 是否曾部署过单位
+    BattleEndReason _endReason          = BattleEndReason::TIMEOUT; ///< 战斗结束原因
+    bool            _townHallDestroyed  = false;                    ///< 大本营是否被摧毁
+    bool            _hasDeployedAnyUnit = false;                    ///< 是否曾部署过单位
 
-    std::vector<BaseUnit*> _deployedUnits;       ///< 已部署的单位
-    std::vector<BaseBuilding*> _enemyBuildings;  ///< 敌方建筑
-    int _totalBuildingHP = 0;      ///< 总建筑血量
-    int _destroyedBuildingHP = 0;  ///< 已摧毁建筑血量
+    std::vector<BaseUnit*>     _deployedUnits;           ///< 已部署的单位
+    std::vector<BaseBuilding*> _enemyBuildings;          ///< 敌方建筑
+    int                        _totalBuildingHP     = 0; ///< 总建筑血量
+    int                        _destroyedBuildingHP = 0; ///< 已摧毁建筑血量
 
-    int _barbarianCount = 0;    ///< 野蛮人数量
-    int _archerCount = 0;       ///< 弓箭手数量
-    int _giantCount = 0;        ///< 巨人数量
-    int _goblinCount = 0;       ///< 哥布林数量
-    int _wallBreakerCount = 0;  ///< 炸弹人数量
+    int _barbarianCount   = 0; ///< 野蛮人数量
+    int _archerCount      = 0; ///< 弓箭手数量
+    int _giantCount       = 0; ///< 巨人数量
+    int _goblinCount      = 0; ///< 哥布林数量
+    int _wallBreakerCount = 0; ///< 炸弹人数量
 
-    float _accumulatedTime = 0.0f;   ///< 累积时间
-    unsigned int _currentFrame = 0;  ///< 当前帧
-    const float FIXED_TIME_STEP = 1.0f / 60.0f;  ///< 固定时间步长
+    float        _accumulatedTime = 0.0f;         ///< 累积时间
+    unsigned int _currentFrame    = 0;            ///< 当前帧
+    const float  FIXED_TIME_STEP  = 1.0f / 60.0f; ///< 固定时间步长
 
-    std::function<void()> _onUIUpdate;               ///< UI更新回调
-    std::function<void()> _onBattleEnd;              ///< 战斗结束回调
-    std::function<void(UnitType, int)> _onTroopDeploy;  ///< 部队部署回调
+    std::function<void()>              _onUIUpdate;    ///< UI更新回调
+    std::function<void()>              _onBattleEnd;   ///< 战斗结束回调
+    std::function<void(UnitType, int)> _onTroopDeploy; ///< 部队部署回调
 
-    bool _isNetworked = false;  ///< 是否为网络模式
-    bool _isAttacker = false;   ///< 是否为攻击者
-    std::function<void(UnitType, const cocos2d::Vec2&)> _onNetworkDeploy;  ///< 网络部署回调
+    bool                                                _isNetworked = false; ///< 是否为网络模式
+    bool                                                _isAttacker  = false; ///< 是否为攻击者
+    std::function<void(UnitType, const cocos2d::Vec2&)> _onNetworkDeploy;     ///< 网络部署回调
 };
 
-#endif  // BATTLE_MANAGER_H_
+#endif // BATTLE_MANAGER_H_

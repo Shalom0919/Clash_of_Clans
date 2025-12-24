@@ -117,3 +117,16 @@ int BuildingCapacityManager::getTotalCapacity(ResourceType type) const
     auto it = _currentTotalCapacity.find(type);
     return it != _currentTotalCapacity.end() ? it->second : 0;
 }
+
+void BuildingCapacityManager::clearAllBuildings()
+{
+    _storageBuildings.clear();
+    _currentTotalCapacity.clear();
+    
+    // 重置容量为基础值
+    auto& resMgr = ResourceManager::getInstance();
+    resMgr.setResourceCapacity(ResourceType::kGold, BASE_CAPACITY);
+    resMgr.setResourceCapacity(ResourceType::kElixir, BASE_CAPACITY);
+    
+    CCLOG("🗑️ BuildingCapacityManager 已清空所有建筑引用");
+}

@@ -889,10 +889,17 @@ DraggableMapScene::~DraggableMapScene()
         _currentUpgradeUI = nullptr;
     }
 
-    if (_buildingManager && !_isAttackMode)
+    // 🔴 关键修复：如果是切换账号或攻击模式，绝对不要保存状态！
+    // 否则会将旧账号的建筑数据保存到新切换的账号存档中（因为 AccountManager 已经切换了）
+    if (_buildingManager && !_isAttackMode && !_isSwitchingAccount)
     {
         _buildingManager->saveCurrentState();
         CCLOG("💾 Game state auto-saved on scene destruction");
+    }
+    else
+    {
+        CCLOG("🚫 Auto-save skipped (Switching Account: %d, Attack Mode: %d)", 
+              _isSwitchingAccount, _isAttackMode);
     }
     
     CCLOG("🗑️ DraggableMapScene destroyed, all callbacks cleaned");
@@ -966,10 +973,12 @@ void DraggableMapScene::returnToOwnBase()
 void DraggableMapScene::onAccountSwitched()
 {
     CCLOG("✅ Account switch initiated...");
+    
+    // 1. 先保存当前账号的状态（此时 AccountManager 还是旧账号）
     if (_buildingManager)
     {
         _buildingManager->saveCurrentState();
-        CCLOG("✅ Saved current account state");
+        CCLOG("✅ Saved current account state before switch");
     }
 
     std::string targetUserId = UserDefault::getInstance()->getStringForKey("switching_to_account", "");
@@ -979,10 +988,15 @@ void DraggableMapScene::onAccountSwitched()
         return;
     }
 
+    // 2. 🔴 设置标志位，告诉析构函数不要再保存了
+    _isSwitchingAccount = true;
+
+    // 3. 切换 AccountManager 的活动账号
     auto& accMgr = AccountManager::getInstance();
     if (!accMgr.switchAccount(targetUserId))
     {
         CCLOG("❌ Failed to switch account");
+        _isSwitchingAccount = false; // 恢复标志位
         return;
     }
 

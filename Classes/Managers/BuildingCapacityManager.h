@@ -51,6 +51,9 @@ public:
      */
     int getTotalCapacity(ResourceType type) const;
 
+    /** @brief 清空所有存储的建筑引用（账号切换时调用） */
+    void clearAllBuildings();
+
 private:
     BuildingCapacityManager();
 

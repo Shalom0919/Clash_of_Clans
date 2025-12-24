@@ -10,9 +10,9 @@
 #ifndef __BATTLE_SCENE_H__
 #define __BATTLE_SCENE_H__
 
-#include "AccountManager.h"
 #include "Buildings/DefenseBuilding.h"
 #include "Managers/BattleManager.h"
+#include "Managers/GameDataModels.h"
 #include "Managers/ReplaySystem.h"
 #include "UI/BattleUI.h"
 #include "Unit/UnitTypes.h"
@@ -32,7 +32,7 @@ class BaseBuilding;
  * @brief 战斗场景 - 异步多人游戏攻击场景
  *
  * 功能：
- * 1. 加载敌方基地布局（从 AccountGameData）
+ * 1. 加载敌方基地布局（从 GameStateData）
  * 2. 部署己方士兵进行攻击
  * 3. 计算战斗结果（星数、掠夺资源）
  * 4. 上传战斗结果到服务器（可选）
@@ -54,14 +54,14 @@ public:
      * @brief 创建战斗场景（带敌方数据）
      * @param enemyData 敌方玩家的基地数据
      */
-    static BattleScene* createWithEnemyData(const AccountGameData& enemyData);
+    static BattleScene* createWithEnemyData(const GameStateData& enemyData);
 
     /**
      * @brief 创建战斗场景（带敌方数据）
      * @param enemyData 敌方玩家的基地数据
      * @param enemyUserId 敌方玩家ID
      */
-    static BattleScene* createWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId);
+    static BattleScene* createWithEnemyData(const GameStateData& enemyData, const std::string& enemyUserId);
 
     /**
      * @brief 创建战斗回放场景
@@ -75,14 +75,14 @@ public:
      * @brief 初始化战斗场景（带敌方数据）
      * @param enemyData 敌方玩家的基地数据
      */
-    virtual bool initWithEnemyData(const AccountGameData& enemyData);
+    virtual bool initWithEnemyData(const GameStateData& enemyData);
 
     /**
      * @brief 初始化战斗场景（带敌方数据）
      * @param enemyData 敌方玩家的基地数据
      * @param enemyUserId 敌方玩家ID
      */
-    virtual bool initWithEnemyData(const AccountGameData& enemyData, const std::string& enemyUserId);
+    virtual bool initWithEnemyData(const GameStateData& enemyData, const std::string& enemyUserId);
 
     /**
      * @brief 初始化战斗回放场景

@@ -54,10 +54,10 @@ void ClanService::syncLocalClanInfo()
     auto& accMgr = AccountManager::getInstance();
     auto  cur    = accMgr.getCurrentAccount();
 
-    if (cur && !cur->gameData.clanId.empty())
+    if (cur && !cur->gameState.progress.clanId.empty())
     {
         auto& cache = ClanDataCache::getInstance();
-        cache.setCurrentClan(cur->gameData.clanId, "");
+        cache.setCurrentClan(cur->gameState.progress.clanId, "");
     }
 }
 
@@ -102,9 +102,9 @@ void ClanService::registerNetworkCallbacks()
                 auto& accMgr = AccountManager::getInstance();
                 if (auto cur = const_cast<AccountInfo*>(accMgr.getCurrentAccount()))
                 {
-                    AccountGameData newData = cur->gameData;
-                    newData.clanId          = clanId;
-                    accMgr.updateGameData(newData);
+                    GameStateData newState   = cur->gameState;
+                    newState.progress.clanId = clanId;
+                    accMgr.updateGameState(newState);
                     accMgr.save();
                 }
 
@@ -134,9 +134,9 @@ void ClanService::registerNetworkCallbacks()
                 auto& accMgr = AccountManager::getInstance();
                 if (auto cur = const_cast<AccountInfo*>(accMgr.getCurrentAccount()))
                 {
-                    AccountGameData newData = cur->gameData;
-                    newData.clanId          = _pendingClanId;
-                    accMgr.updateGameData(newData);
+                    GameStateData newState   = cur->gameState;
+                    newState.progress.clanId = _pendingClanId;
+                    accMgr.updateGameState(newState);
                     accMgr.save();
                 }
 
@@ -165,9 +165,9 @@ void ClanService::registerNetworkCallbacks()
                 auto& accMgr = AccountManager::getInstance();
                 if (auto cur = const_cast<AccountInfo*>(accMgr.getCurrentAccount()))
                 {
-                    AccountGameData newData = cur->gameData;
-                    newData.clanId.clear();
-                    accMgr.updateGameData(newData);
+                    GameStateData newState = cur->gameState;
+                    newState.progress.clanId.clear();
+                    accMgr.updateGameState(newState);
                     accMgr.save();
                 }
 
@@ -197,7 +197,8 @@ void ClanService::connect(const std::string& ip, int port, OperationCallback cal
                 auto& accMgr = AccountManager::getInstance();
                 if (auto cur = accMgr.getCurrentAccount())
                 {
-                    SocketClient::getInstance().login(cur->userId, cur->username, cur->gameData.trophies);
+                    SocketClient::getInstance().login(cur->account.userId, cur->account.username,
+                                                      cur->gameState.progress.trophies);
                     std::string mapData = accMgr.exportGameStateJson();
                     if (!mapData.empty())
                     {

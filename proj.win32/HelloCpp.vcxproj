@@ -829,6 +829,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\ArmyCampBuilding.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BaseBuilding.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildersHutBuilding.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingConfig.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingData.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingUpgradeUI.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\DefenseBuilding.h" />
@@ -844,9 +845,13 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\ClanDataCache.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\DefenseLogSystem.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameDataModels.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameDataRepository.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameDataSerializer.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GlobalAudioManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\HUDLayer.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\InputController.h" />
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\JsonSerializer.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MapConfigManager.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MapController.h" />
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MusicManager.h" />

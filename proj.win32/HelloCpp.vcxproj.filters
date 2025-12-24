@@ -207,6 +207,9 @@
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildersHutBuilding.h">
       <Filter>Source Files\Classes\Buildings</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingConfig.h">
+      <Filter>Source Files\Classes\Buildings</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Buildings\BuildingData.h">
       <Filter>Source Files\Classes\Buildings</Filter>
     </ClInclude>
@@ -252,6 +255,15 @@
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameConfig.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameDataModels.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameDataRepository.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GameDataSerializer.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\GlobalAudioManager.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
@@ -259,6 +271,9 @@
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\InputController.h">
+      <Filter>Source Files\Classes\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\JsonSerializer.h">
       <Filter>Source Files\Classes\Managers</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Shalom\Documents\GitHub\coc\Classes\Managers\MapConfigManager.h">

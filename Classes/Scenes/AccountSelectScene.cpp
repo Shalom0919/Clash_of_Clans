@@ -415,6 +415,10 @@ void AccountSelectScene::showPasswordDialog(const std::string& userId)
         auto& mgr = AccountManager::getInstance();
         if (mgr.verifyPassword(userId, password))
         {
+            // 🆕 关键修复：切换账号前保存当前状态
+            auto& mgr = AccountManager::getInstance();
+            mgr.saveGameStateToFile();  // 保存当前账号数据
+            
             // 密码正确，切换账号并进入游戏
             mgr.switchAccount(userId);
             mask->removeFromParent();
