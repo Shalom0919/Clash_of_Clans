@@ -18,8 +18,8 @@
 #include "TownHallBuilding.h"
 #include "WallBuilding.h"
 #include "DefenseBuilding.h"
-#include "GameConfig.h"
-#include "BuildingCapacityManager.h"
+#include "GameConfig.h" 
+#include "BuildingCapacityManager.h" 
 #include "UpgradeTimerUI.h"
 #include "Managers/ResourceCollectionManager.h"
 #include <map>
@@ -27,7 +27,7 @@
 USING_NS_CC;
 bool BuildingManager::init()
 {
-    if (!Node::init())
+    if (!Node::init()) 
         return false;
     // 启用每帧更新
     scheduleUpdate();
