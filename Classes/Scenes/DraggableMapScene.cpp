@@ -1,7 +1,8 @@
 ﻿/**
- * @file DraggableMapScene.cpp
- * @brief 主场景实现 - 重构后的精简版本
- */
+* @file DraggableMapScene.cpp
+* @brief 主场景实现 - 重构后的精简版本
+* @author 薛毓哲 (2025/12/24) - 修复场景切换时资源UI不更新的问题
+*/
 
 #include "DraggableMapScene.h"
 
@@ -78,16 +79,6 @@ bool DraggableMapScene::init()
     auto listener = EventListenerCustom::create("scene_resume", [this](EventCustom* event) { this->onSceneResume(); });
     _eventDispatcher->addEventListenerWithFixedPriority(listener, 1);
     _sceneResumeListener = listener;  // 保存引用以便析构时移除
-
-    // HUD 层（已在 initializeManagers 中创建为成员 _hudLayer）
-    if (_hudLayer)
-    {
-        // 绑定 UpgradeManager 回调到成员 HUD 层，避免创建重复 HUD
-        UpgradeManager::getInstance()->setOnAvailableBuilderChanged([this](int available) {
-            if (_hudLayer)
-                _hudLayer->updateDisplay();
-        });
-    }
 
     // 延迟加载游戏状态
     this->scheduleOnce([this](float) { loadGameState(); }, 0.1f, "load_game_state");
@@ -862,6 +853,9 @@ DraggableMapScene::~DraggableMapScene()
         _sceneResumeListener = nullptr;
     }
     
+    // 清除 UpgradeManager 回调，避免悬垂指针
+    UpgradeManager::getInstance()->setOnAvailableBuilderChanged(nullptr);
+    
     SocketClient::getInstance().setOnAttackResult(nullptr);
     SocketClient::getInstance().setOnUserListReceived(nullptr);
 
@@ -901,6 +895,9 @@ void DraggableMapScene::onSceneResume()
 
     // 重新设置网络回调
     setupNetworkCallbacks();
+    
+    // 重新设置 UpgradeManager 回调（场景恢复后回调可能已失效）
+    setupUpgradeManagerCallbacks();
 
     // 刷新军营显示
     if (_buildingManager)

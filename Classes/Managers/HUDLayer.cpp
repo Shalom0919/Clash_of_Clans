@@ -2,21 +2,26 @@
 #include "Managers/UpgradeManager.h" // 引入升级管理器
 /****************************************************************
  * Project Name:  Clash_of_Clans
- * File Name:     WallBuilding.cpp
- * File Function:  全新顶部资源栏
+ * File Name:     HUDLayer.cpp
+ * File Function: 全新顶部资源栏
  * Author:        刘相成
  * Update Date:   2025/12/06
+ * Modified By:   薛毓哲 (2025/12/24) - 修复场景切换时回调被清除的问题
  * License:       MIT License
  ****************************************************************/
 USING_NS_CC;
 
 HUDLayer::~HUDLayer() {
     // 清除回调，避免悬垂指针
-    ResourceManager::getInstance().setOnResourceChangeCallback(nullptr);
-    if (UpgradeManager::getInstance()) {
-        UpgradeManager::getInstance()->setOnAvailableBuilderChanged(nullptr);
+    // 使用唯一ID取消注册，不会影响其他HUDLayer实例的回调
+    if (!_callbackId.empty()) {
+        ResourceManager::getInstance().unregisterCallback(_callbackId);
     }
-    CCLOG("🗑️ HUDLayer destroyed, callbacks cleared");
+    // ✅ 修复：不再直接清除 UpgradeManager 的回调
+    // 原因：场景切换时使用 TransitionFade，新旧场景同时存在
+    // 如果旧 HUDLayer 销毁时清除回调，会导致新 HUDLayer 设置的回调也被清除
+    // 改为使用唯一ID机制（类似 ResourceManager）或由 DraggableMapScene 统一管理
+    CCLOG("🗑️ HUDLayer destroyed, callbacks cleared (id=%s)", _callbackId.c_str());
 }
 
 HUDLayer* HUDLayer::create() {
@@ -48,13 +53,15 @@ bool HUDLayer::init() {
     // ================= 新增：显示人口 =================
     createResourceNode(ResourceType::kTroopPopulation, "units/barbarian_select_button_active.png", 4);
     // ====================================================
-    UpgradeManager::getInstance()->setOnAvailableBuilderChanged([this](int available) {
+    
+    // ✅ 修复：不再在 HUDLayer 中设置 UpgradeManager 回调
+    // 由 DraggableMapScene 统一管理回调，避免场景切换时回调被覆盖或清除
+    
+    // 注册资源变化监听（使用唯一ID避免场景切换时回调被覆盖）
+    _callbackId = "HUDLayer_" + std::to_string(reinterpret_cast<uintptr_t>(this));
+    ResourceManager::getInstance().registerCallback(_callbackId, [this](ResourceType type, int amount) {
         this->updateDisplay();
-        });
-    // 注册资源变化监听
-    ResourceManager::getInstance().setOnResourceChangeCallback([this](ResourceType type, int amount) {
-        this->updateDisplay();
-        });
+    });
 
     updateDisplay();
     return true;

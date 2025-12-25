@@ -34,6 +34,9 @@ public:
      */
     static TroopInventory& getInstance();
 
+    /** @brief 销毁单例实例 */
+    static void destroyInstance();
+
     /**
      * @brief 获取指定兵种的数量
      * @param type 兵种类型

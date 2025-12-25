@@ -39,6 +39,15 @@ TroopInventory& TroopInventory::getInstance()
     return *_instance;
 }
 
+void TroopInventory::destroyInstance()
+{
+    if (_instance)
+    {
+        delete _instance;
+        _instance = nullptr;
+    }
+}
+
 // ==================== 士兵数量管理 ====================
 
 int TroopInventory::getTroopCount(UnitType type) const

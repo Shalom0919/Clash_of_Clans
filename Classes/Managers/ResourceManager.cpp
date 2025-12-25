@@ -84,10 +84,7 @@ void ResourceManager::setResourceCount(ResourceType type, int amount)
         amount = 0;
     }
     _resources[type] = amount;
-    if (_onChangeCallback)
-    {
-        _onChangeCallback(type, _resources[type]);
-    }
+    notifyCallbacks(type, _resources[type]);
 }
 void ResourceManager::setResourceCapacity(ResourceType type, int capacity)
 {
@@ -105,10 +102,7 @@ void ResourceManager::setResourceCapacity(ResourceType type, int capacity)
     }
     
     // 容量改变时也触发回调，让HUDLayer更新显示
-    if (_onChangeCallback)
-    {
-        _onChangeCallback(type, current > capacity ? capacity : current);
-    }
+    notifyCallbacks(type, current > capacity ? capacity : current);
 }
 int ResourceManager::addResource(ResourceType type, int amount)
 {
@@ -152,6 +146,42 @@ bool ResourceManager::consume(ResourceType type, int amount)
 void ResourceManager::setOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback)
 {
     _onChangeCallback = callback;
+}
+
+void ResourceManager::registerCallback(const std::string& listenerId, const std::function<void(ResourceType, int)>& callback)
+{
+    if (!listenerId.empty() && callback)
+    {
+        _callbacks[listenerId] = callback;
+        CCLOG("[ResourceManager] Registered callback for '%s'", listenerId.c_str());
+    }
+}
+
+void ResourceManager::unregisterCallback(const std::string& listenerId)
+{
+    auto it = _callbacks.find(listenerId);
+    if (it != _callbacks.end())
+    {
+        _callbacks.erase(it);
+        CCLOG("[ResourceManager] Unregistered callback for '%s'", listenerId.c_str());
+    }
+}
+
+void ResourceManager::notifyCallbacks(ResourceType type, int amount)
+{
+    // 旧的单个回调（保留兼容性）
+    if (_onChangeCallback)
+    {
+        _onChangeCallback(type, amount);
+    }
+    // 新的多监听器回调
+    for (const auto& pair : _callbacks)
+    {
+        if (pair.second)
+        {
+            pair.second(type, amount);
+        }
+    }
 }
 
 // 人口系统实现

@@ -41,4 +41,5 @@ private:
 
     std::map<ResourceType, cocos2d::Label*> _amountLabels;    ///< 数量标签
     std::map<ResourceType, cocos2d::Label*> _capacityLabels;  ///< 容量标签
+    std::string _callbackId;  ///< 回调标识符用于取消注册
 };

@@ -13,6 +13,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <unordered_map>
 
 /**
  * @enum ResourceType
@@ -99,10 +100,23 @@ public:
     bool consume(ResourceType type, int amount);
 
     /**
-     * @brief 设置资源变化回调
+     * @brief 设置资源变化回调 (已废弃，建议使用 registerCallback/unregisterCallback)
      * @param callback 回调函数
      */
     void setOnResourceChangeCallback(const std::function<void(ResourceType, int)>& callback);
+
+    /**
+     * @brief 注册资源变化回调（支持多个监听器）
+     * @param listenerId 监听器唯一标识
+     * @param callback 回调函数
+     */
+    void registerCallback(const std::string& listenerId, const std::function<void(ResourceType, int)>& callback);
+
+    /**
+     * @brief 取消注册资源变化回调
+     * @param listenerId 监听器唯一标识
+     */
+    void unregisterCallback(const std::string& listenerId);
 
     /**
      * @brief 增加资源容量
@@ -141,5 +155,9 @@ private:
     static ResourceManager* _instance;                    ///< 单例实例
     std::map<ResourceType, int> _resources;               ///< 资源数量
     std::map<ResourceType, int> _capacities;              ///< 资源容量
-    std::function<void(ResourceType, int)> _onChangeCallback;  ///< 变化回调
+    std::function<void(ResourceType, int)> _onChangeCallback;  ///< 变化回调 (已废弃)
+    std::unordered_map<std::string, std::function<void(ResourceType, int)>> _callbacks;  ///< 多监听器回调
+
+    /** @brief 通知所有监听器 */
+    void notifyCallbacks(ResourceType type, int amount);
 };
