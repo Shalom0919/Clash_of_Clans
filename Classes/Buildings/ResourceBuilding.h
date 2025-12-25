@@ -2,7 +2,7 @@
 * Project Name:  Clash_of_Clans
 * File Name:     ResourceBuilding.h
 * File Function: 资源生产建筑类（金矿、圣水收集器等）
-* Author:        赵崇治
+* Author:        赵崇治、刘相成
 * Update Date:   2025/12/24
 * License:       MIT License
 ****************************************************************/

@@ -2,7 +2,7 @@
  * Project Name:  Clash_of_Clans
  * File Name:     TownHallBuilding.cpp
  * File Function: 大本营建筑实现
- * Author:        赵崇治、薛毓哲
+ * Author:        刘相成、赵崇治、薛毓哲
  * Update Date:   2025/12/24
  * License:       MIT License
  ****************************************************************/

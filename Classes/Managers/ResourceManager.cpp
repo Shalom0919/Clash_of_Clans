@@ -1,8 +1,10 @@
-﻿// 2453619 薛毓哲
-/****************************************************************
+﻿/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     ResourceManager.cpp
- * File Function: 资源管理器实现
+ * File Function: 资源管理器
+ * Author:        薛毓哲,刘相成
+ * Update Date:   2025/12/10
+ * License:       MIT License
  ****************************************************************/
 #include "ResourceManager.h"
 ResourceManager* ResourceManager::_instance = nullptr;

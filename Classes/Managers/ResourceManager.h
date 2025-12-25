@@ -2,8 +2,8 @@
  * Project Name:  Clash_of_Clans
  * File Name:     ResourceManager.h
  * File Function: 资源管理器
- * Author:        薛毓哲
- * Update Date:   2025/01/10
+ * Author:        薛毓哲,刘相成
+ * Update Date:   2025/12/10
  * License:       MIT License
  ****************************************************************/
 #pragma once

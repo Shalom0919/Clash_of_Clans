@@ -2,7 +2,7 @@
  * Project Name:  Clash_of_Clans
  * File Name:     BuildingUpgradeService.h
  * File Function: 建筑升级服务 - 统一处理升级业务逻辑
- * Author:        薛毓哲
+ * Author:        薛毓哲、刘相成   
  * Update Date:   2025/12/08
  * License:       MIT License
  ****************************************************************/

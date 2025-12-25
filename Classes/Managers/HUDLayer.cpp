@@ -1,6 +1,4 @@
-﻿#include "HUDLayer.h"
-#include "Managers/UpgradeManager.h" // 引入升级管理器
-/****************************************************************
+﻿/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     HUDLayer.cpp
  * File Function: 全新顶部资源栏
@@ -9,6 +7,8 @@
  * Modified By:   薛毓哲 (2025/12/24) - 修复场景切换时回调被清除的问题
  * License:       MIT License
  ****************************************************************/
+#include "HUDLayer.h"
+#include "Managers/UpgradeManager.h" // 引入升级管理器
 USING_NS_CC;
 
 HUDLayer::~HUDLayer() {

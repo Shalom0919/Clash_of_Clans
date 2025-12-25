@@ -2,7 +2,7 @@
 * Project Name:  Clash_of_Clans
 * File Name:     DraggableMapScene.h
 * File Function: 主场景类
-* Author:        赵崇治、薛毓哲
+* Author:        赵崇治、薛毓哲、刘相成
 * Update Date:   2025/12/24
 * License:       MIT License
 ****************************************************************/

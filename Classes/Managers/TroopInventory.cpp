@@ -3,7 +3,7 @@
  * File Name:     TroopInventory.cpp
  * File Function: 士兵库存管理器实现
  * Author:        薛毓哲
- * Update Date:   2025/01/10
+ * Update Date:   2025/12/20
  * License:       MIT License
  ****************************************************************/
 #include "TroopInventory.h"

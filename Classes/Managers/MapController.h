@@ -2,7 +2,7 @@
  * Project Name:  Clash_of_Clans
  * File Name:     MapController.h
  * File Function: 地图控制器 - 管理游戏中的地图切换、缩放和移动
- * Author:        赵崇治
+ * Author:        赵崇治、刘相成
  * Update Date:   2025/12/14
  * License:       MIT License
  ****************************************************************/

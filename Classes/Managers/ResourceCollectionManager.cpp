@@ -1,8 +1,4 @@
-﻿/**
- * @file ResourceCollectionManager.cpp
- * @brief 资源收集管理器实现
- */
- /****************************************************************
+﻿/****************************************************************
     * Project Name:  Clash_of_Clans
     * File Name:     WallBuilding.cpp
     * File Function: 资源收集管理器类

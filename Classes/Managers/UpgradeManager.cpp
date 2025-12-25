@@ -2,7 +2,7 @@
  * Project Name:  Clash_of_Clans
  * File Name:     UpgradeManager.cpp
  * File Function: 建筑升级管理器实现
- * Author:        薛毓哲
+ * Author:        薛毓哲、刘相成
  * Update Date:   2025/12/24
  * License:       MIT License
  ****************************************************************/
