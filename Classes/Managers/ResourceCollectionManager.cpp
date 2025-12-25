@@ -141,13 +141,11 @@ ResourceCollectionManager* ResourceCollectionManager::getInstance()
 {
     if (!_instance)
     {
-        // 改造为单例创建模式
         _instance = new (std::nothrow) ResourceCollectionManager();
         if (_instance && _instance->init())
         {
-            _instance->autorelease();
-            _instance->retain(); // 确保它不会被自动释放（Node单例的常见做法）
-            // ⚠️ 警告：作为 Node 的单例，你需要确保它在场景中被 addChild 一次，否则它的触摸监听可能不工作
+            // 使用 retain 保持存活，通过 destroyInstance 释放
+            _instance->retain();
         }
         else
         {
@@ -155,6 +153,15 @@ ResourceCollectionManager* ResourceCollectionManager::getInstance()
         }
     }
     return _instance;
+}
+
+void ResourceCollectionManager::destroyInstance()
+{
+    if (_instance)
+    {
+        _instance->release();
+        _instance = nullptr;
+    }
 }
 // 🔴 关键修改：构造函数私有化
 ResourceCollectionManager::ResourceCollectionManager()

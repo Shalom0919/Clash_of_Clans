@@ -33,7 +33,7 @@ bool BuildingHealthBarUI::init(BaseBuilding* building)
     _building = building;
     _lastHealthValue = building->getHitpoints();
 
-    // 🔴 修复：根据建筑的锚点和实际高度计算血条位置
+    // 修复：根据建筑的锚点和实际高度计算血条位置
     // 建筑锚点通常是 (0.5, 0.35)，所以需要相应调整
     float buildingHeight = building->getContentSize().height;
     float anchorY = building->getAnchorPoint().y;
@@ -99,16 +99,15 @@ void BuildingHealthBarUI::update(float dt)
     if (_building == nullptr)
     {
         this->unscheduleUpdate();
-        this->removeFromParent();
         return;
     }
     
-    // 检查建筑是否已销毁
+    // 检查建筑是否已销毁 - 只停止更新，不自己移除
+    // 由 BaseBuilding::disableBattleMode() 统一管理生命周期
     if (_building->isDestroyed())
     {
         _building = nullptr;
         this->unscheduleUpdate();
-        this->removeFromParent();
         return;
     }
 

@@ -71,7 +71,7 @@ struct BuildingConfigData
 class BaseBuilding : public cocos2d::Sprite
 {
 public:
-    virtual ~BaseBuilding() = default;
+    virtual ~BaseBuilding();
 
     /**
      * @brief 通用初始化入口

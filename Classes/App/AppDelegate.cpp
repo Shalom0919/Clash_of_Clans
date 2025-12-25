@@ -44,10 +44,12 @@
 #include "HelloWorldScene.h"
 #include "Managers/AccountManager.h"
 #include "Managers/ResourceManager.h"
+#include "Managers/ResourceCollectionManager.h"
+#include "Managers/TroopInventory.h"
 #include "Managers/UpgradeManager.h"
+#include "audio/include/AudioEngine.h"
 // #define USE_AUDIO_ENGINE 1
 #if USE_AUDIO_ENGINE
-#include "audio/include/AudioEngine.h"
 using namespace cocos2d::experimental;
 #endif
 USING_NS_CC;
@@ -58,10 +60,15 @@ static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
 AppDelegate::AppDelegate() {}
 AppDelegate::~AppDelegate()
 {
+    // 清理音频引擎（始终调用，解决 AudioEngine 内存泄漏）
+    cocos2d::AudioEngine::end();
+    
 #if USE_AUDIO_ENGINE
     AudioEngine::end();
 #endif
     // 清理单例以防止内存泄漏
+    ResourceCollectionManager::destroyInstance();
+    TroopInventory::destroyInstance();
     ResourceManager::destroyInstance();
     UpgradeManager::destroyInstance();
 }

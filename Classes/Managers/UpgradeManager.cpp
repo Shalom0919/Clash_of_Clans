@@ -20,7 +20,16 @@ UpgradeManager* UpgradeManager::getInstance()
 {
     if (!_instance)
     {
-        _instance = new UpgradeManager();
+        _instance = new (std::nothrow) UpgradeManager();
+        if (_instance && _instance->init())
+        {
+            // 使用 retain 保持存活，通过 destroyInstance 释放
+            _instance->retain();
+        }
+        else
+        {
+            CC_SAFE_DELETE(_instance);
+        }
     }
     return _instance;
 }
@@ -29,7 +38,7 @@ void UpgradeManager::destroyInstance()
 {
     if (_instance)
     {
-        delete _instance;
+        _instance->release();
         _instance = nullptr;
     }
 }

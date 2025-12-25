@@ -16,6 +16,24 @@
 
 USING_NS_CC;
 
+// ==================== 析构函数 ====================
+
+BaseBuilding::~BaseBuilding()
+{
+    // 安全清理血条UI
+    if (_healthBarUI)
+    {
+        // 先停止更新调度，防止并发访问
+        _healthBarUI->unscheduleUpdate();
+        
+        if (_healthBarUI->getParent() != nullptr)
+        {
+            _healthBarUI->removeFromParent();
+        }
+        _healthBarUI = nullptr;
+    }
+}
+
 // ==================== 大本营配置数据表 (17级) ====================
 namespace TownHallConfigTable
 {
@@ -704,7 +722,7 @@ void BaseBuilding::initHealthBarUI()
 
 void BaseBuilding::showHealthBar()
 {
-    if (_healthBarUI)
+    if (_healthBarUI && _healthBarUI->getParent() != nullptr)
     {
         _healthBarUI->setAlwaysVisible(true);
         _healthBarUI->show();
@@ -723,10 +741,16 @@ void BaseBuilding::disableBattleMode()
     _battleModeEnabled = false;
     _hasBeenAttacked = false;
     
-    // 移除血条UI
+    // 安全移除血条UI
     if (_healthBarUI)
     {
-        _healthBarUI->removeFromParent();
+        // 先停止更新调度，防止并发访问
+        _healthBarUI->unscheduleUpdate();
+        
+        if (_healthBarUI->getParent() != nullptr)
+        {
+            _healthBarUI->removeFromParent();
+        }
         _healthBarUI = nullptr;
     }
     
