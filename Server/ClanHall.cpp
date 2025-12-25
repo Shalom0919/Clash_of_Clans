@@ -12,15 +12,28 @@
 #include <iostream>
 #include <sstream>
 
+// ============================================================================
+// 构造函数
+// ============================================================================
+
 ClanHall::ClanHall(PlayerRegistry* registry) : player_registry_(registry) {}
+
+// ============================================================================
+// 私有辅助方法
+// ============================================================================
 
 std::string ClanHall::GenerateClanId() {
     static int counter = 0;
     return "CLAN_" + std::to_string(++counter);
 }
 
+// ============================================================================
+// 部落创建与管理
+// ============================================================================
+
 bool ClanHall::CreateClan(const std::string& player_id,
                           const std::string& clan_name) {
+    // 验证玩家存在性
     PlayerContext* player = player_registry_->GetById(player_id);
     if (player == nullptr) {
         std::cout << "[Clan] 创建失败: 玩家 " << player_id << " 未找到"
@@ -28,6 +41,7 @@ bool ClanHall::CreateClan(const std::string& player_id,
         return false;
     }
 
+    // 验证玩家未加入其他部落
     if (!player->clanId.empty()) {
         std::cout << "[Clan] 创建失败: " << player_id << " 已在部落中"
                   << std::endl;
@@ -36,6 +50,7 @@ bool ClanHall::CreateClan(const std::string& player_id,
 
     std::string clan_id = GenerateClanId();
 
+    // 创建部落记录
     {
         std::lock_guard<std::mutex> lock(clan_mutex_);
 
@@ -51,6 +66,7 @@ bool ClanHall::CreateClan(const std::string& player_id,
         clans_[clan_id] = clan;
     }
 
+    // 更新玩家的部落归属
     player->clanId = clan_id;
 
     std::cout << "[Clan] 创建成功: " << clan_name << " (ID: " << clan_id
@@ -60,6 +76,7 @@ bool ClanHall::CreateClan(const std::string& player_id,
 
 bool ClanHall::JoinClan(const std::string& player_id,
                         const std::string& clan_id) {
+    // 验证玩家存在性
     PlayerContext* player = player_registry_->GetById(player_id);
     if (player == nullptr) {
         std::cout << "[Clan] 加入失败: 玩家 " << player_id << " 未找到"
@@ -67,6 +84,7 @@ bool ClanHall::JoinClan(const std::string& player_id,
         return false;
     }
 
+    // 验证玩家未加入其他部落
     if (!player->clanId.empty()) {
         std::cout << "[Clan] 加入失败: " << player_id << " 已在部落 "
                   << player->clanId << " 中" << std::endl;
@@ -75,6 +93,7 @@ bool ClanHall::JoinClan(const std::string& player_id,
 
     std::lock_guard<std::mutex> lock(clan_mutex_);
 
+    // 验证目标部落存在
     auto it = clans_.find(clan_id);
     if (it == clans_.end()) {
         std::cout << "[Clan] 加入失败: 部落 " << clan_id << " 未找到"
@@ -82,12 +101,14 @@ bool ClanHall::JoinClan(const std::string& player_id,
         return false;
     }
 
+    // 验证部落开放状态
     if (!it->second.isOpen) {
         std::cout << "[Clan] 加入失败: 部落 " << clan_id << " 未开放"
                   << std::endl;
         return false;
     }
 
+    // 验证奖杯数要求
     if (player->trophies < it->second.requiredTrophies) {
         std::cout << "[Clan] 加入失败: " << player_id << " 奖杯数 "
                   << player->trophies << " 不满足要求 "
@@ -95,6 +116,7 @@ bool ClanHall::JoinClan(const std::string& player_id,
         return false;
     }
 
+    // 执行加入操作
     it->second.memberIds.push_back(player_id);
     it->second.clanTrophies += player->trophies;
     player->clanId = clan_id;
@@ -105,11 +127,13 @@ bool ClanHall::JoinClan(const std::string& player_id,
 }
 
 bool ClanHall::LeaveClan(const std::string& player_id) {
+    // 验证玩家存在性
     PlayerContext* player = player_registry_->GetById(player_id);
     if (player == nullptr) {
         return false;
     }
 
+    // 验证玩家已加入部落
     std::string clan_id = player->clanId;
     if (clan_id.empty()) {
         return false;
@@ -117,17 +141,20 @@ bool ClanHall::LeaveClan(const std::string& player_id) {
 
     std::lock_guard<std::mutex> lock(clan_mutex_);
 
+    // 查找部落
     auto it = clans_.find(clan_id);
     if (it == clans_.end()) {
         return false;
     }
 
+    // 从成员列表中移除
     auto& members = it->second.memberIds;
     members.erase(std::remove(members.begin(), members.end(), player_id),
                   members.end());
     it->second.clanTrophies -= player->trophies;
     player->clanId = "";
 
+    // 如果部落为空，删除部落
     if (members.empty()) {
         clans_.erase(it);
         std::cout << "[Clan] 删除空部落: " << clan_id << std::endl;
@@ -136,6 +163,10 @@ bool ClanHall::LeaveClan(const std::string& player_id) {
     std::cout << "[Clan] " << player_id << " 离开部落 " << clan_id << std::endl;
     return true;
 }
+
+// ============================================================================
+// 部落查询
+// ============================================================================
 
 std::string ClanHall::GetClanListJson() {
     std::lock_guard<std::mutex> lock(clan_mutex_);
@@ -151,9 +182,9 @@ std::string ClanHall::GetClanListJson() {
         }
         first = false;
 
-        oss << "{" << "\"id\":\"" << clan.clanId << "\","
-            << "\"name\":\"" << clan.clanName << "\","
-            << "\"members\":" << clan.memberIds.size() << ","
+        oss << "{" << "\"id\":\"" << clan.clanId << "\",\""
+            << "name\":\"" << clan.clanName << "\",\""
+            << "members\":" << clan.memberIds.size() << ","
             << "\"trophies\":" << clan.clanTrophies << ","
             << "\"required\":" << clan.requiredTrophies << ","
             << "\"open\":" << (clan.isOpen ? "true" : "false") << "}";
@@ -181,14 +212,15 @@ std::string ClanHall::GetClanMembersJson(const std::string& clan_id) {
         }
         first = false;
 
+        // 获取成员的在线状态和信息
         PlayerContext* player = player_registry_->GetById(member_id);
         bool online = (player != nullptr);
         int trophies = online ? player->trophies : 0;
         std::string name = online ? player->playerName : member_id;
 
-        oss << "{" << "\"id\":\"" << member_id << "\","
-            << "\"name\":\"" << name << "\","
-            << "\"trophies\":" << trophies << ","
+        oss << "{" << "\"id\":\"" << member_id << "\",\""
+            << "name\":\"" << name << "\",\""
+            << "trophies\":" << trophies << ","
             << "\"online\":" << (online ? "true" : "false") << "}";
     }
 
@@ -217,5 +249,5 @@ std::vector<std::string> ClanHall::GetClanMemberIds(const std::string& clan_id) 
         return {};
     }
 
-    return it->second.memberIds;
+    return it->second.memberIds;  // 返回副本
 }

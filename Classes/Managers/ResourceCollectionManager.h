@@ -30,6 +30,9 @@ public:
      */
     static ResourceCollectionManager* getInstance();
 
+    /** @brief 销毁单例实例（防止内存泄漏） */
+    static void destroyInstance();
+
     virtual bool init() override;
 
     /** @brief 清空已注册的建筑 */

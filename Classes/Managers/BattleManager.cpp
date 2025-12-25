@@ -906,11 +906,12 @@ void BattleManager::uploadBattleResult()
     defenseLog.replayData   = ReplaySystem::getInstance().stopRecording();
 
     std::string attackerUserId = currentAccount->account.userId;
+    std::string enemyUserId = _enemyUserId;
     
-    // 使用延迟调用，确保在主线程安全执行账号切换
-    Director::getInstance()->getScheduler()->performFunctionInCocosThread([=]() {
+    //  修复：显式捕获变量，避免悬空引用
+    Director::getInstance()->getScheduler()->performFunctionInCocosThread([defenseLog, attackerUserId, enemyUserId]() {
         auto& accMgrLocal = AccountManager::getInstance();
-        if (accMgrLocal.switchAccount(_enemyUserId, true))
+        if (accMgrLocal.switchAccount(enemyUserId, true))
         {
             DefenseLogSystem::getInstance().load();
             DefenseLogSystem::getInstance().addDefenseLog(defenseLog);

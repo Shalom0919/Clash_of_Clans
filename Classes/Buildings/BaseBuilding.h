@@ -2,7 +2,7 @@
 * Project Name:  Clash_of_Clans
 * File Name:     BaseBuilding.h
 * File Function: 建筑基类 - 定义所有建筑的统一接口
-* Author:        赵崇治、薛毓哲
+* Author:        赵崇治、薛毓哲、刘相成
 * Update Date:   2025/12/24
 * License:       MIT License
 ****************************************************************/
@@ -71,7 +71,7 @@ struct BuildingConfigData
 class BaseBuilding : public cocos2d::Sprite
 {
 public:
-    virtual ~BaseBuilding() = default;
+    virtual ~BaseBuilding();
 
     /**
      * @brief 通用初始化入口

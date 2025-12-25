@@ -2,8 +2,8 @@
  * Project Name:  Clash_of_Clans
  * File Name:     PathFinder.h
  * File Function: A*寻路算法实现
- * Author:        赵崇治
- * Update Date:   2025/01/10
+ * Author:        刘相成、赵崇治
+ * Update Date:   2025/12/24
  * License:       MIT License
  ****************************************************************/
 #pragma once

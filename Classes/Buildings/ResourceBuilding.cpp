@@ -2,7 +2,7 @@
  * Project Name:  Clash_of_Clans
  * File Name:     ResourceBuilding.cpp
  * File Function: 资源生产/存储建筑实现
- * Author:        赵崇治、薛毓哲
+ * Author:        赵崇治、薛毓哲、刘相成
  * Update Date:   2025/12/24
  * License:       MIT License
  ****************************************************************/

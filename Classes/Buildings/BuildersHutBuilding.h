@@ -3,7 +3,7 @@
  * File Name:     BuildersHutBuilding.h
  * File Function: 建筑工人小屋类
  * Author:        薛毓哲
- * Update Date:   2025/01/09
+ * Update Date:   2025/12/19
  * License:       MIT License
  ****************************************************************/
 #pragma once

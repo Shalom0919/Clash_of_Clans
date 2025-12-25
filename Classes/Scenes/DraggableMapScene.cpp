@@ -1,9 +1,11 @@
-﻿/**
-* @file DraggableMapScene.cpp
-* @brief 主场景实现 - 重构后的精简版本
-* @author 薛毓哲 (2025/12/25) - 添加 createDraggableMapScene 全局函数
-*/
-
+﻿/****************************************************************
+* Project Name:  Clash_of_Clans
+* File Name:     DraggableMapScene.h
+* File Function: 主场景类
+* Author:        刘相成、薛毓哲
+* Update Date:   2025/12/24
+* License:       MIT License
+****************************************************************/
 #include "DraggableMapScene.h"
 
 #include "AccountManager.h"

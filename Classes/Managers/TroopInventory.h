@@ -3,7 +3,7 @@
  * File Name:     TroopInventory.h
  * File Function: 士兵库存管理器 - 管理玩家拥有的所有士兵
  * Author:        薛毓哲
- * Update Date:   2025/01/10
+ * Update Date:   2025/12/20
  * License:       MIT License
  ****************************************************************/
 #ifndef TROOP_INVENTORY_H_

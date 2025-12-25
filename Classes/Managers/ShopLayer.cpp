@@ -1,11 +1,4 @@
-﻿#include "ShopLayer.h"
-#include "DraggableMapScene.h"
-#include "Managers/BuildingLimitManager.h"
-#include "Managers/BuildingManager.h"
-#include "Managers/GameConfig.h"
-#include "Managers/ResourceManager.h"
-
-/****************************************************************
+﻿/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     ShopLayer.cpp
  * File Function: 商店界面
@@ -13,6 +6,12 @@
  * Update Date:   2025/12/08
  * License:       MIT License
  ****************************************************************/
+#include "ShopLayer.h"
+#include "DraggableMapScene.h"
+#include "Managers/BuildingLimitManager.h"
+#include "Managers/BuildingManager.h"
+#include "Managers/GameConfig.h"
+#include "Managers/ResourceManager.h"
 
 USING_NS_CC;
 using namespace ui;

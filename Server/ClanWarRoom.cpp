@@ -14,16 +14,28 @@
 #include <iostream>
 #include <sstream>
 
-// 前向声明网络发送函数
+// 前向声明网络发送函数（定义在 NetworkUtils.cpp 中）
 extern bool sendPacket(SOCKET socket, uint32_t type, const std::string& data);
+
+// ============================================================================
+// 构造函数
+// ============================================================================
 
 ClanWarRoom::ClanWarRoom(PlayerRegistry* registry, ClanHall* hall)
     : player_registry_(registry), clan_hall_(hall) {}
+
+// ============================================================================
+// 私有辅助方法
+// ============================================================================
 
 std::string ClanWarRoom::GenerateWarId() {
     static int counter = 0;
     return "WAR_" + std::to_string(++counter);
 }
+
+// ============================================================================
+// 匹配队列管理
+// ============================================================================
 
 void ClanWarRoom::AddToQueue(const std::string& clan_id) {
     std::lock_guard<std::mutex> lock(war_mutex_);
@@ -54,11 +66,12 @@ void ClanWarRoom::AddToQueue(const std::string& clan_id) {
 }
 
 void ClanWarRoom::ProcessQueue() {
-    // 假设已持有 war_mutex_
+    // 前置条件：调用者已持有 war_mutex_
     if (war_queue_.size() < 2) {
         return;
     }
 
+    // 取出队列前两个部落进行匹配
     std::string clan1_id = war_queue_[0];
     std::string clan2_id = war_queue_[1];
 
@@ -68,6 +81,10 @@ void ClanWarRoom::ProcessQueue() {
     StartWar(clan1_id, clan2_id);
 }
 
+// ============================================================================
+// 战争生命周期管理
+// ============================================================================
+
 void ClanWarRoom::StartWar(const std::string& clan1_id,
                            const std::string& clan2_id) {
     std::string war_id = GenerateWarId();
@@ -75,6 +92,7 @@ void ClanWarRoom::StartWar(const std::string& clan1_id,
     {
         std::lock_guard<std::mutex> lock(session_mutex_);
 
+        // 初始化战争会话
         ClanWarSession session;
         session.warId = war_id;
         session.clan1Id = clan1_id;
@@ -84,7 +102,7 @@ void ClanWarRoom::StartWar(const std::string& clan1_id,
         session.clan1TotalStars = 0;
         session.clan2TotalStars = 0;
 
-        // 初始化第一个部落的成员
+        // 初始化第一个部落的成员（快照地图数据）
         auto clan1_members = clan_hall_->GetClanMemberIds(clan1_id);
         for (const auto& member_id : clan1_members) {
             ClanWarMember member;
@@ -101,7 +119,7 @@ void ClanWarRoom::StartWar(const std::string& clan1_id,
             session.clan1Members.push_back(member);
         }
 
-        // 初始化第二个部落的成员
+        // 初始化第二个部落的成员（快照地图数据）
         auto clan2_members = clan_hall_->GetClanMemberIds(clan2_id);
         for (const auto& member_id : clan2_members) {
             ClanWarMember member;
@@ -124,291 +142,20 @@ void ClanWarRoom::StartWar(const std::string& clan1_id,
                   << " vs " << clan2_id << ")" << std::endl;
     }
 
-    // 通知所有成员战争已开始
+    // 在锁外发送网络通知，避免死锁
     std::string msg = war_id + "|" + clan1_id + "|" + clan2_id;
 
     auto notify_members = [&](const std::vector<std::string>& member_ids) {
         for (const auto& member_id : member_ids) {
             PlayerContext* player = player_registry_->GetById(member_id);
             if (player != nullptr && player->socket != INVALID_SOCKET) {
-                sendPacket(player->socket, PACKET_CLAN_WAR_MATCH, msg);
+                sendPacket(player->socket, PACKET_WAR_MATCH, msg);
             }
         }
     };
 
     notify_members(clan_hall_->GetClanMemberIds(clan1_id));
     notify_members(clan_hall_->GetClanMemberIds(clan2_id));
-}
-
-void ClanWarRoom::HandleAttackStart(SOCKET client_socket,
-                                    const std::string& war_id,
-                                    const std::string& target_id) {
-    PlayerContext* attacker = player_registry_->GetBySocket(client_socket);
-    if (attacker == nullptr) {
-        sendPacket(client_socket, PACKET_CLAN_WAR_ATTACK_START,
-                   "FAIL|NOT_LOGGED_IN|");
-        return;
-    }
-
-    std::string attacker_id = attacker->playerId;
-    std::string target_map_data;
-
-    {
-        std::lock_guard<std::mutex> lock(session_mutex_);
-
-        auto it = active_wars_.find(war_id);
-        if (it == active_wars_.end()) {
-            sendPacket(client_socket, PACKET_CLAN_WAR_ATTACK_START,
-                       "FAIL|WAR_NOT_FOUND|");
-            return;
-        }
-
-        ClanWarSession& session = it->second;
-
-        // 检查战争是否还在进行中
-        if (!session.isActive) {
-            sendPacket(client_socket, PACKET_CLAN_WAR_ATTACK_START,
-                       "FAIL|WAR_ENDED|");
-            return;
-        }
-
-        // 检查攻击者是否已在战斗中
-        if (session.activeBattles.find(attacker_id) !=
-            session.activeBattles.end()) {
-            sendPacket(client_socket, PACKET_CLAN_WAR_ATTACK_START,
-                       "FAIL|ALREADY_IN_BATTLE|");
-            return;
-        }
-
-        // 查找目标成员
-        ClanWarMember* target_member = nullptr;
-        for (auto& member : session.clan1Members) {
-            if (member.memberId == target_id) {
-                target_member = &member;
-                break;
-            }
-        }
-        if (target_member == nullptr) {
-            for (auto& member : session.clan2Members) {
-                if (member.memberId == target_id) {
-                    target_member = &member;
-                    break;
-                }
-            }
-        }
-
-        if (target_member == nullptr || target_member->mapData.empty()) {
-            sendPacket(client_socket, PACKET_CLAN_WAR_ATTACK_START,
-                       "FAIL|NO_MAP_DATA|");
-            return;
-        }
-
-        target_map_data = target_member->mapData;
-
-        // 创建战斗会话
-        PvpSession pvp_session;
-        pvp_session.attackerId = attacker_id;
-        pvp_session.defenderId = target_id;
-        pvp_session.mapData = target_map_data;
-        pvp_session.isActive = true;
-        pvp_session.startTime = std::chrono::steady_clock::now();
-
-        session.activeBattles[attacker_id] = pvp_session;
-    }
-
-    std::cout << "[ClanWar] 攻击开始: " << attacker_id << " -> " << target_id
-              << " (战争: " << war_id << ")" << std::endl;
-
-    std::string response = "ATTACK|" + target_id + "|" + target_map_data;
-    sendPacket(client_socket, PACKET_CLAN_WAR_ATTACK_START, response);
-}
-
-void ClanWarRoom::HandleAttackEnd(const std::string& war_id,
-                                  const AttackRecord& record) {
-    bool need_broadcast = false;
-    std::string defender_id;
-    SOCKET defender_socket = INVALID_SOCKET;
-    std::vector<std::pair<std::string, SOCKET>> spectators_to_notify;
-    size_t total_action_count = 0;  // 🔧 新增：总操作数量
-
-    {
-        std::lock_guard<std::mutex> lock(session_mutex_);
-
-        auto it = active_wars_.find(war_id);
-        if (it == active_wars_.end()) {
-            std::cout << "[ClanWar] 错误: 战争 " << war_id << " 未找到"
-                      << std::endl;
-            return;
-        }
-
-        ClanWarSession& session = it->second;
-
-        // 查找并验证战斗会话
-        auto battle_it = session.activeBattles.find(record.attackerId);
-        if (battle_it == session.activeBattles.end()) {
-            std::cout << "[ClanWar] 错误: 玩家 " << record.attackerId
-                      << " 没有活跃的战斗" << std::endl;
-            return;
-        }
-
-        defender_id = battle_it->second.defenderId;
-        total_action_count = battle_it->second.actionHistory.size();  // 🔧 获取总操作数
-        
-        // 🔧 修复：收集需要通知的观战者（在锁内收集socket）
-        for (const auto& spectator_id : battle_it->second.spectatorIds) {
-            PlayerContext* spectator = player_registry_->GetById(spectator_id);
-            if (spectator != nullptr && spectator->socket != INVALID_SOCKET) {
-                spectators_to_notify.push_back({spectator_id, spectator->socket});
-            }
-        }
-
-        // 判断攻击者所属部落
-        bool is_attacker_in_clan1 =
-            clan_hall_->IsPlayerInClan(record.attackerId, session.clan1Id);
-
-        // 目标在敌方部落
-        auto& target_members =
-            is_attacker_in_clan1 ? session.clan2Members : session.clan1Members;
-
-        ClanWarMember* target_member = nullptr;
-        for (auto& member : target_members) {
-            if (member.memberId == defender_id) {
-                target_member = &member;
-                break;
-            }
-        }
-
-        if (target_member != nullptr) {
-            // 记录攻击
-            target_member->attacksReceived.push_back(record);
-
-            // 更新最佳成绩
-            if (record.starsEarned > target_member->bestStars ||
-                (record.starsEarned == target_member->bestStars &&
-                 record.destructionRate > target_member->bestDestructionRate)) {
-                target_member->bestStars = record.starsEarned;
-                target_member->bestDestructionRate = record.destructionRate;
-            }
-
-            // 更新部落总星数
-            if (is_attacker_in_clan1) {
-                session.clan1TotalStars += record.starsEarned;
-            } else {
-                session.clan2TotalStars += record.starsEarned;
-            }
-
-            std::cout << "[ClanWar] 攻击结束: " << record.attackerId << " -> "
-                      << defender_id << " (获得 " << record.starsEarned
-                      << " 星, 总操作数: " << total_action_count << ")"
-                      << std::endl;
-        }
-
-        // 获取防守方socket（在锁内）
-        PlayerContext* defender = player_registry_->GetById(defender_id);
-        if (defender != nullptr && defender->socket != INVALID_SOCKET) {
-            defender_socket = defender->socket;
-        }
-
-        // 清理战斗会话
-        session.activeBattles.erase(record.attackerId);
-        need_broadcast = true;
-    }
-
-    // 🔧 修复：构建包含总操作数的结束消息
-    std::ostringstream end_msg;
-    end_msg << "BATTLE_ENDED|" << total_action_count;
-    std::string end_message = end_msg.str();
-
-    // 🔧 修复：在锁外发送网络包，防止死锁
-    // 通知防守方战斗结束
-    if (defender_socket != INVALID_SOCKET) {
-        sendPacket(defender_socket, PACKET_CLAN_WAR_ATTACK_END, end_message);
-    }
-
-    // 通知观战者
-    for (const auto& pair : spectators_to_notify) {
-        sendPacket(pair.second, PACKET_CLAN_WAR_ATTACK_END, end_message);
-        std::cout << "[ClanWar] 已通知观战者: " << pair.first 
-                  << " (总操作数: " << total_action_count << ")" << std::endl;
-    }
-
-    if (need_broadcast) {
-        BroadcastWarUpdate(war_id);
-    }
-}
-
-void ClanWarRoom::HandleSpectate(SOCKET client_socket,
-                                 const std::string& war_id,
-                                 const std::string& target_id) {
-    PlayerContext* spectator = player_registry_->GetBySocket(client_socket);
-    if (spectator == nullptr) {
-        sendPacket(client_socket, PACKET_CLAN_WAR_SPECTATE, "0|||");
-        return;
-    }
-
-    std::string spectator_id = spectator->playerId;
-    std::string attacker_id, defender_id, map_data;
-    std::vector<std::string> history;
-    bool found = false;
-
-    {
-        std::lock_guard<std::mutex> lock(session_mutex_);
-
-        auto it = active_wars_.find(war_id);
-        if (it == active_wars_.end()) {
-            sendPacket(client_socket, PACKET_CLAN_WAR_SPECTATE, "0|||");
-            return;
-        }
-
-        ClanWarSession& session = it->second;
-
-        for (auto& pair : session.activeBattles) {
-            if (!pair.second.isActive) {
-                continue;
-            }
-
-            if (pair.second.attackerId == target_id ||
-                pair.second.defenderId == target_id) {
-                attacker_id = pair.second.attackerId;
-                defender_id = pair.second.defenderId;
-                map_data = pair.second.mapData;
-                history = pair.second.actionHistory;
-                
-                // 🔧 修复：防止重复添加观战者
-                auto& spectators = pair.second.spectatorIds;
-                if (std::find(spectators.begin(), spectators.end(), spectator_id) == spectators.end()) {
-                    spectators.push_back(spectator_id);
-                }
-                found = true;
-                break;
-            }
-        }
-    }
-
-    if (!found || map_data.empty()) {
-        sendPacket(client_socket, PACKET_CLAN_WAR_SPECTATE, "0|||");
-        return;
-    }
-
-    std::cout << "[ClanWar] 观战者 " << spectator_id << " 正在观看 "
-              << attacker_id << " vs " << defender_id 
-              << " (历史操作: " << history.size() << ")" << std::endl;
-
-    // 🔧 修复：构建包含历史记录的响应
-    std::ostringstream oss;
-    oss << "1|" << attacker_id << "|" << defender_id << "|" << map_data;
-    
-    if (!history.empty()) {
-        oss << "[[[HISTORY]]]";
-        for (size_t i = 0; i < history.size(); ++i) {
-            if (i > 0) {
-                oss << "[[[ACTION]]]";
-            }
-            oss << history[i];
-        }
-    }
-
-    sendPacket(client_socket, PACKET_CLAN_WAR_SPECTATE, oss.str());
 }
 
 void ClanWarRoom::EndWar(const std::string& war_id) {
@@ -429,19 +176,20 @@ void ClanWarRoom::EndWar(const std::string& war_id) {
 
         ClanWarSession& session = it->second;
         
-        // 🔧 修复：先标记为非活跃状态，防止并发问题
+        // 先标记为非活跃状态，防止新的攻击发起
         session.isActive = false;
 
-        // 检查是否还有活跃战斗
+        // 强制结束所有活跃战斗
         if (!session.activeBattles.empty()) {
             std::cout << "[ClanWar] 警告: 战争 " << war_id
                       << " 仍有 " << session.activeBattles.size()
                       << " 场活跃战斗，正在强制结束" << std::endl;
 
-            // 🔧 修复：收集所有需要通知的socket（在锁内收集）
+            // 收集所有需要通知的 socket（在锁内收集，锁外发送）
             for (auto& battle_pair : session.activeBattles) {
                 battle_pair.second.isActive = false;
                 
+                // 通知攻击者
                 PlayerContext* attacker =
                     player_registry_->GetById(battle_pair.second.attackerId);
                 if (attacker != nullptr && attacker->socket != INVALID_SOCKET) {
@@ -466,16 +214,16 @@ void ClanWarRoom::EndWar(const std::string& war_id) {
         clan1_id = session.clan1Id;
         clan2_id = session.clan2Id;
 
-        // 确定胜者
+        // 确定胜者（星数多者胜，相同则平局）
         std::string winner_id;
         if (session.clan1TotalStars > session.clan2TotalStars) {
             winner_id = session.clan1Id;
         } else if (session.clan2TotalStars > session.clan1TotalStars) {
             winner_id = session.clan2Id;
         }
-        // 如果星数相同则为平局，winner_id 保持为空
+        // 星数相同：winner_id 保持为空表示平局
 
-        // 构建结果JSON
+        // 构建结果 JSON
         std::ostringstream oss;
         oss << "{";
         oss << "\"warId\":\"" << war_id << "\",";
@@ -487,7 +235,7 @@ void ClanWarRoom::EndWar(const std::string& war_id) {
         oss << "}";
         result_json = oss.str();
 
-        // 收集所有成员ID用于通知
+        // 收集所有成员 ID 用于通知
         for (const auto& member : session.clan1Members) {
             all_member_ids.push_back(member.memberId);
         }
@@ -503,20 +251,311 @@ void ClanWarRoom::EndWar(const std::string& war_id) {
                   << std::endl;
     }
 
-    // 🔧 修复：在锁外发送网络包，防止死锁
-    // 首先发送战斗结束通知给还在战斗中的玩家
+    // 在锁外发送网络包，防止死锁
+    // 首先通知还在战斗中的玩家战斗被强制结束
     for (const auto& packet : packets_to_send) {
-        sendPacket(packet.first, PACKET_CLAN_WAR_ATTACK_END, packet.second);
+        sendPacket(packet.first, PACKET_WAR_ATTACK_END, packet.second);
     }
 
-    // 通知所有参与者战争结束
+    // 通知所有参与者战争结束结果
     for (const auto& member_id : all_member_ids) {
         PlayerContext* player = player_registry_->GetById(member_id);
         if (player != nullptr && player->socket != INVALID_SOCKET) {
-            sendPacket(player->socket, PACKET_CLAN_WAR_END, result_json);
+            sendPacket(player->socket, PACKET_WAR_END, result_json);
         }
     }
 }
+
+// ============================================================================
+// 攻击处理
+// ============================================================================
+
+void ClanWarRoom::HandleAttackStart(SOCKET client_socket,
+                                    const std::string& war_id,
+                                    const std::string& target_id) {
+    // 验证攻击者身份
+    PlayerContext* attacker = player_registry_->GetBySocket(client_socket);
+    if (attacker == nullptr) {
+        sendPacket(client_socket, PACKET_WAR_ATTACK_START,
+                   "FAIL|NOT_LOGGED_IN|");
+        return;
+    }
+
+    std::string attacker_id = attacker->playerId;
+    std::string target_map_data;
+
+    {
+        std::lock_guard<std::mutex> lock(session_mutex_);
+
+        // 验证战争存在
+        auto it = active_wars_.find(war_id);
+        if (it == active_wars_.end()) {
+            sendPacket(client_socket, PACKET_WAR_ATTACK_START,
+                       "FAIL|WAR_NOT_FOUND|");
+            return;
+        }
+
+        ClanWarSession& session = it->second;
+
+        // 验证战争活跃状态
+        if (!session.isActive) {
+            sendPacket(client_socket, PACKET_WAR_ATTACK_START,
+                       "FAIL|WAR_ENDED|");
+            return;
+        }
+
+        // 验证攻击者未在其他战斗中
+        if (session.activeBattles.find(attacker_id) !=
+            session.activeBattles.end()) {
+            sendPacket(client_socket, PACKET_WAR_ATTACK_START,
+                       "FAIL|ALREADY_IN_BATTLE|");
+            return;
+        }
+
+        // 查找目标成员（在双方成员中搜索）
+        ClanWarMember* target_member = nullptr;
+        for (auto& member : session.clan1Members) {
+            if (member.memberId == target_id) {
+                target_member = &member;
+                break;
+            }
+        }
+        if (target_member == nullptr) {
+            for (auto& member : session.clan2Members) {
+                if (member.memberId == target_id) {
+                    target_member = &member;
+                    break;
+                }
+            }
+        }
+
+        // 验证目标有地图数据
+        if (target_member == nullptr || target_member->mapData.empty()) {
+            sendPacket(client_socket, PACKET_WAR_ATTACK_START,
+                       "FAIL|NO_MAP_DATA|");
+            return;
+        }
+
+        target_map_data = target_member->mapData;
+
+        // 创建战斗会话
+        PvpSession pvp_session;
+        pvp_session.attackerId = attacker_id;
+        pvp_session.defenderId = target_id;
+        pvp_session.mapData = target_map_data;
+        pvp_session.isActive = true;
+        pvp_session.startTime = std::chrono::steady_clock::now();
+
+        session.activeBattles[attacker_id] = pvp_session;
+    }
+
+    std::cout << "[ClanWar] 攻击开始: " << attacker_id << " -> " << target_id
+              << " (战争: " << war_id << ")" << std::endl;
+
+    // 在锁外发送响应
+    std::string response = "ATTACK|" + target_id + "|" + target_map_data;
+    sendPacket(client_socket, PACKET_WAR_ATTACK_START, response);
+}
+
+void ClanWarRoom::HandleAttackEnd(const std::string& war_id,
+                                  const AttackRecord& record) {
+    bool need_broadcast = false;
+    std::string defender_id;
+    SOCKET defender_socket = INVALID_SOCKET;
+    std::vector<std::pair<std::string, SOCKET>> spectators_to_notify;
+    size_t total_action_count = 0;
+
+    {
+        std::lock_guard<std::mutex> lock(session_mutex_);
+
+        // 查找战争会话
+        auto it = active_wars_.find(war_id);
+        if (it == active_wars_.end()) {
+            std::cout << "[ClanWar] 错误: 战争 " << war_id << " 未找到"
+                      << std::endl;
+            return;
+        }
+
+        ClanWarSession& session = it->second;
+
+        // 查找并验证战斗会话
+        auto battle_it = session.activeBattles.find(record.attackerId);
+        if (battle_it == session.activeBattles.end()) {
+            std::cout << "[ClanWar] 错误: 玩家 " << record.attackerId
+                      << " 没有活跃的战斗" << std::endl;
+            return;
+        }
+
+        defender_id = battle_it->second.defenderId;
+        total_action_count = battle_it->second.actionHistory.size();
+        
+        // 收集需要通知的观战者（在锁内收集 socket）
+        for (const auto& spectator_id : battle_it->second.spectatorIds) {
+            PlayerContext* spectator = player_registry_->GetById(spectator_id);
+            if (spectator != nullptr && spectator->socket != INVALID_SOCKET) {
+                spectators_to_notify.push_back({spectator_id, spectator->socket});
+            }
+        }
+
+        // 判断攻击者所属部落，确定目标在敌方
+        bool is_attacker_in_clan1 =
+            clan_hall_->IsPlayerInClan(record.attackerId, session.clan1Id);
+
+        auto& target_members =
+            is_attacker_in_clan1 ? session.clan2Members : session.clan1Members;
+
+        // 查找目标成员并记录攻击结果
+        ClanWarMember* target_member = nullptr;
+        for (auto& member : target_members) {
+            if (member.memberId == defender_id) {
+                target_member = &member;
+                break;
+            }
+        }
+
+        if (target_member != nullptr) {
+            // 记录本次攻击
+            target_member->attacksReceived.push_back(record);
+
+            // 更新最佳成绩（星数优先，相同星数比较摧毁率）
+            if (record.starsEarned > target_member->bestStars ||
+                (record.starsEarned == target_member->bestStars &&
+                 record.destructionRate > target_member->bestDestructionRate)) {
+                target_member->bestStars = record.starsEarned;
+                target_member->bestDestructionRate = record.destructionRate;
+            }
+
+            // 累加部落总星数
+            if (is_attacker_in_clan1) {
+                session.clan1TotalStars += record.starsEarned;
+            } else {
+                session.clan2TotalStars += record.starsEarned;
+            }
+
+            std::cout << "[ClanWar] 攻击结束: " << record.attackerId << " -> "
+                      << defender_id << " (获得 " << record.starsEarned
+                      << " 星, 总操作数: " << total_action_count << ")"
+                      << std::endl;
+        }
+
+        // 获取防守方 socket
+        PlayerContext* defender = player_registry_->GetById(defender_id);
+        if (defender != nullptr && defender->socket != INVALID_SOCKET) {
+            defender_socket = defender->socket;
+        }
+
+        // 清理战斗会话
+        session.activeBattles.erase(record.attackerId);
+        need_broadcast = true;
+    }
+
+    // 构建结束消息（包含总操作数用于回放）
+    std::ostringstream end_msg;
+    end_msg << "BATTLE_ENDED|" << total_action_count;
+    std::string end_message = end_msg.str();
+
+    // 在锁外发送网络包，防止死锁
+    if (defender_socket != INVALID_SOCKET) {
+        sendPacket(defender_socket, PACKET_WAR_ATTACK_END, end_message);
+    }
+
+    for (const auto& pair : spectators_to_notify) {
+        sendPacket(pair.second, PACKET_WAR_ATTACK_END, end_message);
+        std::cout << "[ClanWar] 已通知观战者: " << pair.first 
+                  << " (总操作数: " << total_action_count << ")" << std::endl;
+    }
+
+    // 广播战争状态更新
+    if (need_broadcast) {
+        BroadcastWarUpdate(war_id);
+    }
+}
+
+// ============================================================================
+// 观战处理
+// ============================================================================
+
+void ClanWarRoom::HandleSpectate(SOCKET client_socket,
+                                 const std::string& war_id,
+                                 const std::string& target_id) {
+    // 验证观战者身份
+    PlayerContext* spectator = player_registry_->GetBySocket(client_socket);
+    if (spectator == nullptr) {
+        sendPacket(client_socket, PACKET_WAR_SPECTATE, "0|||");
+        return;
+    }
+
+    std::string spectator_id = spectator->playerId;
+    std::string attacker_id, defender_id, map_data;
+    std::vector<std::string> history;
+    bool found = false;
+
+    {
+        std::lock_guard<std::mutex> lock(session_mutex_);
+
+        // 查找战争会话
+        auto it = active_wars_.find(war_id);
+        if (it == active_wars_.end()) {
+            sendPacket(client_socket, PACKET_WAR_SPECTATE, "0|||");
+            return;
+        }
+
+        ClanWarSession& session = it->second;
+
+        // 查找目标参与的活跃战斗
+        for (auto& pair : session.activeBattles) {
+            if (!pair.second.isActive) {
+                continue;
+            }
+
+            if (pair.second.attackerId == target_id ||
+                pair.second.defenderId == target_id) {
+                attacker_id = pair.second.attackerId;
+                defender_id = pair.second.defenderId;
+                map_data = pair.second.mapData;
+                history = pair.second.actionHistory;
+                
+                // 添加观战者（防止重复）
+                auto& spectators = pair.second.spectatorIds;
+                if (std::find(spectators.begin(), spectators.end(), spectator_id) == spectators.end()) {
+                    spectators.push_back(spectator_id);
+                }
+                found = true;
+                break;
+            }
+        }
+    }
+
+    // 未找到活跃战斗
+    if (!found || map_data.empty()) {
+        sendPacket(client_socket, PACKET_WAR_SPECTATE, "0|||");
+        return;
+    }
+
+    std::cout << "[ClanWar] 观战者 " << spectator_id << " 正在观看 "
+              << attacker_id << " vs " << defender_id 
+              << " (历史操作: " << history.size() << ")" << std::endl;
+
+    // 构建响应（包含历史操作记录用于追赶进度）
+    std::ostringstream oss;
+    oss << "1|" << attacker_id << "|" << defender_id << "|" << map_data;
+    
+    if (!history.empty()) {
+        oss << "[[[HISTORY]]]";
+        for (size_t i = 0; i < history.size(); ++i) {
+            if (i > 0) {
+                oss << "[[[ACTION]]]";
+            }
+            oss << history[i];
+        }
+    }
+
+    sendPacket(client_socket, PACKET_WAR_SPECTATE, oss.str());
+}
+
+// ============================================================================
+// 玩家断开连接清理
+// ============================================================================
 
 void ClanWarRoom::CleanupPlayerSessions(const std::string& player_id) {
     std::vector<std::pair<SOCKET, std::string>> packets_to_send;
@@ -535,7 +574,7 @@ void ClanWarRoom::CleanupPlayerSessions(const std::string& player_id) {
 
                 battle_it->second.isActive = false;
 
-                // 🔧 修复：收集需要通知的socket
+                // 收集需要通知的观战者 socket
                 for (const auto& spectator_id : battle_it->second.spectatorIds) {
                     PlayerContext* spectator =
                         player_registry_->GetById(spectator_id);
@@ -548,7 +587,7 @@ void ClanWarRoom::CleanupPlayerSessions(const std::string& player_id) {
                 session.activeBattles.erase(battle_it);
             }
 
-            // 从所有战斗的观战者列表中移除玩家
+            // 从所有战斗的观战者列表中移除该玩家
             for (auto& battle_pair : session.activeBattles) {
                 auto& spectators = battle_pair.second.spectatorIds;
                 spectators.erase(
@@ -558,11 +597,15 @@ void ClanWarRoom::CleanupPlayerSessions(const std::string& player_id) {
         }
     }
 
-    // 🔧 修复：在锁外发送网络包
+    // 在锁外发送网络包
     for (const auto& packet : packets_to_send) {
-        sendPacket(packet.first, PACKET_CLAN_WAR_SPECTATE, packet.second);
+        sendPacket(packet.first, PACKET_WAR_SPECTATE, packet.second);
     }
 }
+
+// ============================================================================
+// 查询方法
+// ============================================================================
 
 std::string ClanWarRoom::GetActiveWarIdForPlayer(const std::string& player_id) {
     std::lock_guard<std::mutex> lock(session_mutex_);
@@ -573,7 +616,7 @@ std::string ClanWarRoom::GetActiveWarIdForPlayer(const std::string& player_id) {
             continue;
         }
 
-        // 检查玩家是否在任一部落中
+        // 检查玩家是否在任一部落的成员列表中
         for (const auto& member : session.clan1Members) {
             if (member.memberId == player_id) {
                 return war_pair.first;
@@ -600,6 +643,7 @@ std::string ClanWarRoom::GetMemberListJson(const std::string& war_id,
 
     const ClanWarSession& session = it->second;
 
+    // 根据请求者所属部落确定敌方
     bool is_in_clan1 =
         clan_hall_->IsPlayerInClan(requester_id, session.clan1Id);
 
@@ -633,6 +677,10 @@ std::string ClanWarRoom::GetMemberListJson(const std::string& war_id,
     return oss.str();
 }
 
+// ============================================================================
+// 状态广播
+// ============================================================================
+
 void ClanWarRoom::BroadcastWarUpdate(const std::string& war_id) {
     std::string state_json;
     std::string clan1_id, clan2_id;
@@ -649,6 +697,7 @@ void ClanWarRoom::BroadcastWarUpdate(const std::string& war_id) {
         clan1_id = session.clan1Id;
         clan2_id = session.clan2Id;
 
+        // 构建状态更新 JSON
         std::ostringstream oss;
         oss << "{";
         oss << "\"warId\":\"" << war_id << "\",";
@@ -659,11 +708,12 @@ void ClanWarRoom::BroadcastWarUpdate(const std::string& war_id) {
         state_json = oss.str();
     }
 
+    // 在锁外发送给双方所有成员
     auto send_to_members = [&](const std::vector<std::string>& member_ids) {
         for (const auto& member_id : member_ids) {
             PlayerContext* player = player_registry_->GetById(member_id);
             if (player != nullptr && player->socket != INVALID_SOCKET) {
-                sendPacket(player->socket, PACKET_CLAN_WAR_STATE_UPDATE,
+                sendPacket(player->socket, PACKET_WAR_STATE_UPDATE,
                            state_json);
             }
         }
@@ -689,11 +739,12 @@ void ClanWarRoom::BroadcastWarEnd(const std::string& war_id,
         clan2_id = it->second.clan2Id;
     }
 
+    // 在锁外发送给双方所有成员
     auto send_to_members = [&](const std::vector<std::string>& member_ids) {
         for (const auto& member_id : member_ids) {
             PlayerContext* player = player_registry_->GetById(member_id);
             if (player != nullptr && player->socket != INVALID_SOCKET) {
-                sendPacket(player->socket, PACKET_CLAN_WAR_END, result_json);
+                sendPacket(player->socket, PACKET_WAR_END, result_json);
             }
         }
     };

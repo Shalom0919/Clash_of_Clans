@@ -1,4 +1,12 @@
-﻿#include "PathFinder.h"
+﻿/****************************************************************
+ * Project Name:  Clash_of_Clans
+ * File Name:     PathFinder.cpp
+ * File Function: A*寻路算法实现
+ * Author:        刘相成
+ * Update Date:   2025/12/24
+ * License:       MIT License
+ ****************************************************************/
+#include "PathFinder.h"
 #include <algorithm>
 #include <cmath>
 #include <queue>

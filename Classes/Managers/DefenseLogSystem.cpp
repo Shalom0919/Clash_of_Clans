@@ -158,19 +158,18 @@ void DefenseLogSystem::addDefenseLog(const DefenseLog& log)
         resMgr.setResourceCount(ResourceType::kGold, std::max(0, currentGold - log.goldLost));
         resMgr.setResourceCount(ResourceType::kElixir, std::max(0, currentElixir - log.elixirLost));
         
-        // 🆕 同步更新账号数据并保存到 JSON
-        AccountGameData gameData = accMgr.getCurrentGameData();
-        gameData.gold = resMgr.getResourceCount(ResourceType::kGold);
-        gameData.elixir = resMgr.getResourceCount(ResourceType::kElixir);
-        gameData.trophies        = std::max(0, gameData.trophies + log.trophyChange);
-        
+        // 修复：使用 GameStateData 的正确结构访问资源
+        GameStateData gameData = accMgr.getCurrentGameData();
+        gameData.resources.gold = resMgr.getResourceCount(ResourceType::kGold);
+        gameData.resources.elixir = resMgr.getResourceCount(ResourceType::kElixir);
+        gameData.progress.trophies = std::max(0, gameData.progress.trophies + log.trophyChange);
         
         accMgr.updateGameData(gameData);
         
         CCLOG("💰 Updated resources after attack: Gold=%d (-%d), Elixir=%d (-%d), Trophy=%d (%+d)", 
-              gameData.gold, log.goldLost, 
-              gameData.elixir, log.elixirLost,
-              gameData.trophies, log.trophyChange);
+              gameData.resources.gold, log.goldLost, 
+              gameData.resources.elixir, log.elixirLost,
+              gameData.progress.trophies, log.trophyChange);
     }
 }
 

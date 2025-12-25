@@ -8,6 +8,10 @@
  ****************************************************************/
 #include "PlayerRegistry.h"
 
+// ============================================================================
+// 玩家注册与注销
+// ============================================================================
+
 void PlayerRegistry::Register(SOCKET s, const PlayerContext& ctx) {
     std::lock_guard<std::mutex> lock(registry_mutex_);
     players_[s] = ctx;
@@ -17,6 +21,10 @@ void PlayerRegistry::Unregister(SOCKET s) {
     std::lock_guard<std::mutex> lock(registry_mutex_);
     players_.erase(s);
 }
+
+// ============================================================================
+// 玩家查询
+// ============================================================================
 
 PlayerContext* PlayerRegistry::GetBySocket(SOCKET s) {
     std::lock_guard<std::mutex> lock(registry_mutex_);
@@ -34,7 +42,11 @@ PlayerContext* PlayerRegistry::GetById(const std::string& player_id) {
     return nullptr;
 }
 
+// ============================================================================
+// 数据快照
+// ============================================================================
+
 std::map<SOCKET, PlayerContext> PlayerRegistry::GetAllSnapshot() {
     std::lock_guard<std::mutex> lock(registry_mutex_);
-    return players_;  // 返回副本
+    return players_;  // 返回副本，调用者可安全使用
 }

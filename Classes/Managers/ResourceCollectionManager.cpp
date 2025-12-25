@@ -1,8 +1,4 @@
-﻿/**
- * @file ResourceCollectionManager.cpp
- * @brief 资源收集管理器实现
- */
- /****************************************************************
+﻿/****************************************************************
     * Project Name:  Clash_of_Clans
     * File Name:     WallBuilding.cpp
     * File Function: 资源收集管理器类
@@ -82,15 +78,32 @@ void ResourceCollectionManager::unregisterBuilding(ResourceBuilding* building)
 bool ResourceCollectionManager::handleTouch(const cocos2d::Vec2& touchPos)
 {
     // 遍历所有注册的建筑，查看是否有可收集的资源被点击
-    for (auto* building : _trackedBuildings)
+    for (auto it = _trackedBuildings.begin(); it != _trackedBuildings.end(); )
     {
-        // ✅ 改进：添加更安全的检查
-        if (!building || !building->getParent() || !building->isVisible())
+        auto* building = *it;
+        
+        // 安全检查：验证建筑指针是否有效
+        if (!building || 
+            building->getReferenceCount() <= 0 || 
+            building->getReferenceCount() > 10000)
+        {
+            CCLOG("[ResourceCollectionManager] Removing invalid building pointer");
+            it = _trackedBuildings.erase(it);
             continue;
+        }
+        
+        if (!building->getParent() || !building->isVisible())
+        {
+            ++it;
+            continue;
+        }
         
         auto collectionUI = getCollectionUI(building);
         if (!collectionUI)
+        {
+            ++it;
             continue;
+        }
         
         // 检查触摸是否在收集区域内
         if (collectionUI->checkTouchInside(touchPos))
@@ -99,6 +112,8 @@ bool ResourceCollectionManager::handleTouch(const cocos2d::Vec2& touchPos)
             collectionUI->performCollection();
             return true;
         }
+        
+        ++it;
     }
     
     return false;
@@ -122,13 +137,11 @@ ResourceCollectionManager* ResourceCollectionManager::getInstance()
 {
     if (!_instance)
     {
-        // 改造为单例创建模式
         _instance = new (std::nothrow) ResourceCollectionManager();
         if (_instance && _instance->init())
         {
-            _instance->autorelease();
-            _instance->retain(); // 确保它不会被自动释放（Node单例的常见做法）
-            // ⚠️ 警告：作为 Node 的单例，你需要确保它在场景中被 addChild 一次，否则它的触摸监听可能不工作
+            // 使用 retain 保持存活，通过 destroyInstance 释放
+            _instance->retain();
         }
         else
         {
@@ -136,6 +149,15 @@ ResourceCollectionManager* ResourceCollectionManager::getInstance()
         }
     }
     return _instance;
+}
+
+void ResourceCollectionManager::destroyInstance()
+{
+    if (_instance)
+    {
+        _instance->release();
+        _instance = nullptr;
+    }
 }
 // 🔴 关键修改：构造函数私有化
 ResourceCollectionManager::ResourceCollectionManager()

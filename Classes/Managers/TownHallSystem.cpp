@@ -1,10 +1,6 @@
-﻿/**
- * @file TownHallSystem.cpp
- * @brief 大本营系统UI实现
- */
- /****************************************************************
+﻿/****************************************************************
   * Project Name:  Clash_of_Clans
-  * File Name:     WallBuilding.cpp
+  * File Name:     TownHallSystem.cpp
   * File Function: 大本营系统
   * Author:        刘相成
   * Update Date:   2025/12/06

@@ -1,8 +1,8 @@
 ﻿/****************************************************************
  * Project Name:  Clash_of_Clans
  * File Name:     UpgradeManager.h
- * File Function: 建筑升级管理器（处理升级队列、工人分配、倒计时）
- * Author:        薛毓哲
+ * File Function: 建筑升级管理器（处理升级队列、工人分配）
+ * Author:        薛毓哲、刘相成
  * Update Date:   2025/12/24
  * License:       MIT License
  ****************************************************************/
