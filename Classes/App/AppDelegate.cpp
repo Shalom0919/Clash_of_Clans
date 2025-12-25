@@ -29,7 +29,12 @@
 //   3. 在项目属性 -> 链接器 -> 常规 -> 附加库目录 中添加 $(SolutionDir)..\third_party\vld\src\bin\$(Platform)\Debug-v143
 //   4. 确保运行时 vld_x86.dll/vld_x64.dll 和 dbghelp.dll 在可执行文件目录或 PATH 中
 // 注意：不定义 ENABLE_VLD 时，VLD 相关代码会被完全跳过，协作者无需安装 VLD 即可编译
+//
+// 过滤策略 (2025-12-25, Author: 薛毓哲):
+//   使用 VLD API 在引擎初始化完成后才开始追踪，过滤掉 cocos2d-x 引擎单例的分配
+//   (Director, Scheduler, EventDispatcher 等)
 #if defined(_DEBUG) && defined(_WIN32) && defined(ENABLE_VLD)
+    #define VLD_FORCE_ENABLE  // 强制启用 VLD（即使 vld.ini 中禁用）
     #include <vld.h>
 #endif
 
@@ -38,8 +43,8 @@
 #include "DraggableMapScene.h"
 #include "HelloWorldScene.h"
 #include "Managers/AccountManager.h"
-#include "Managers/ResourceManager.h" // 新增：包含资源管理器头文件
-#include "Managers/UpgradeManager.h"  // 新增：包含升级管理器头文件
+#include "Managers/ResourceManager.h"
+#include "Managers/UpgradeManager.h"
 // #define USE_AUDIO_ENGINE 1
 #if USE_AUDIO_ENGINE
 #include "audio/include/AudioEngine.h"
@@ -76,6 +81,11 @@ static int register_all_packages()
 }
 bool AppDelegate::applicationDidFinishLaunching()
 {
+    // VLD: 暂停追踪，跳过引擎初始化阶段的分配
+#if defined(_DEBUG) && defined(_WIN32) && defined(ENABLE_VLD)
+    VLDDisable();
+#endif
+
     // 1. 获取导演
     auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
@@ -106,6 +116,12 @@ bool AppDelegate::applicationDidFinishLaunching()
     // 4. 不要用 NO_BORDER，因为你现在允许乱拉窗口了，NO_BORDER 会切掉你的 UI
     // 推荐用 FIXED_HEIGHT：高度固定，宽度视野变大 (适合 COC 类游戏)
     glview->setDesignResolutionSize(1280, 720, ResolutionPolicy::FIXED_HEIGHT);
+
+    // VLD: 引擎初始化完成，恢复追踪，只检测应用代码的内存泄漏
+#if defined(_DEBUG) && defined(_WIN32) && defined(ENABLE_VLD)
+    VLDRestore();
+    CCLOG("[VLD] Memory leak detection enabled - engine init phase skipped");
+#endif
 #if 0
     if (frameSize.height > mediumResolutionSize.height)
     {        
