@@ -3,7 +3,7 @@
  * File Name:     BattleManager.cpp
  * File Function: 战斗逻辑实现 - 管理战斗流程和状态
  * Author:        赵崇治
- * Update Date:   2025/01/10
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 
@@ -43,11 +43,11 @@ void BattleManager::init(cocos2d::Node* mapLayer, const AccountGameData& enemyDa
 
     if (_gridMap)
     {
-        CCLOG("✅ BattleManager: GridMap successfully linked!");
+        CCLOG("✅ BattleManager: GridMap 已成功关联!");
     }
     else
     {
-        CCLOG("❌ ERROR: BattleManager could not find GridMap! Pathfinding will FAIL.");
+        CCLOG("❌ 错误: BattleManager 未找到 GridMap! 寻路将失败.");
     }
 
     _enemyGameData = enemyData;
@@ -55,7 +55,9 @@ void BattleManager::init(cocos2d::Node* mapLayer, const AccountGameData& enemyDa
     _isReplayMode  = isReplay;
     _state         = BattleState::LOADING;
 
+    // 重置所有战斗数据
     _elapsedTime        = 0.0f;
+    _readyPhaseElapsed  = 0.0f;
     _starsEarned        = 0;
     _goldLooted         = 0;
     _elixirLooted       = 0;
@@ -63,7 +65,7 @@ void BattleManager::init(cocos2d::Node* mapLayer, const AccountGameData& enemyDa
     _accumulatedTime    = 0.0f;
     _currentFrame       = 0;
 
-    // 🆕 重置战斗结束状态
+    // 重置战斗结束状态
     _endReason          = BattleEndReason::TIMEOUT;
     _townHallDestroyed  = false;
     _hasDeployedAnyUnit = false;
@@ -79,7 +81,7 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
     _destroyedBuildingHP = 0;
 
     if (!_gridMap)
-        CCLOG("❌ WARNING: setBuildings called but _gridMap is null!");
+        CCLOG("❌ 警告: setBuildings 调用时 _gridMap 为空!");
 
     CCLOG("📊 ============ 设置战斗建筑 ============");
     CCLOG("📊 建筑总数: %zu", buildings.size());
@@ -99,18 +101,16 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
                 maxHP = 100;
             }
             
-            // 🔴 修复：战斗开始时强制将所有建筑血量重置为满血
-            // 这确保破坏率从0%开始
+            // 战斗开始时强制将所有建筑血量重置为满血
             if (curHP != maxHP)
             {
                 CCLOG("⚠️ 警告：建筑 %s 血量不一致 (%d/%d)，重置为满血", 
                       building->getDisplayName().c_str(), curHP, maxHP);
-                building->repair(maxHP - curHP);  // 使用repair方法恢复到满血
+                building->repair(maxHP - curHP);
             }
             
             _totalBuildingHP += maxHP;
 
-            // 🔍 调试日志：显示每个建筑的血量信息
             CCLOG("📊 建筑: %s, 血量: %d/%d, 类型: %d", 
                   building->getDisplayName().c_str(), 
                   curHP, maxHP,
@@ -131,23 +131,21 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
 
 void BattleManager::startBattle(const TroopDeploymentMap& deployment)
 {
-    // 🆕 Prevent resetting state if already fighting (e.g. spectator catching up)
-    if (_state != BattleState::FIGHTING)
+    // 防止重复调用时重置已进行中的战斗
+    if (_state == BattleState::FIGHTING)
     {
-        _state       = BattleState::READY;
-        _elapsedTime = 0.0f;
+        CCLOG("⚠️ 战斗已在进行中，跳过 startBattle");
+        return;
     }
 
-    MusicManager::getInstance().playMusic(MusicType::BATTLE_GOING);
+    // 进入准备阶段（准备倒计时开始，战斗计时器不启动）
+    _state             = BattleState::READY;
+    _elapsedTime       = 0.0f;
+    _readyPhaseElapsed = 0.0f;
 
-    for (auto* building : _enemyBuildings)
-    {
-        if (building)
-        {
-            building->enableBattleMode();
-        }
-    }
+    CCLOG("🎮 进入战斗准备阶段，等待部署第一个单位（最长 %.0f 秒）...", _readyPhaseTime);
 
+    // 初始化部队数量
     _barbarianCount   = 0;
     _archerCount      = 0;
     _giantCount       = 0;
@@ -176,9 +174,10 @@ void BattleManager::startBattle(const TroopDeploymentMap& deployment)
         }
     }
 
-    CCLOG("📦 Deployed Troops: Barb=%d, Arch=%d, Giant=%d, Goblin=%d, WallBreaker=%d", _barbarianCount, _archerCount,
-          _giantCount, _goblinCount, _wallBreakerCount);
+    CCLOG("📦 可部署部队: 野蛮人=%d, 弓箭手=%d, 巨人=%d, 哥布林=%d, 炸弹人=%d", 
+          _barbarianCount, _archerCount, _giantCount, _goblinCount, _wallBreakerCount);
 
+    // 非回放模式下消耗部队并开始录制
     if (!_isReplayMode)
     {
         auto& troopInv = TroopInventory::getInstance();
@@ -199,9 +198,98 @@ void BattleManager::startBattle(const TroopDeploymentMap& deployment)
         _onUIUpdate();
 }
 
+void BattleManager::skipReadyPhase()
+{
+    if (_state != BattleState::READY && _state != BattleState::LOADING)
+    {
+        CCLOG("⚠️ skipReadyPhase: 当前状态不允许跳过准备阶段");
+        return;
+    }
+
+    CCLOG("⏩ 跳过准备阶段，直接进入战斗状态（回放模式）");
+    
+    _state = BattleState::FIGHTING;
+    _elapsedTime = 0.0f;
+    _readyPhaseElapsed = _readyPhaseTime;  // 标记准备阶段已完成
+
+    // 激活所有防御建筑
+    activateAllBuildings();
+
+    // 播放战斗音乐（回放模式在 BattleScene 中已处理）
+}
+
+void BattleManager::triggerBattleStart()
+{
+    if (_state != BattleState::READY)
+    {
+        CCLOG("⚠️ triggerBattleStart: 当前状态不是 READY，跳过");
+        return;
+    }
+
+    CCLOG("⚔️ 战斗正式开始！计时器启动（准备阶段用时: %.1f秒）", _readyPhaseElapsed);
+    
+    _state = BattleState::FIGHTING;
+    _elapsedTime = 0.0f;
+
+    // 播放战斗音乐
+    MusicManager::getInstance().playMusic(MusicType::BATTLE_GOING);
+
+    // 激活所有防御建筑
+    activateAllBuildings();
+
+    // 通知 UI 战斗已开始
+    if (_onBattleStart)
+    {
+        _onBattleStart();
+    }
+
+    if (_onUIUpdate)
+    {
+        _onUIUpdate();
+    }
+}
+
+void BattleManager::checkReadyPhaseTimeout()
+{
+    if (_state != BattleState::READY)
+        return;
+
+    // 检查准备阶段是否超时
+    if (_readyPhaseElapsed >= _readyPhaseTime)
+    {
+        CCLOG("⏰ 准备阶段超时（%.0f秒），战斗结束（0星）", _readyPhaseTime);
+        _endReason = BattleEndReason::TIMEOUT;
+        endBattle(false);
+    }
+}
+
+float BattleManager::getReadyPhaseRemainingTime() const
+{
+    if (_state != BattleState::READY)
+    {
+        return 0.0f;
+    }
+    return std::max(0.0f, _readyPhaseTime - _readyPhaseElapsed);
+}
+
 void BattleManager::update(float dt)
 {
-    if (_state == BattleState::READY || _state == BattleState::FIGHTING)
+    // READY 状态：更新准备阶段倒计时
+    if (_state == BattleState::READY)
+    {
+        _readyPhaseElapsed += dt;
+        
+        // 检查准备阶段超时
+        checkReadyPhaseTimeout();
+        
+        // 更新 UI（显示准备阶段倒计时）
+        if (_onUIUpdate)
+            _onUIUpdate();
+        return;
+    }
+
+    // FIGHTING 状态：正常更新战斗逻辑
+    if (_state == BattleState::FIGHTING)
     {
         _accumulatedTime += dt;
 
@@ -227,12 +315,16 @@ void BattleManager::fixedUpdate()
 
 void BattleManager::updateBattleState(float dt)
 {
-    _elapsedTime += dt;
+    // 仅在 FIGHTING 状态下累加战斗时间
+    if (_state == BattleState::FIGHTING)
+    {
+        _elapsedTime += dt;
+    }
 
-    // Update Z-Order
+    // 更新 Z-Order
     for (auto* unit : _deployedUnits)
     {
-        if (unit && !unit->isDead())
+        if (unit && !unit->isDead() && !unit->isPendingRemoval())
         {
             int newZOrder = 10000 - static_cast<int>(unit->getPositionY());
             unit->setLocalZOrder(newZOrder);
@@ -248,28 +340,37 @@ void BattleManager::updateBattleState(float dt)
         }
     }
 
-    // Update AI and Physics
-    updateUnitAI(dt);
-
-    // 在遍历前清理已死亡的单位
-    // 🔴 修复：只检查 isDead()，不检查 getReferenceCount()，
-    // 因为当引用计数为0时对象可能已被释放，访问它是未定义行为
+    // 清理已死亡且等待移除的单位
     _deployedUnits.erase(
         std::remove_if(_deployedUnits.begin(), _deployedUnits.end(),
             [](BaseUnit* unit) {
-                // 只检查空指针，死亡单位由 RemoveSelf 处理
-                return unit == nullptr;
+                if (unit == nullptr)
+                {
+                    return true;
+                }
+                // 检查是否已标记为等待移除
+                if (unit->isPendingRemoval())
+                {
+                    CCLOG("🧹 清理已移除的单位: %s", unit->getDisplayName().c_str());
+                    return true;
+                }
+                return false;
             }),
         _deployedUnits.end());
 
+    // 更新单位移动
     for (auto* unit : _deployedUnits)
     {
         if (unit && !unit->isDead())
         {
-            unit->tick(dt);
+            unit->tickMovement(dt);
         }
     }
 
+    // 更新 AI（包括攻击冷却和攻击逻辑）
+    updateUnitAI(dt);
+
+    // 更新防御建筑
     for (auto* building : _enemyBuildings)
     {
         if (building && building->isDefenseBuilding())
@@ -283,17 +384,16 @@ void BattleManager::updateBattleState(float dt)
         }
     }
 
-    // 🆕 统一的星星和破坏率计算
+    // 更新星星和破坏率
     updateStarsAndDestruction();
 
-    // 🆕 统一的战斗结束条件检查
+    // 检查战斗结束条件
     checkBattleEndConditions();
 
     if (_onUIUpdate)
         _onUIUpdate();
 }
 
-// 🆕 统一的星星和破坏率更新逻辑
 void BattleManager::updateStarsAndDestruction()
 {
     if (_enemyBuildings.empty())
@@ -320,13 +420,13 @@ void BattleManager::updateStarsAndDestruction()
         {
             destroyedCount++;
 
-            // 检测大本营是否被摧毁
+            // 检測大本营是否被摧毁
             if (building->getBuildingType() == BuildingType::kTownHall)
             {
                 if (!_townHallDestroyed)
                 {
                     _townHallDestroyed = true;
-                    CCLOG("⭐ Town Hall destroyed! +1 Star");
+                    CCLOG("⭐ 大本营被摧毁! +1 星");
                 }
             }
         }
@@ -343,7 +443,7 @@ void BattleManager::updateStarsAndDestruction()
         _destructionPercent = std::min(100, (_destroyedBuildingHP * 100) / _totalBuildingHP);
     }
 
-    // 🆕 统一的星星计算逻辑
+    // 统一的星星计算逻辑
     int newStars = 0;
 
     // 规则1: 摧毁大本营 = 1 星
@@ -369,31 +469,34 @@ void BattleManager::updateStarsAndDestruction()
     {
         int gained   = newStars - _starsEarned;
         _starsEarned = newStars;
-        CCLOG("⭐ Stars updated: %d (+%d), Destruction: %d%%", _starsEarned, gained, _destructionPercent);
+        CCLOG("⭐ 星星更新: %d (+%d), 破坏率: %d%%", _starsEarned, gained, _destructionPercent);
     }
 }
 
-// 🆕 统一的战斗结束条件检查
 void BattleManager::checkBattleEndConditions()
 {
     if (_state == BattleState::FINISHED)
         return;
 
-    float remainingTime = _battleTime - _elapsedTime;
-
-    // 条件1: 时间耗尽
-    if (remainingTime <= 0)
+    // 仅在 FIGHTING 状态下检查时间
+    if (_state == BattleState::FIGHTING)
     {
-        CCLOG("⏰ Battle ended: Time's up!");
-        _endReason = BattleEndReason::TIMEOUT;
-        endBattle(false);
-        return;
+        float remainingTime = _battleTime - _elapsedTime;
+
+        // 条件1: 战斗时间耗尽
+        if (remainingTime <= 0)
+        {
+            CCLOG("⏰ 战斗结束: 时间耗尽!");
+            _endReason = BattleEndReason::TIMEOUT;
+            endBattle(false);
+            return;
+        }
     }
 
     // 条件2: 100% 破坏
     if (_destructionPercent >= 100)
     {
-        CCLOG("🎉 Battle ended: All buildings destroyed!");
+        CCLOG("🎉 战斗结束: 全部建筑被摧毁!");
         _endReason = BattleEndReason::ALL_DESTROYED;
         endBattle(false);
         return;
@@ -407,7 +510,7 @@ void BattleManager::checkBattleEndConditions()
 
         if (aliveUnits == 0 && remainingTroops == 0)
         {
-            CCLOG("💀 Battle ended: All units eliminated!");
+            CCLOG("💀 战斗结束: 全军覆没!");
             _endReason = BattleEndReason::ALL_UNITS_DEAD;
             endBattle(false);
             return;
@@ -415,27 +518,26 @@ void BattleManager::checkBattleEndConditions()
     }
 }
 
-// 检查是否所有单位都已死亡或已部署
 bool BattleManager::checkAllUnitsDeadOrDeployed() const
 {
-    // 检查是否还有存活的已部署单位
     for (auto* unit : _deployedUnits)
     {
-        if (unit && !unit->isDead())
+        // 跳过空指针和等待移除的单位
+        if (unit && !unit->isDead() && !unit->isPendingRemoval())
         {
-            return false;  // 还有存活单位
+            return false;
         }
     }
     return true;
 }
 
-// 统计存活单位数量
 int BattleManager::countAliveUnits() const
 {
     int count = 0;
     for (auto* unit : _deployedUnits)
     {
-        if (unit && !unit->isDead())
+        // 只统计有效且未死亡且未等待移除的单位
+        if (unit && !unit->isDead() && !unit->isPendingRemoval())
         {
             count++;
         }
@@ -443,7 +545,6 @@ int BattleManager::countAliveUnits() const
     return count;
 }
 
-// 🆕 获取剩余可部署的总兵力
 int BattleManager::getTotalRemainingTroops() const
 {
     return _barbarianCount + _archerCount + _giantCount + _goblinCount + _wallBreakerCount;
@@ -451,11 +552,13 @@ int BattleManager::getTotalRemainingTroops() const
 
 void BattleManager::deployUnit(UnitType type, const cocos2d::Vec2& position)
 {
+    // 网络模式下非攻击方不能部署
     if (_isNetworked && !_isAttacker)
     {
         return;
     }
 
+    // 获取对应部队计数器
     int* count = nullptr;
     switch (type)
     {
@@ -482,27 +585,30 @@ void BattleManager::deployUnit(UnitType type, const cocos2d::Vec2& position)
         return;
 
     (*count)--;
-    _hasDeployedAnyUnit = true; // 🆕 标记已部署过单位
 
+    // 记录部署回调
     if (_onTroopDeploy)
         _onTroopDeploy(type, *count);
 
+    // 非回放模式下记录操作
     if (!_isReplayMode)
     {
         ReplaySystem::getInstance().recordDeployUnit(_currentFrame, type, position);
 
+        // 网络模式下发送操作
         if (_isNetworked && _isAttacker && _onNetworkDeploy)
         {
             _onNetworkDeploy(type, position);
         }
     }
 
+    // 生成单位
     spawnUnit(type, position);
 }
 
 void BattleManager::deployUnitRemote(UnitType type, const cocos2d::Vec2& position)
 {
-    _hasDeployedAnyUnit = true; // 🆕 远程部署也标记
+    // 远程部署不消耗本地部队计数
     spawnUnit(type, position);
 }
 
@@ -520,15 +626,20 @@ void BattleManager::spawnUnit(UnitType type, const cocos2d::Vec2& position)
         _mapLayer->addChild(unit, zOrder);
     _deployedUnits.push_back(unit);
 
-    if (_state == BattleState::READY || _state == BattleState::LOADING)
+    // 首次部署单位时触发战斗正式开始
+    if (!_hasDeployedAnyUnit)
     {
-        if (_state == BattleState::LOADING)
+        _hasDeployedAnyUnit = true;
+        
+        // 如果当前是 READY 或 LOADING 状态，触发战斗开始
+        if (_state == BattleState::READY || _state == BattleState::LOADING)
         {
-            CCLOG("Auto-starting battle on unit deploy");
+            triggerBattleStart();
         }
-        _state = BattleState::FIGHTING;
-        activateAllBuildings();
     }
+
+    CCLOG("🪖 部署单位: type=%d, pos=(%.1f,%.1f), 存活单位数=%zu", 
+          static_cast<int>(type), position.x, position.y, _deployedUnits.size());
 }
 
 void BattleManager::updateUnitAI(float dt)
@@ -538,7 +649,9 @@ void BattleManager::updateUnitAI(float dt)
     for (auto it = _deployedUnits.begin(); it != _deployedUnits.end();)
     {
         BaseUnit* unit = *it;
-        if (!unit || unit->isDead())
+        
+        // 安全检查：跳过空指针、已死亡或等待移除的单位
+        if (!unit || unit->isDead() || unit->isPendingRemoval())
         {
             ++it;
             continue;
@@ -546,6 +659,7 @@ void BattleManager::updateUnitAI(float dt)
 
         BaseBuilding* target = unit->getTarget();
 
+        // 需要寻找新目标
         if (!target || target->isDestroyed())
         {
             unit->clearTarget();
@@ -553,6 +667,7 @@ void BattleManager::updateUnitAI(float dt)
             BaseBuilding* bestTarget = nullptr;
             Vec2          unitPos    = unit->getPosition();
 
+            // 目标查找辅助函数
             auto findTargetWithFilter = [&](std::function<bool(BaseBuilding*)> filter) -> BaseBuilding* {
                 BaseBuilding* closest = nullptr;
                 float         minDist = 999999.0f;
@@ -571,21 +686,26 @@ void BattleManager::updateUnitAI(float dt)
                 return closest;
             };
 
+            // 根据单位类型选择优先目标
             if (unit->getUnitType() == UnitType::kGiant)
             {
+                // 巨人优先攻击防御建筑
                 bestTarget = findTargetWithFilter([](BaseBuilding* b) { return b->isDefenseBuilding(); });
             }
             else if (unit->getUnitType() == UnitType::kGoblin)
             {
+                // 哥布林优先攻击资源建筑
                 bestTarget = findTargetWithFilter(
                     [](BaseBuilding* b) { return b->getBuildingType() == BuildingType::kResource; });
             }
             else if (unit->getUnitType() == UnitType::kWallBreaker)
             {
+                // 炸弹人优先攻击城墙
                 bestTarget =
                     findTargetWithFilter([](BaseBuilding* b) { return b->getBuildingType() == BuildingType::kWall; });
             }
 
+            // 如果没有优先目标，选择最近的任意建筑
             if (!bestTarget)
             {
                 bestTarget = findTargetWithFilter([](BaseBuilding* b) { return true; });
@@ -599,34 +719,58 @@ void BattleManager::updateUnitAI(float dt)
             }
         }
 
+        // 执行攻击或移动逻辑
         if (target && !target->isDestroyed())
         {
             Vec2 targetPos = target->getPosition();
 
             if (unit->isInAttackRange(targetPos))
             {
+                // 在攻击范围内
                 if (unit->isMoving())
                     unit->stopMoving();
 
+                // 🔴 修复：先更新攻击冷却，再检查是否可以攻击
                 unit->updateAttackCooldown(dt);
+                
                 if (unit->isAttackReady())
                 {
+                    // 🔴 修复：在攻击前再次检查目标有效性，防止重复攻击已摧毁的建筑
+                    if (target->isDestroyed())
+                    {
+                        unit->clearTarget();
+                        ++it;
+                        continue;
+                    }
+                    
                     if (unit->getUnitType() == UnitType::kWallBreaker)
                     {
+                        // 炸弹人自爆攻击
                         unit->attack(false);
                         float damage = unit->getDamage() * 40.0f;
                         target->takeDamage(static_cast<int>(damage));
                         unit->die();
+                        
+                        CCLOG("💥 炸弹人自爆攻击: 伤害=%.1f, 目标血量=%d/%d",
+                              damage, target->getHitpoints(), target->getMaxHitpoints());
                     }
                     else
                     {
+                        // 普通攻击
                         unit->attack(false);
-                        target->takeDamage(static_cast<int>(unit->getDamage()));
+                        int damage = static_cast<int>(unit->getDamage());
+                        target->takeDamage(damage);
                         unit->resetAttackCooldown();
+                        
+                        CCLOG("⚔️ %s 攻击 %s: 伤害=%d, 目标血量=%d/%d",
+                              unit->getDisplayName().c_str(), target->getDisplayName().c_str(),
+                              damage, target->getHitpoints(), target->getMaxHitpoints());
                     }
 
+                    // 检查目标是否被摧毁
                     if (target->isDestroyed())
                     {
+                        CCLOG("🔥 %s 被摧毁!", target->getDisplayName().c_str());
                         unit->clearTarget();
                         if (gridMap)
                         {
@@ -637,6 +781,7 @@ void BattleManager::updateUnitAI(float dt)
             }
             else
             {
+                // 不在攻击范围内，需要移动
                 bool needsPathfinding = !unit->isMoving();
 
                 if (needsPathfinding)
@@ -645,7 +790,6 @@ void BattleManager::updateUnitAI(float dt)
                     {
                         std::vector<Vec2> path =
                             PathFinder::getInstance().findPath(gridMap, unit->getPosition(), targetPos, false);
-
                         unit->moveToPath(path);
                     }
                     else
@@ -677,11 +821,11 @@ void BattleManager::endBattle(bool surrender)
         return;
     _state = BattleState::FINISHED;
 
-    // 🆕 处理投降
+    // 处理投降
     if (surrender)
     {
         _endReason = BattleEndReason::SURRENDER;
-        CCLOG("🏳️ Battle ended: Player surrendered!");
+        CCLOG("🏳️ 战斗结束: 玩家投降!");
     }
 
     if (!_isReplayMode)
@@ -691,8 +835,7 @@ void BattleManager::endBattle(bool surrender)
 
     calculateBattleResult();
 
-    // 🆕 改进的胜负音乐判定
-    // 获得至少1星 或 破坏率>=50% 视为胜利
+    // 胜负判定：获得至少1星 或 破坏率>=50% 视为胜利
     bool isVictory = (_starsEarned > 0) || (_destructionPercent >= 50);
 
     if (isVictory)
@@ -700,9 +843,11 @@ void BattleManager::endBattle(bool surrender)
     else
         MusicManager::getInstance().playMusic(MusicType::BATTLE_LOSE, false);
 
-    CCLOG("🏆 Battle Result: Stars=%d, Destruction=%d%%, Reason=%d, Victory=%s", _starsEarned, _destructionPercent,
-          static_cast<int>(_endReason), isVictory ? "YES" : "NO");
+    CCLOG("🏆 战斗结果: 星数=%d, 破坏率=%d%%, 原因=%d, 胜利=%s", 
+          _starsEarned, _destructionPercent,
+          static_cast<int>(_endReason), isVictory ? "是" : "否");
 
+    // 非回放非网络模式下返还未使用的部队
     if (!_isReplayMode && !_isNetworked)
     {
         auto& inventory = TroopInventory::getInstance();
@@ -725,9 +870,9 @@ void BattleManager::calculateBattleResult()
     int maxGold   = _enemyGameData.gold;
     int maxElixir = _enemyGameData.elixir;
 
-    // 🆕 根据星星数量调整掠夺率
+    // 根据星星数量调整掠夺率
     float baseLootRate = 0.2f;
-    float starBonus    = _starsEarned * 0.1f; // 每颗星 +10%
+    float starBonus    = _starsEarned * 0.1f;
     float lootRate     = std::min(0.5f, baseLootRate + starBonus);
 
     _goldLooted   = static_cast<int>(maxGold * (_destructionPercent / 100.0f) * lootRate);
@@ -745,7 +890,7 @@ void BattleManager::uploadBattleResult()
     if (!currentAccount)
         return;
 
-    // 如果敌方ID和当前账号相同，跳过上传（自己攻击自己的情况）
+    // 跳过自己攻击自己的情况
     if (_enemyUserId == currentAccount->account.userId)
         return;
 
@@ -791,6 +936,11 @@ std::string BattleManager::getCurrentTimestamp()
 
 float BattleManager::getRemainingTime() const
 {
+    // READY 状态返回满时间，FIGHTING 状态返回剩余时间
+    if (_state == BattleState::READY || _state == BattleState::LOADING)
+    {
+        return _battleTime;
+    }
     return std::max(0.0f, _battleTime - _elapsedTime);
 }
 
@@ -850,19 +1000,16 @@ int BattleManager::calculateStars() const
 {
     int stars = 0;
 
-    // 规则1: 摧毁大本营 = 1 星
     if (_townHallDestroyed)
     {
         stars++;
     }
 
-    // 规则2: 破坏率 >= 50% = 1 星
     if (_destructionPercent >= 50)
     {
         stars++;
     }
 
-    // 规则3: 破坏率 = 100% = 1 星
     if (_destructionPercent >= 100)
     {
         stars++;
@@ -877,4 +1024,41 @@ float BattleManager::calculateDestructionRate() const
         return 0.0f;
 
     return static_cast<float>(_destroyedBuildingHP) / static_cast<float>(_totalBuildingHP);
+}
+
+// ============================================================================
+// 时间同步（观战模式）
+// ============================================================================
+
+void BattleManager::setTimeOffset(int64_t elapsed_ms)
+{
+    // 将毫秒转换为秒
+    float elapsed_seconds = static_cast<float>(elapsed_ms) / 1000.0f;
+    
+    // 确保不超过战斗总时间
+    _elapsedTime = std::min(elapsed_seconds, _battleTime);
+    
+    // 计算对应的帧数
+    _currentFrame = static_cast<unsigned int>(_elapsedTime / FIXED_TIME_STEP);
+    
+    // 如果有时间偏移，说明战斗已经在进行中
+    if (elapsed_ms > 0 && _state == BattleState::READY)
+    {
+        _state = BattleState::FIGHTING;
+        _hasDeployedAnyUnit = true;
+        _readyPhaseElapsed = _readyPhaseTime;  // 标记准备阶段已完成
+    }
+    
+    CCLOG("📺 [BattleManager] 设置时间偏移: %lldms -> %.2fs (帧: %u)", 
+          static_cast<long long>(elapsed_ms), _elapsedTime, _currentFrame);
+    
+    if (_onUIUpdate)
+    {
+        _onUIUpdate();
+    }
+}
+
+int64_t BattleManager::getElapsedTimeMs() const
+{
+    return static_cast<int64_t>(_elapsedTime * 1000.0f);
 }

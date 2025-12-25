@@ -1,7 +1,7 @@
 ﻿/**
 * @file DraggableMapScene.cpp
 * @brief 主场景实现 - 重构后的精简版本
-* @author 薛毓哲 (2025/12/24) - 修复场景切换时资源UI不更新的问题
+* @author 薛毓哲 (2025/12/25) - 添加 createDraggableMapScene 全局函数
 */
 
 #include "DraggableMapScene.h"
@@ -44,6 +44,15 @@ using namespace ui;
 Scene* DraggableMapScene::createScene()
 {
     return DraggableMapScene::create();
+}
+
+// ============================================================================
+// 全局函数：创建主场景（供 BattleScene 等外部调用）
+// ============================================================================
+
+cocos2d::Scene* createDraggableMapScene()
+{
+    return DraggableMapScene::createScene();
 }
 
 bool DraggableMapScene::init()
@@ -742,23 +751,23 @@ void DraggableMapScene::setupNetworkCallbacks()
         if (!cur) return;
 
         // If this client is the defender, record a defense log
-        if (result.defenderId == cur->account.userId)
+        if (result.defender_id == cur->account.userId)
         {
             DefenseLog log;
-            log.attackerId = result.attackerId;
+            log.attackerId = result.attacker_id;
             // we don't always have attacker name from network; fallback to id
-            log.attackerName = result.attackerId;
-            log.starsLost = result.starsEarned;
-            log.goldLost = result.goldLooted;
-            log.elixirLost = result.elixirLooted;
-            log.trophyChange = result.trophyChange;
+            log.attackerName = result.attacker_id;
+            log.starsLost = result.stars_earned;
+            log.goldLost = result.gold_looted;
+            log.elixirLost = result.elixir_looted;
+            log.trophyChange = result.trophy_change;
             log.timestamp = getCurrentTimestamp();
             log.isViewed = false;
 
             DefenseLogSystem::getInstance().addDefenseLog(log);
             
             CCLOG("Defense log added for defender: %s, attacked by: %s", 
-                  result.defenderId.c_str(), result.attackerId.c_str());
+                  result.defender_id.c_str(), result.attacker_id.c_str());
 
             // 显示防守日志UI
             if (DefenseLogSystem::getInstance().hasUnviewedLogs())

@@ -1,6 +1,6 @@
 ﻿# ⚔️ Clash of Clans - 程序设计范式期末项目
 
-![C++](https://img.shields.io/badge/language-C%2B%2B17-blue.svg?style=flat-square)
+![C++](https://img.shields.io/badge/language-C%2B%2B14-blue.svg?style=flat-square)
 ![Cocos2d-x](https://img.shields.io/badge/framework-Cocos2d--x%204.0-green.svg?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Android-pink.svg?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg?style=flat-square)
@@ -24,7 +24,7 @@
 
 | 模块 | 技术选型 | 版本/配置 |
 | :--- | :--- | :--- |
-| **引擎核心** | Cocos2d-x | 4.0 (基于 C++17) |
+| **引擎核心** | Cocos2d-x | 4.0 (基于 C++14) |
 | **构建系统** | Gradle | 8.0 (AGP 7.4.2) |
 | **网络通信** | BSD Socket | TCP / Blocking Mode |
 | **数据交换** | RapidJSON | JSON 序列化 |
@@ -109,17 +109,24 @@ coc/
 * **动态计算**：基于大本营等级和存储建筑等级动态计算容量上限。
 * **动画反馈**：点击收集时的资源飞入动画。
 
-### ⚔️ 3. 战斗与对战 (Battle System)
-* **双模式**：
+### ⚔️ 3. 战斗系统 (Battle System)
+* **完整状态机**：
+    * `LOADING` → 加载敌方基地数据
+    * `READY` → 准备阶段（30秒观察期，战斗计时器暂停）
+    * `FIGHTING` → 战斗进行中（首次部署单位后触发）
+    * `FINISHED` → 战斗结束
+* **双模式支持**：
     * **PVE**：单机挑战 AI 或离线玩家镜像。
-    * **PVP**：(实验性) 在线实时 Socket 对战。
+    * **PVP**：在线实时 Socket 对战，支持观战模式。
 * **智能 AI**：基于 A* 寻路的自动索敌、攻击判定、城墙破坏逻辑。
 * **结算体系**：0-3 星评级、摧毁百分比、资源掠夺量、奖杯升降。
+* **固定时间步长**：60 FPS 物理更新，确保回放一致性。
 
 ### 🌐 4. 网络与多人 (Network & Multiplayer)
 * **Socket 通信**：自定义 TCP 协议，支持多线程并发处理。
 * **部落功能**：创建部落、成员管理、部落战匹配。
 * **数据同步**：玩家数据云端/本地双重备份，支持多设备登录。
+* **观战同步**：支持实时时间偏移同步，观战者可中途加入。
 
 ### 📹 5. 高级特性
 * **回放系统**：采用**指令序列化**技术，完美重现整场战斗过程（下兵位置、时机）。

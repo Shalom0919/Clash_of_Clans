@@ -3,7 +3,7 @@
  * File Name:     Server.cpp
  * File Function: 服务器主逻辑实现
  * Author:        赵崇治
- * Update Date:   2025/12/24
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #define _CRT_SECURE_NO_WARNINGS
@@ -11,7 +11,6 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include "Server.h"
-
 #include "NetworkUtils.h"
 
 #include <algorithm>
@@ -19,18 +18,27 @@
 #include <sstream>
 #include <thread>
 
-// ==================== 构造与析构 ====================
+// ============================================================================
+// 协议格式常量
+// ============================================================================
+namespace {
+    constexpr char kFieldSeparator = '|';
+}
+
+// ============================================================================
+// 构造与析构
+// ============================================================================
 
 Server::Server() : port(8888) {
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "[Server] WSAStartup 失败" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     // 初始化各模块
     playerRegistry = std::make_unique<PlayerRegistry>();
     clanHall = std::make_unique<ClanHall>(playerRegistry.get());
-    clanWarRoom = std::make_unique<ClanWarRoom>(playerRegistry.get(),
-                                                 clanHall.get());
+    clanWarRoom = std::make_unique<ClanWarRoom>(playerRegistry.get(), clanHall.get());
     matchmaker = std::make_unique<Matchmaker>();
     arenaSession = std::make_unique<ArenaSession>(playerRegistry.get());
     router = std::make_unique<Router>();
@@ -43,372 +51,361 @@ Server::~Server() {
     WSACleanup();
 }
 
-// ==================== 路由注册 ====================
+// ============================================================================
+// 路由注册
+// ============================================================================
 
 void Server::registerRoutes() {
-    // 登录
+    // ======================== 登录处理 ========================
     router->Register(PACKET_LOGIN,
-                     [this](SOCKET client, const std::string& data) {
-        std::istringstream iss(data);
-        std::string playerId, playerName, trophiesStr;
-        std::getline(iss, playerId, '|');
-        std::getline(iss, playerName, '|');
-        std::getline(iss, trophiesStr, '|');
+        [this](SOCKET client, const std::string& data) {
+            std::istringstream iss(data);
+            std::string playerId, playerName, trophiesStr;
+            std::getline(iss, playerId, kFieldSeparator);
+            std::getline(iss, playerName, kFieldSeparator);
+            std::getline(iss, trophiesStr, kFieldSeparator);
 
-        PlayerContext ctx;
-        ctx.socket = client;
-        ctx.playerId = playerId;
-        ctx.playerName = playerName.empty() ? playerId : playerName;
-        if (!trophiesStr.empty()) {
-            try {
-                ctx.trophies = std::stoi(trophiesStr);
-            } catch (...) {
-                ctx.trophies = 0;
+            PlayerContext ctx;
+            ctx.socket = client;
+            ctx.playerId = playerId;
+            ctx.playerName = playerName.empty() ? playerId : playerName;
+            if (!trophiesStr.empty()) {
+                try {
+                    ctx.trophies = std::stoi(trophiesStr);
+                } catch (...) {
+                    ctx.trophies = 0;
+                }
             }
-        }
 
-        playerRegistry->Register(client, ctx);
+            playerRegistry->Register(client, ctx);
 
-        std::cout << "[Login] 用户: " << playerId
-                  << " (奖杯: " << ctx.trophies << ")" << std::endl;
-        sendPacket(client, PACKET_LOGIN, "Login Success");
-    });
+            std::cout << "[Login] 用户: " << playerId
+                      << " (奖杯: " << ctx.trophies << ")" << std::endl;
+            sendPacket(client, PACKET_LOGIN, "Login Success");
+        });
 
-    // 上传地图
+    // ======================== 地图操作 ========================
     router->Register(PACKET_UPLOAD_MAP,
-                     [this](SOCKET client, const std::string& data) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player != nullptr && !player->playerId.empty()) {
-            std::lock_guard<std::mutex> lock(dataMutex);
-            savedMaps[player->playerId] = data;
-            player->mapData = data;
-            std::cout << "[Map] 已保存玩家 " << player->playerId
-                      << " 的地图 (大小: " << data.size() << ")" << std::endl;
-        }
-    });
+        [this](SOCKET client, const std::string& data) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player != nullptr && !player->playerId.empty()) {
+                std::lock_guard<std::mutex> lock(dataMutex);
+                savedMaps[player->playerId] = data;
+                player->mapData = data;
+                std::cout << "[Map] 已保存玩家 " << player->playerId
+                          << " 的地图 (大小: " << data.size() << ")" << std::endl;
+            }
+        });
 
-    // 查询地图
     router->Register(PACKET_QUERY_MAP,
-                     [this](SOCKET client, const std::string& data) {
-        std::lock_guard<std::mutex> lock(dataMutex);
-        auto it = savedMaps.find(data);
-        if (it != savedMaps.end()) {
-            sendPacket(client, PACKET_QUERY_MAP, it->second);
-            std::cout << "[Query] 已发送玩家 " << data << " 的地图" << std::endl;
-        } else {
-            sendPacket(client, PACKET_QUERY_MAP, "");
-        }
-    });
+        [this](SOCKET client, const std::string& data) {
+            std::lock_guard<std::mutex> lock(dataMutex);
+            auto it = savedMaps.find(data);
+            if (it != savedMaps.end()) {
+                sendPacket(client, PACKET_QUERY_MAP, it->second);
+                std::cout << "[Query] 已发送玩家 " << data << " 的地图" << std::endl;
+            } else {
+                sendPacket(client, PACKET_QUERY_MAP, "");
+            }
+        });
 
-    // 攻击数据
-    router->Register(PACKET_ATTACK_DATA,
-                     [](SOCKET, const std::string&) {
-        std::cout << "[Attack] 收到回放数据" << std::endl;
-    });
+    // ======================== 用户列表 ========================
+    router->Register(PACKET_USER_LIST_REQ,
+        [this](SOCKET client, const std::string&) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr || player->playerId.empty()) {
+                sendPacket(client, PACKET_USER_LIST_RESP, "");
+                return;
+            }
+            std::string userList = getUserListJson(player->playerId);
+            sendPacket(client, PACKET_USER_LIST_RESP, userList);
+            std::cout << "[UserList] 已发送给: " << player->playerId << std::endl;
+        });
 
-    // 用户列表
-    router->Register(REQ_USER_LIST,
-                     [this](SOCKET client, const std::string&) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr || player->playerId.empty()) {
-            sendPacket(client, RESP_USER_LIST, "");
-            return;
-        }
-        std::string userList = getUserListJson(player->playerId);
-        sendPacket(client, RESP_USER_LIST, userList);
-        std::cout << "[UserList] 已发送给: " << player->playerId << std::endl;
-    });
+    // ======================== 匹配系统 ========================
+    router->Register(PACKET_MATCH_FIND,
+        [this](SOCKET client, const std::string&) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr) {
+                return;
+            }
 
-    // 匹配系统
-    router->Register(PACKET_FIND_MATCH,
-                     [this](SOCKET client, const std::string&) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr) {
-            return;
-        }
+            MatchQueueEntry entry;
+            entry.socket = client;
+            entry.playerId = player->playerId;
+            entry.trophies = player->trophies;
+            entry.queueTime = std::chrono::steady_clock::now();
 
-        MatchQueueEntry entry;
-        entry.socket = client;
-        entry.playerId = player->playerId;
-        entry.trophies = player->trophies;
-        entry.queueTime = std::chrono::steady_clock::now();
+            matchmaker->Enqueue(entry);
+            std::cout << "[Match] " << player->playerId << " 加入匹配队列" << std::endl;
 
-        matchmaker->Enqueue(entry);
-        std::cout << "[Match] " << player->playerId << " 加入匹配队列"
-                  << std::endl;
-
-        // 处理匹配
-        auto matches = matchmaker->ProcessQueue();
-        for (auto& match : matches) {
-            std::string msg1 =
-                match.second.playerId + "|" +
-                std::to_string(match.second.trophies);
-            std::string msg2 =
-                match.first.playerId + "|" +
-                std::to_string(match.first.trophies);
-            sendPacket(match.first.socket, PACKET_MATCH_FOUND, msg1);
-            sendPacket(match.second.socket, PACKET_MATCH_FOUND, msg2);
-            std::cout << "[Match] 匹配成功: " << match.first.playerId
-                      << " vs " << match.second.playerId << std::endl;
-        }
-    });
+            // 处理匹配
+            auto matches = matchmaker->ProcessQueue();
+            for (auto& match : matches) {
+                std::string msg1 = match.second.playerId + kFieldSeparator +
+                                   std::to_string(match.second.trophies);
+                std::string msg2 = match.first.playerId + kFieldSeparator +
+                                   std::to_string(match.first.trophies);
+                sendPacket(match.first.socket, PACKET_MATCH_FOUND, msg1);
+                sendPacket(match.second.socket, PACKET_MATCH_FOUND, msg2);
+                std::cout << "[Match] 匹配成功: " << match.first.playerId
+                          << " vs " << match.second.playerId << std::endl;
+            }
+        });
 
     router->Register(PACKET_MATCH_CANCEL,
-                     [this](SOCKET client, const std::string&) {
-        matchmaker->Remove(client);
-        std::cout << "[Match] 玩家取消匹配" << std::endl;
-    });
+        [this](SOCKET client, const std::string&) {
+            matchmaker->Remove(client);
+            std::cout << "[Match] 玩家取消匹配" << std::endl;
+        });
 
-    // 开始攻击
+    // ======================== 攻击处理 ========================
     router->Register(PACKET_ATTACK_START,
-                     [this](SOCKET client, const std::string& data) {
-        std::lock_guard<std::mutex> lock(dataMutex);
-        auto it = savedMaps.find(data);
-        if (it != savedMaps.end()) {
-            sendPacket(client, PACKET_ATTACK_START, it->second);
-            PlayerContext* player = playerRegistry->GetBySocket(client);
-            if (player != nullptr) {
-                std::cout << "[Battle] " << player->playerId
-                          << " 攻击 " << data << std::endl;
+        [this](SOCKET client, const std::string& data) {
+            std::lock_guard<std::mutex> lock(dataMutex);
+            auto it = savedMaps.find(data);
+            if (it != savedMaps.end()) {
+                sendPacket(client, PACKET_ATTACK_START, it->second);
+                PlayerContext* player = playerRegistry->GetBySocket(client);
+                if (player != nullptr) {
+                    std::cout << "[Battle] " << player->playerId
+                              << " 攻击 " << data << std::endl;
+                }
             }
-        }
-    });
+        });
 
-    // 战斗状态列表
-    router->Register(PACKET_BATTLE_STATUS_LIST,
-                     [this](SOCKET client, const std::string&) {
-        std::string statusJson = arenaSession->GetBattleStatusListJson();
-        sendPacket(client, PACKET_BATTLE_STATUS_LIST, statusJson);
-    });
-
-    // 攻击结果
     router->Register(PACKET_ATTACK_RESULT,
-                     [this](SOCKET client, const std::string& data) {
-        try {
-            AttackResult result = deserializeAttackResult(data);
+        [this](SOCKET client, const std::string& data) {
+            try {
+                AttackResult result = deserializeAttackResult(data);
 
-            PlayerContext* attacker = playerRegistry->GetBySocket(client);
-            if (attacker != nullptr) {
-                attacker->gold += result.goldLooted;
-                attacker->elixir += result.elixirLooted;
-                attacker->trophies += result.trophyChange;
+                PlayerContext* attacker = playerRegistry->GetBySocket(client);
+                if (attacker != nullptr) {
+                    attacker->gold += result.goldLooted;
+                    attacker->elixir += result.elixirLooted;
+                    attacker->trophies += result.trophyChange;
+                }
+
+                PlayerContext* defender = playerRegistry->GetById(result.defenderId);
+                if (defender != nullptr) {
+                    defender->gold -= result.goldLooted;
+                    defender->elixir -= result.elixirLooted;
+                    defender->trophies -= result.trophyChange;
+                    sendPacket(defender->socket, PACKET_ATTACK_RESULT, data);
+                }
+
+                std::cout << "[Battle] 结果 - 星数: " << result.starsEarned
+                          << ", 金币: " << result.goldLooted << std::endl;
+            } catch (const std::exception& e) {
+                std::cout << "[Battle] 错误: " << e.what() << std::endl;
+            }
+        });
+
+    // ======================== 战斗状态 ========================
+    router->Register(PACKET_BATTLE_STATUS_LIST,
+        [this](SOCKET client, const std::string&) {
+            std::string statusJson = arenaSession->GetBattleStatusListJson();
+            sendPacket(client, PACKET_BATTLE_STATUS_LIST, statusJson);
+        });
+
+    // ======================== 部落系统 ========================
+    router->Register(PACKET_CLAN_CREATE,
+        [this](SOCKET client, const std::string& data) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr) {
+                return;
             }
 
-            PlayerContext* defender = playerRegistry->GetById(result.defenderId);
-            if (defender != nullptr) {
-                defender->gold -= result.goldLooted;
-                defender->elixir -= result.elixirLooted;
-                defender->trophies -= result.trophyChange;
-                sendPacket(defender->socket, PACKET_ATTACK_RESULT, data);
+            if (clanHall->CreateClan(player->playerId, data)) {
+                sendPacket(client, PACKET_CLAN_CREATE, 
+                           "OK" + std::string(1, kFieldSeparator) + player->clanId);
+            } else {
+                sendPacket(client, PACKET_CLAN_CREATE, "FAIL");
+            }
+        });
+
+    router->Register(PACKET_CLAN_JOIN,
+        [this](SOCKET client, const std::string& data) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr) {
+                return;
             }
 
-            std::cout << "[Battle] 结果 - 星数: " << result.starsEarned
-                      << ", 金币: " << result.goldLooted << std::endl;
-        } catch (const std::exception& e) {
-            std::cout << "[Battle] 错误: " << e.what() << std::endl;
-        }
-    });
+            if (clanHall->JoinClan(player->playerId, data)) {
+                sendPacket(client, PACKET_CLAN_JOIN, "OK");
+            } else {
+                sendPacket(client, PACKET_CLAN_JOIN, "FAIL");
+            }
+        });
 
-    // 部落系统
-    router->Register(PACKET_CREATE_CLAN,
-                     [this](SOCKET client, const std::string& data) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr) {
-            return;
-        }
+    router->Register(PACKET_CLAN_LEAVE,
+        [this](SOCKET client, const std::string&) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr) {
+                return;
+            }
 
-        if (clanHall->CreateClan(player->playerId, data)) {
-            sendPacket(client, PACKET_CREATE_CLAN, "OK|" + player->clanId);
-        } else {
-            sendPacket(client, PACKET_CREATE_CLAN, "FAIL");
-        }
-    });
-
-    router->Register(PACKET_JOIN_CLAN,
-                     [this](SOCKET client, const std::string& data) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr) {
-            return;
-        }
-
-        if (clanHall->JoinClan(player->playerId, data)) {
-            sendPacket(client, PACKET_JOIN_CLAN, "OK");
-        } else {
-            sendPacket(client, PACKET_JOIN_CLAN, "FAIL");
-        }
-    });
-
-    router->Register(PACKET_LEAVE_CLAN,
-                     [this](SOCKET client, const std::string&) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr) {
-            return;
-        }
-
-        if (clanHall->LeaveClan(player->playerId)) {
-            sendPacket(client, PACKET_LEAVE_CLAN, "OK");
-        } else {
-            sendPacket(client, PACKET_LEAVE_CLAN, "FAIL");
-        }
-    });
+            if (clanHall->LeaveClan(player->playerId)) {
+                sendPacket(client, PACKET_CLAN_LEAVE, "OK");
+            } else {
+                sendPacket(client, PACKET_CLAN_LEAVE, "FAIL");
+            }
+        });
 
     router->Register(PACKET_CLAN_LIST,
-                     [this](SOCKET client, const std::string&) {
-        std::string clanList = clanHall->GetClanListJson();
-        sendPacket(client, PACKET_CLAN_LIST, clanList);
-    });
+        [this](SOCKET client, const std::string&) {
+            std::string clanList = clanHall->GetClanListJson();
+            sendPacket(client, PACKET_CLAN_LIST, clanList);
+        });
 
     router->Register(PACKET_CLAN_MEMBERS,
-                     [this](SOCKET client, const std::string& data) {
-        std::string members = clanHall->GetClanMembersJson(data);
-        sendPacket(client, PACKET_CLAN_MEMBERS, members);
-    });
+        [this](SOCKET client, const std::string& data) {
+            std::string members = clanHall->GetClanMembersJson(data);
+            sendPacket(client, PACKET_CLAN_MEMBERS, members);
+        });
 
-    // 部落战争
-    router->Register(PACKET_CLAN_WAR_SEARCH,
-                     [this](SOCKET client, const std::string&) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr || player->clanId.empty()) {
-            sendPacket(client, PACKET_CLAN_WAR_SEARCH, "NO_CLAN");
-            return;
-        }
-        clanWarRoom->AddToQueue(player->clanId);
-        sendPacket(client, PACKET_CLAN_WAR_SEARCH, "SEARCHING");
-    });
-
-    router->Register(PACKET_CLAN_WAR_ATTACK,
-                     [this](SOCKET client, const std::string& data) {
-        std::istringstream iss(data);
-        std::string warId, targetId;
-        std::getline(iss, warId, '|');
-        std::getline(iss, targetId, '|');
-
-        std::lock_guard<std::mutex> lock(dataMutex);
-        auto it = savedMaps.find(targetId);
-        if (it != savedMaps.end()) {
-            sendPacket(client, PACKET_CLAN_WAR_ATTACK, warId + "|" + it->second);
-        }
-    });
-
-    router->Register(PACKET_CLAN_WAR_RESULT,
-                     [this](SOCKET, const std::string& data) {
-        size_t pos = data.find('|');
-        if (pos != std::string::npos) {
-            std::string warId = data.substr(0, pos);
-            std::string resultData = data.substr(pos + 1);
-            try {
-                AttackResult result = deserializeAttackResult(resultData);
-                std::cout << "[ClanWar] 攻击结果: 战争 " << warId << std::endl;
-            } catch (...) {
+    // ======================== 部落战争 ========================
+    router->Register(PACKET_WAR_SEARCH,
+        [this](SOCKET client, const std::string&) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr || player->clanId.empty()) {
+                sendPacket(client, PACKET_WAR_SEARCH, "NO_CLAN");
+                return;
             }
-        }
-    });
+            clanWarRoom->AddToQueue(player->clanId);
+            sendPacket(client, PACKET_WAR_SEARCH, "SEARCHING");
+        });
 
-    // PVP系统
+    router->Register(PACKET_WAR_ATTACK,
+        [this](SOCKET client, const std::string& data) {
+            std::istringstream iss(data);
+            std::string warId, targetId;
+            std::getline(iss, warId, kFieldSeparator);
+            std::getline(iss, targetId, kFieldSeparator);
+
+            std::lock_guard<std::mutex> lock(dataMutex);
+            auto it = savedMaps.find(targetId);
+            if (it != savedMaps.end()) {
+                sendPacket(client, PACKET_WAR_ATTACK, 
+                           warId + kFieldSeparator + it->second);
+            }
+        });
+
+    router->Register(PACKET_WAR_RESULT,
+        [this](SOCKET, const std::string& data) {
+            size_t pos = data.find(kFieldSeparator);
+            if (pos != std::string::npos) {
+                std::string warId = data.substr(0, pos);
+                std::string resultData = data.substr(pos + 1);
+                try {
+                    AttackResult result = deserializeAttackResult(resultData);
+                    std::cout << "[ClanWar] 攻击结果: 战争 " << warId << std::endl;
+                } catch (...) {}
+            }
+        });
+
+    // ======================== PVP 系统 ========================
     router->Register(PACKET_PVP_REQUEST,
-                     [this](SOCKET client, const std::string& data) {
-        arenaSession->HandlePvpRequest(client, data);
-    });
+        [this](SOCKET client, const std::string& data) {
+            arenaSession->HandlePvpRequest(client, data);
+        });
 
     router->Register(PACKET_PVP_ACTION,
-                     [this](SOCKET client, const std::string& data) {
-        arenaSession->HandlePvpAction(client, data);
-    });
+        [this](SOCKET client, const std::string& data) {
+            arenaSession->HandlePvpAction(client, data);
+        });
 
     router->Register(PACKET_PVP_END,
-                     [this](SOCKET client, const std::string&) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player != nullptr && !player->playerId.empty()) {
-            arenaSession->EndSession(player->playerId);
-        }
-    });
+        [this](SOCKET client, const std::string&) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player != nullptr && !player->playerId.empty()) {
+                arenaSession->EndSession(player->playerId);
+            }
+        });
 
     router->Register(PACKET_SPECTATE_REQUEST,
-                     [this](SOCKET client, const std::string& data) {
-        arenaSession->HandleSpectateRequest(client, data);
-    });
+        [this](SOCKET client, const std::string& data) {
+            arenaSession->HandleSpectateRequest(client, data);
+        });
 
-    // 部落战争增强
-    router->Register(PACKET_CLAN_WAR_MEMBER_LIST,
-                     [this](SOCKET client, const std::string& data) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr) {
-            return;
-        }
-        std::string json = clanWarRoom->GetMemberListJson(data, player->playerId);
-        sendPacket(client, PACKET_CLAN_WAR_MEMBER_LIST, json);
-    });
-
-    router->Register(PACKET_CLAN_WAR_ATTACK_START,
-                     [this](SOCKET client, const std::string& data) {
-        size_t pos = data.find('|');
-        if (pos != std::string::npos) {
-            std::string warId = data.substr(0, pos);
-            std::string targetId = data.substr(pos + 1);
-            clanWarRoom->HandleAttackStart(client, warId, targetId);
-        }
-    });
-
-    router->Register(PACKET_CLAN_WAR_ATTACK_END,
-                     [this](SOCKET, const std::string& data) {
-        try {
-            AttackRecord record;
-            std::istringstream iss(data);
-            std::string warId, starsStr, destructionStr;
-            std::getline(iss, warId, '|');
-            std::getline(iss, record.attackerId, '|');
-            std::getline(iss, record.attackerName, '|');
-            std::getline(iss, starsStr, '|');
-            std::getline(iss, destructionStr, '|');
-
-            if (!starsStr.empty()) {
-                record.starsEarned = std::stoi(starsStr);
+    // ======================== 部落战争增强 ========================
+    router->Register(PACKET_WAR_MEMBER_LIST,
+        [this](SOCKET client, const std::string& data) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr) {
+                return;
             }
-            if (!destructionStr.empty()) {
-                record.destructionRate = std::stof(destructionStr);
+            std::string json = clanWarRoom->GetMemberListJson(data, player->playerId);
+            sendPacket(client, PACKET_WAR_MEMBER_LIST, json);
+        });
+
+    router->Register(PACKET_WAR_ATTACK_START,
+        [this](SOCKET client, const std::string& data) {
+            size_t pos = data.find(kFieldSeparator);
+            if (pos != std::string::npos) {
+                std::string warId = data.substr(0, pos);
+                std::string targetId = data.substr(pos + 1);
+                clanWarRoom->HandleAttackStart(client, warId, targetId);
             }
-            record.attackTime = std::chrono::steady_clock::now();
+        });
 
-            clanWarRoom->HandleAttackEnd(warId, record);
-        } catch (const std::exception& e) {
-            std::cout << "[ClanWar] 解析攻击结束数据错误: " << e.what()
-                      << std::endl;
-        }
-    });
+    router->Register(PACKET_WAR_ATTACK_END,
+        [this](SOCKET, const std::string& data) {
+            try {
+                AttackRecord record;
+                std::istringstream iss(data);
+                std::string warId, starsStr, destructionStr;
+                std::getline(iss, warId, kFieldSeparator);
+                std::getline(iss, record.attackerId, kFieldSeparator);
+                std::getline(iss, record.attackerName, kFieldSeparator);
+                std::getline(iss, starsStr, kFieldSeparator);
+                std::getline(iss, destructionStr, kFieldSeparator);
 
-    router->Register(PACKET_CLAN_WAR_SPECTATE,
-                     [this](SOCKET client, const std::string& data) {
-        size_t pos = data.find('|');
-        if (pos != std::string::npos) {
-            std::string warId = data.substr(0, pos);
-            std::string targetId = data.substr(pos + 1);
-            clanWarRoom->HandleSpectate(client, warId, targetId);
-        }
-    });
+                if (!starsStr.empty()) {
+                    record.starsEarned = std::stoi(starsStr);
+                }
+                if (!destructionStr.empty()) {
+                    record.destructionRate = std::stof(destructionStr);
+                }
+                record.attackTime = std::chrono::steady_clock::now();
 
-    // 结束部落战争
-    router->Register(PACKET_CLAN_WAR_END,
-                     [this](SOCKET client, const std::string& data) {
-        PlayerContext* player = playerRegistry->GetBySocket(client);
-        if (player == nullptr) {
-            return;
-        }
-
-        // 检查玩家是否有权限结束战争（通常只有族长可以）
-        if (!data.empty()) {
-            clanWarRoom->EndWar(data);
-        } else {
-            // 如果没有指定战争ID，尝试结束玩家所在的战争
-            std::string warId =
-                clanWarRoom->GetActiveWarIdForPlayer(player->playerId);
-            if (!warId.empty()) {
-                clanWarRoom->EndWar(warId);
+                clanWarRoom->HandleAttackEnd(warId, record);
+            } catch (const std::exception& e) {
+                std::cout << "[ClanWar] 解析攻击结束数据错误: " << e.what() << std::endl;
             }
-        }
-    });
+        });
+
+    router->Register(PACKET_WAR_SPECTATE,
+        [this](SOCKET client, const std::string& data) {
+            size_t pos = data.find(kFieldSeparator);
+            if (pos != std::string::npos) {
+                std::string warId = data.substr(0, pos);
+                std::string targetId = data.substr(pos + 1);
+                clanWarRoom->HandleSpectate(client, warId, targetId);
+            }
+        });
+
+    router->Register(PACKET_WAR_END,
+        [this](SOCKET client, const std::string& data) {
+            PlayerContext* player = playerRegistry->GetBySocket(client);
+            if (player == nullptr) {
+                return;
+            }
+
+            if (!data.empty()) {
+                clanWarRoom->EndWar(data);
+            } else {
+                std::string warId = clanWarRoom->GetActiveWarIdForPlayer(player->playerId);
+                if (!warId.empty()) {
+                    clanWarRoom->EndWar(warId);
+                }
+            }
+        });
 }
 
-// ==================== 客户端处理 ====================
+// ============================================================================
+// 客户端连接处理
+// ============================================================================
 
 void clientHandler(SOCKET clientSocket, Server& server) {
     uint32_t msgType;
@@ -418,7 +415,7 @@ void clientHandler(SOCKET clientSocket, Server& server) {
         server.router->Route(clientSocket, msgType, msgData);
     }
 
-    // 玩家断开连接清理
+    // 玩家断开连接时的清理工作
     PlayerContext* player = server.playerRegistry->GetBySocket(clientSocket);
     std::string playerId;
     if (player != nullptr) {
@@ -428,9 +425,8 @@ void clientHandler(SOCKET clientSocket, Server& server) {
     server.matchmaker->Remove(clientSocket);
 
     if (!playerId.empty()) {
-        // 清理所有PVP相关会话
+        // 清理 PVP 相关会话
         server.arenaSession->CleanupPlayerSessions(playerId);
-
         // 清理部落战争相关会话
         server.clanWarRoom->CleanupPlayerSessions(playerId);
     }
@@ -438,7 +434,9 @@ void clientHandler(SOCKET clientSocket, Server& server) {
     server.closeClientSocket(clientSocket);
 }
 
-// ==================== 服务器生命周期 ====================
+// ============================================================================
+// 服务器生命周期
+// ============================================================================
 
 void Server::run() {
     createAndBindSocket();
@@ -448,6 +446,7 @@ void Server::run() {
 void Server::createAndBindSocket() {
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == INVALID_SOCKET) {
+        std::cerr << "[Server] 创建 socket 失败" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -455,9 +454,11 @@ void Server::createAndBindSocket() {
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     serverAddr.sin_port = htons(port);
 
-    if (bind(serverSocket, reinterpret_cast<struct sockaddr*>(&serverAddr),
+    if (bind(serverSocket, 
+             reinterpret_cast<struct sockaddr*>(&serverAddr),
              sizeof(serverAddr)) == SOCKET_ERROR) {
         closesocket(serverSocket);
+        std::cerr << "[Server] 绑定端口失败" << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -473,7 +474,8 @@ void Server::handleConnections() {
         sockaddr_in clientAddr;
         int clientAddrLen = sizeof(clientAddr);
         SOCKET clientSocket = accept(
-            serverSocket, reinterpret_cast<struct sockaddr*>(&clientAddr),
+            serverSocket, 
+            reinterpret_cast<struct sockaddr*>(&clientAddr),
             &clientAddrLen);
 
         if (clientSocket != INVALID_SOCKET) {
@@ -483,8 +485,7 @@ void Server::handleConnections() {
             ctx.socket = clientSocket;
             playerRegistry->Register(clientSocket, ctx);
 
-            std::thread clientThread(clientHandler, clientSocket,
-                                     std::ref(*this));
+            std::thread clientThread(clientHandler, clientSocket, std::ref(*this));
             clientThread.detach();
         }
     }
@@ -507,13 +508,18 @@ void Server::closeClientSocket(SOCKET clientSocket) {
     std::cout << std::endl;
 }
 
-// ==================== 辅助函数 ====================
+// ============================================================================
+// 辅助函数
+// ============================================================================
 
 std::string Server::serializeAttackResult(const AttackResult& result) {
     std::ostringstream oss;
-    oss << result.attackerId << "|" << result.defenderId << "|"
-        << result.starsEarned << "|" << result.goldLooted << "|"
-        << result.elixirLooted << "|" << result.trophyChange << "|"
+    oss << result.attackerId << kFieldSeparator
+        << result.defenderId << kFieldSeparator
+        << result.starsEarned << kFieldSeparator
+        << result.goldLooted << kFieldSeparator
+        << result.elixirLooted << kFieldSeparator
+        << result.trophyChange << kFieldSeparator
         << result.replayData;
     return oss.str();
 }
@@ -523,25 +529,25 @@ AttackResult Server::deserializeAttackResult(const std::string& data) {
     std::istringstream iss(data);
     std::string token;
 
-    std::getline(iss, result.attackerId, '|');
-    std::getline(iss, result.defenderId, '|');
+    std::getline(iss, result.attackerId, kFieldSeparator);
+    std::getline(iss, result.defenderId, kFieldSeparator);
 
-    std::getline(iss, token, '|');
+    std::getline(iss, token, kFieldSeparator);
     if (!token.empty()) {
         result.starsEarned = std::stoi(token);
     }
 
-    std::getline(iss, token, '|');
+    std::getline(iss, token, kFieldSeparator);
     if (!token.empty()) {
         result.goldLooted = std::stoi(token);
     }
 
-    std::getline(iss, token, '|');
+    std::getline(iss, token, kFieldSeparator);
     if (!token.empty()) {
         result.elixirLooted = std::stoi(token);
     }
 
-    std::getline(iss, token, '|');
+    std::getline(iss, token, kFieldSeparator);
     if (!token.empty()) {
         result.trophyChange = std::stoi(token);
     }
@@ -564,12 +570,15 @@ std::string Server::getUserListJson(const std::string& requesterId) {
         }
 
         if (!first) {
-            oss << "|";
+            oss << kFieldSeparator;
         }
         first = false;
 
-        oss << player.playerId << "," << player.playerName << ","
-            << player.trophies << "," << player.gold << "," << player.elixir;
+        oss << player.playerId << ","
+            << player.playerName << ","
+            << player.trophies << ","
+            << player.gold << ","
+            << player.elixir;
     }
 
     return oss.str();

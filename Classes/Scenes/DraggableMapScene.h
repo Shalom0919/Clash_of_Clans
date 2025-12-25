@@ -3,7 +3,7 @@
 * File Name:     DraggableMapScene.h
 * File Function: 主场景类
 * Author:        赵崇治、薛毓哲
-* Update Date:   2025/12/24
+* Update Date:   2025/12/25
 * License:       MIT License
 ****************************************************************/
 #ifndef __DRAGGABLE_MAP_SCENE_H__
@@ -24,6 +24,12 @@ class ResourceCollectionManager;
 struct BuildingData;
 
 /**
+ * @brief 全局函数：创建主场景（供外部调用，避免循环包含）
+ * @return cocos2d::Scene* 主场景指针
+ */
+cocos2d::Scene* createDraggableMapScene();
+
+/**
  * @class DraggableMapScene
  * @brief 主游戏场景 - 精简后的主控制器
  *
@@ -33,9 +39,8 @@ struct BuildingData;
  * - 处理游戏逻辑回调
  * - 管理升级UI
  */
-class DraggableMapScene : public cocos2d::Scene
-{
-public:
+class DraggableMapScene : public cocos2d::Scene {
+ public:
     /**
      * @brief 创建场景
      * @return cocos2d::Scene* 场景指针
@@ -71,7 +76,7 @@ public:
     /** @brief 获取建筑管理器 */
     BuildingManager* getBuildingManager() const { return _buildingManager; }
 
-private:
+ private:
     MapController* _mapController = nullptr;        ///< 地图控制器
     SceneUIController* _uiController = nullptr;     ///< UI控制器
     InputController* _inputController = nullptr;    ///< 输入控制器
@@ -146,4 +151,4 @@ private:
     std::string getCurrentTimestamp();  ///< 获取当前时间戳
 };
 
-#endif // __DRAGGABLE_MAP_SCENE_H__
+#endif  // __DRAGGABLE_MAP_SCENE_H__

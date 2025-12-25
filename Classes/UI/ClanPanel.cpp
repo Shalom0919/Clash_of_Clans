@@ -3,7 +3,7 @@
  * File Name:     ClanPanel.cpp
  * File Function: 部落面板主容器实现（重构版 - 三层架构）
  * Author:        赵崇治
- * Update Date:   2025/12/21
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #include "ClanPanel.h"
@@ -682,7 +682,7 @@ void ClanPanel::showClanListDialog()
     closeBtn->setContentSize(Size(100, 40));
     closeBtn->setPosition(Vec2(260, 20));
     closeBtn->addClickEventListener([this, layer](Ref*) {
-        this->unschedule("fill_clan_list_delayed"); // 取消定时器
+        this->unschedule("fill_clan_list_delayed");
         layer->removeFromParent();
     });
     panel->addChild(closeBtn);
@@ -712,21 +712,21 @@ void ClanPanel::showClanListDialog()
             item->setBackGroundColor(Color3B(60, 60, 80));
             item->setBackGroundColorType(Layout::BackGroundColorType::SOLID);
 
-            auto name = Label::createWithSystemFont(c.clanName, "Arial", 18);
+            auto name = Label::createWithSystemFont(c.clan_name, "Arial", 18);
             name->setAnchorPoint(Vec2::ANCHOR_MIDDLE_LEFT);
             name->setPosition(Vec2(12, 36));
             name->setTextColor(Color4B::WHITE);
             item->addChild(name);
 
-            // 🆕 显示部落信息（不再显示奖杯要求）
+            // 显示部落信息
             auto info = Label::createWithSystemFont(
-                StringUtils::format("%d 成员 • %d 奖杯", c.memberCount, c.clanTrophies), "Arial", 14);
+                StringUtils::format("%d 成员 • %d 奖杯", c.member_count, c.clan_trophies), "Arial", 14);
             info->setAnchorPoint(Vec2::ANCHOR_MIDDLE_LEFT);
             info->setPosition(Vec2(12, 16));
             info->setTextColor(Color4B::GRAY);
             item->addChild(info);
 
-            // 🆕 所有部落都可以直接加入，无需奖杯限制
+            // 加入按钮
             auto joinBtn = Button::create();
             joinBtn->setTitleText("加入");
             joinBtn->setTitleFontSize(20);
@@ -734,7 +734,7 @@ void ClanPanel::showClanListDialog()
             joinBtn->setContentSize(Size(100, 36));
             joinBtn->setPosition(Vec2(420, 30));
 
-            std::string clanId = c.clanId;
+            std::string clanId = c.clan_id;
             joinBtn->addClickEventListener([this, clanId, layer](Ref*) {
                 onJoinClanClicked(clanId);
                 if (layer && layer->getParent())
@@ -918,24 +918,23 @@ void ClanPanel::registerPvpCallbacks()
         });
     });
 
-    // 观战回调 - 更新签名以包含 elapsedMs
-    client.setOnSpectateJoin(
-        [this](bool success, const std::string& attackerId, const std::string& defenderId, 
-               const std::string& mapData, int64_t elapsedMs, const std::vector<std::string>& history) {
-            Director::getInstance()->getScheduler()->performFunctionInCocosThread(
-                [this, success, attackerId, defenderId, mapData, elapsedMs, history]() {
-                    if (success)
-                    {
-                        CCLOG("[ClanPanel] 观战加入成功: %s vs %s (已进行: %lldms, 历史: %zu 操作)", 
-                              attackerId.c_str(), defenderId.c_str(), (long long)elapsedMs, history.size());
-                        enterSpectateScene(attackerId, defenderId, mapData, elapsedMs, history);
-                    }
-                    else
-                    {
-                        showToast("该玩家当前没有进行中的战斗", Color4B::RED);
-                    }
-                });
+    // 观战回调 - 使用 SpectateInfo 结构体
+    client.setOnSpectateJoin([this](const SpectateInfo& info) {
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([this, info]() {
+            if (info.success)
+            {
+                CCLOG("[ClanPanel] 观战加入成功: %s vs %s (已进行: %lldms, 历史: %zu 操作)", 
+                      info.attacker_id.c_str(), info.defender_id.c_str(), 
+                      static_cast<long long>(info.elapsed_ms), info.action_history.size());
+                enterSpectateScene(info.attacker_id, info.defender_id, info.map_data, 
+                                   info.elapsed_ms, info.action_history);
+            }
+            else
+            {
+                showToast("该玩家当前没有进行中的战斗", Color4B::RED);
+            }
         });
+    });
 
     // PVP 结束回调 - 仅在 ClanPanel 可见时处理
     client.setOnPvpEnd([this](const std::string& result) {

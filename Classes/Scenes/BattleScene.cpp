@@ -3,7 +3,7 @@
  * File Name:     BattleScene.cpp
  * File Function: 战斗场景
  * Author:        赵崇治、薛毓哲
- * Update Date:   2025/12/24
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #include "BattleScene.h"
@@ -11,6 +11,7 @@
 #include "BuildingManager.h"
 #include "Buildings/BaseBuilding.h"
 #include "Buildings/DefenseBuilding.h"
+#include "DraggableMapScene.h"
 #include "GridMap.h"
 #include "Managers/DefenseLogSystem.h"
 #include "Managers/MusicManager.h"
@@ -119,9 +120,33 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
         _battleManager->setUIUpdateCallback([this]() {
             if (_battleUI && _battleManager)
             {
-                _battleUI->updateTimer(static_cast<int>(_battleManager->getRemainingTime()));
+                // 根据战斗状态更新不同的计时器
+                if (_battleManager->isInReadyPhase())
+                {
+                    // 准备阶段：更新准备倒计时
+                    int readyTime = static_cast<int>(_battleManager->getReadyPhaseRemainingTime());
+                    _battleUI->updateReadyPhaseTimer(readyTime);
+                    _battleUI->updateTimer(static_cast<int>(_battleManager->getRemainingTime()));
+                }
+                else
+                {
+                    // 战斗阶段：更新战斗计时器
+                    _battleUI->updateTimer(static_cast<int>(_battleManager->getRemainingTime()));
+                }
+                
                 _battleUI->updateStars(_battleManager->getStars());
                 _battleUI->updateDestruction(_battleManager->getDestructionPercent());
+            }
+        });
+
+        // 设置战斗正式开始回调（首次部署单位时触发）
+        _battleManager->setBattleStartCallback([this]() {
+            if (_battleUI)
+            {
+                // 隐藏准备阶段UI
+                _battleUI->showReadyPhaseUI(false);
+                _battleUI->updateStatus("⚔️ 战斗开始！", Color4B::RED);
+                CCLOG("⚔️ UI收到战斗开始通知，隐藏准备阶段UI");
             }
         });
 
@@ -187,7 +212,7 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
     // 播放准备音乐
     MusicManager::getInstance().playMusic(MusicType::BATTLE_PREPARING);
 
-    // 延迟开始战斗
+    // 进入准备阶段
     this->scheduleOnce(
         [this](float dt) {
             if (_battleManager)
@@ -199,21 +224,28 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
 
             if (_battleUI)
             {
-                _battleUI->updateStatus("部署你的士兵进行攻击！", Color4B::YELLOW);
+                // 显示准备阶段UI
+                _battleUI->showReadyPhaseUI(true);
+                _battleUI->updateStatus("🎯 侦察敌方基地，部署士兵开始进攻！", Color4B::YELLOW);
                 _battleUI->showBattleHUD(true);
-                _battleUI->showTroopButtons(true);
                 
-                if (_battleManager)
+                // 只有非观战模式才显示部队按钮
+                if (!_isSpectateMode)
                 {
-                    _battleUI->updateTroopCounts(_battleManager->getTroopCount(UnitType::kBarbarian),
-                                                 _battleManager->getTroopCount(UnitType::kArcher),
-                                                 _battleManager->getTroopCount(UnitType::kGiant),
-                                                 _battleManager->getTroopCount(UnitType::kGoblin),
-                                                 _battleManager->getTroopCount(UnitType::kWallBreaker));
+                    _battleUI->showTroopButtons(true);
+                    
+                    if (_battleManager)
+                    {
+                        _battleUI->updateTroopCounts(_battleManager->getTroopCount(UnitType::kBarbarian),
+                                                     _battleManager->getTroopCount(UnitType::kArcher),
+                                                     _battleManager->getTroopCount(UnitType::kGiant),
+                                                     _battleManager->getTroopCount(UnitType::kGoblin),
+                                                     _battleManager->getTroopCount(UnitType::kWallBreaker));
+                    }
                 }
             }
         },
-        1.0f, "start_battle_delay");
+        0.5f, "start_battle_delay");
 
     scheduleUpdate();
 
@@ -305,17 +337,18 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
             _battleManager->endBattle(false);
     });
 
-    // UI设置
+    // UI设置 - 回放模式不显示准备阶段UI
     if (_battleUI)
     {
         _battleUI->showTroopButtons(false);
+        _battleUI->showReadyPhaseUI(false);  // 回放模式不显示准备阶段
         _battleUI->updateStatus("🔴 战斗回放中", Color4B::RED);
         _battleUI->setEndBattleButtonText("退出回放");
         _battleUI->setReplayMode(true);
         _battleUI->showBattleHUD(true);
     }
 
-    // 立即开始战斗
+    // 回放模式：立即开始战斗，跳过准备阶段
     if (_battleManager)
     {
         // 计算回放所需的兵力
@@ -330,6 +363,8 @@ bool BattleScene::initWithReplayData(const std::string& replayDataStr)
         }
 
         _battleManager->startBattle(neededTroops);
+        // 跳过准备阶段，直接进入战斗状态
+        _battleManager->skipReadyPhase();
     }
 
     return true;
@@ -447,6 +482,28 @@ void BattleScene::update(float dt)
     {
         replaySpectateHistory();
         _historyReplayed = true;
+        return;
+    }
+    
+    // 🔧 新增：观战同步超时检查
+    if (_isSpectateMode && _spectatePendingEnd)
+    {
+        _spectatePendingEndTimer += dt;
+        
+        // 超时后强制结束，防止网络丢包导致永远等待
+        if (_spectatePendingEndTimer >= kSpectateEndTimeout)
+        {
+            CCLOG("📺 观战同步超时（%.1f秒），强制结束战斗。已接收: %zu, 预期: %zu",
+                  kSpectateEndTimeout, _spectateReceivedActionCount, _spectateExpectedActionCount);
+            
+            _spectatePendingEnd = false;
+            
+            if (_battleManager)
+            {
+                _battleManager->endBattle(false);
+            }
+            return;
+        }
     }
 
     float scaledDt = dt * _timeScale;
@@ -500,6 +557,18 @@ void BattleScene::setSpectateMode(const std::string& attackerId,
     _spectateElapsedMs    = elapsedMs;
     _spectateHistory      = history;
     _historyReplayed      = false;
+    _spectateHistoryIndex = 0;
+    
+    // 🔧 初始化去重机制
+    _spectateHistoryProcessed = false;
+    _processedActionSet.clear();
+    _pendingRemoteActions.clear();
+    
+    // 🔧 初始化同步结束机制
+    _spectatePendingEnd = false;
+    _spectateExpectedActionCount = 0;
+    _spectateReceivedActionCount = history.size();  // 历史操作计入已接收数量
+    _spectatePendingEndTimer = 0.0f;
 
     CCLOG("📺 观战模式设置: %s vs %s, 已进行 %lldms, 历史操作 %zu 个",
           attackerId.c_str(), defenderId.c_str(), (long long)elapsedMs, history.size());
@@ -507,15 +576,35 @@ void BattleScene::setSpectateMode(const std::string& attackerId,
     if (_battleManager)
     {
         _battleManager->setNetworkMode(true, false);
+        _battleManager->setBattleMode(BattleMode::SPECTATE);
+        
+        // 设置时间偏移，同步战斗进度
+        if (elapsedMs > 0)
+        {
+            _battleManager->setTimeOffset(elapsedMs);
+        }
     }
 
     if (_battleUI)
     {
         _battleUI->showTroopButtons(false);
-        _battleUI->updateStatus(StringUtils::format("📺 观战中: %s vs %s", 
-                                                    attackerId.c_str(), defenderId.c_str()), Color4B::ORANGE);
+        _battleUI->setSpectateMode(true);
         _battleUI->setEndBattleButtonText("退出观战");
         _battleUI->setReplayMode(true);
+        
+        // 根据是否有历史操作决定显示内容
+        if (history.empty() && elapsedMs == 0)
+        {
+            // 攻击者尚未部署，显示等待状态
+            _battleUI->showSpectateWaitingStatus(attackerId);
+        }
+        else
+        {
+            // 战斗已开始
+            _battleUI->showReadyPhaseUI(false);
+            _battleUI->updateStatus(StringUtils::format("📺 观战中: %s vs %s", 
+                                                        attackerId.c_str(), defenderId.c_str()), Color4B::ORANGE);
+        }
     }
 }
 
@@ -523,6 +612,7 @@ void BattleScene::setSpectateHistory(const std::vector<std::string>& history)
 {
     _spectateHistory = history;
     _historyReplayed = false;
+    _spectateHistoryIndex = 0;
     
     CCLOG("📺 设置观战历史: %zu 个操作", history.size());
 }
@@ -530,12 +620,28 @@ void BattleScene::setSpectateHistory(const std::vector<std::string>& history)
 void BattleScene::replaySpectateHistory()
 {
     if (!_battleManager || _spectateHistory.empty())
-        return;
-
-    CCLOG("📺 回放观战历史: %zu 个操作", _spectateHistory.size());
-
-    for (const auto& action : _spectateHistory)
     {
+        CCLOG("📺 replaySpectateHistory: 无历史操作需要回放");
+        // 🔧 即使没有历史，也标记为已处理完成
+        _spectateHistoryProcessed = true;
+        return;
+    }
+
+    CCLOG("📺 开始回放观战历史: %zu 个操作", _spectateHistory.size());
+
+    // 隐藏等待状态
+    if (_battleUI)
+    {
+        _battleUI->showReadyPhaseUI(false);
+    }
+
+    for (size_t i = 0; i < _spectateHistory.size(); ++i)
+    {
+        const auto& action = _spectateHistory[i];
+        
+        // 🔧 将操作添加到已处理集合（用于后续去重）
+        _processedActionSet.insert(action);
+        
         // 格式解析: "unitType,x,y"
         std::vector<std::string> parts;
         std::stringstream        ss(action);
@@ -553,7 +659,7 @@ void BattleScene::replaySpectateHistory()
                 float x    = std::stof(parts[1]);
                 float y    = std::stof(parts[2]);
 
-                CCLOG("📺 回放操作: type=%d, pos=(%.1f,%.1f)", type, x, y);
+                CCLOG("📺 回放历史操作[%zu]: type=%d, pos=(%.1f,%.1f)", i, type, x, y);
                 _battleManager->deployUnitRemote(static_cast<UnitType>(type), Vec2(x, y));
             }
             catch (const std::exception& e)
@@ -564,6 +670,84 @@ void BattleScene::replaySpectateHistory()
         else
         {
             CCLOG("⚠️ 历史操作格式错误: %s", action.c_str());
+        }
+    }
+    
+    // 🔧 标记历史回放完成
+    _spectateHistoryProcessed = true;
+    _spectateHistoryIndex = _spectateHistory.size();
+    CCLOG("📺 历史回放完成，已处理操作数: %zu", _processedActionSet.size());
+    
+    // 🔧 处理在历史回放期间缓存的远程操作（只处理真正的新操作）
+    if (!_pendingRemoteActions.empty())
+    {
+        CCLOG("📺 处理缓存的远程操作: %zu 个", _pendingRemoteActions.size());
+        for (const auto& pendingAction : _pendingRemoteActions)
+        {
+            int unitType = std::get<0>(pendingAction);
+            float x = std::get<1>(pendingAction);
+            float y = std::get<2>(pendingAction);
+            
+            // 构造操作字符串用于去重检查
+            std::ostringstream oss;
+            oss << unitType << "," << x << "," << y;
+            std::string actionKey = oss.str();
+            
+            // 检查是否已在历史中处理过
+            if (_processedActionSet.find(actionKey) == _processedActionSet.end())
+            {
+                CCLOG("📺 执行缓存的新操作: type=%d, pos=(%.1f,%.1f)", unitType, x, y);
+                _processedActionSet.insert(actionKey);
+                _spectateReceivedActionCount++;
+                _battleManager->deployUnitRemote(static_cast<UnitType>(unitType), Vec2(x, y));
+            }
+            else
+            {
+                CCLOG("📺 跳过缓存中的重复操作: type=%d, pos=(%.1f,%.1f)", unitType, x, y);
+            }
+        }
+        _pendingRemoteActions.clear();
+    }
+    
+    // 🔧 检查是否可以结束（如果在历史回放期间收到了结束信号）
+    checkSpectateEndCondition();
+}
+
+void BattleScene::checkSpectateEndCondition()
+{
+    // 仅在观战模式且收到结束信号后检查
+    if (!_isSpectateMode || !_spectatePendingEnd)
+    {
+        return;
+    }
+    
+    // 检查是否所有操作都已接收完毕
+    // 条件：已接收操作数 >= 预期操作数
+    if (_spectateReceivedActionCount >= _spectateExpectedActionCount)
+    {
+        CCLOG("📺 观战同步完成: 已接收 %zu 个操作，预期 %zu 个，触发战斗结束",
+              _spectateReceivedActionCount, _spectateExpectedActionCount);
+        
+        _spectatePendingEnd = false;  // 防止重复触发
+        
+        if (_battleManager)
+        {
+            _battleManager->endBattle(false);
+        }
+    }
+    else
+    {
+        CCLOG("📺 观战同步等待中: 已接收 %zu/%zu 个操作",
+              _spectateReceivedActionCount, _spectateExpectedActionCount);
+              
+        // 更新UI显示同步状态
+        if (_battleUI)
+        {
+            _battleUI->updateStatus(
+                StringUtils::format("📺 同步数据中... (%zu/%zu)", 
+                                    _spectateReceivedActionCount, 
+                                    _spectateExpectedActionCount), 
+                Color4B::YELLOW);
         }
     }
 }
@@ -583,11 +767,59 @@ void BattleScene::onEnter()
             if (_battleManager)
             {
                 Director::getInstance()->getScheduler()->performFunctionInCocosThread([this, unitType, x, y]() {
-                    if (_battleManager)
+                    if (!_battleManager)
+                        return;
+                        
+                    // 观战模式下，使用操作内容去重
+                    if (_isSpectateMode)
+                    {
+                        // 🔧 修复：如果历史回放尚未完成，缓存此操作
+                        if (!_spectateHistoryProcessed)
+                        {
+                            CCLOG("📺 历史回放未完成，缓存远程操作: type=%d, pos=(%.1f,%.1f)", 
+                                  unitType, x, y);
+                            _pendingRemoteActions.push_back(std::make_tuple(unitType, x, y));
+                            return;
+                        }
+                        
+                        // 🔧 构造操作字符串用于去重检查
+                        std::ostringstream oss;
+                        oss << unitType << "," << x << "," << y;
+                        std::string actionKey = oss.str();
+                        
+                        // 检查是否已处理过此操作
+                        if (_processedActionSet.find(actionKey) != _processedActionSet.end())
+                        {
+                            CCLOG("📺 跳过已处理的重复操作: type=%d, pos=(%.1f,%.1f)", 
+                                  unitType, x, y);
+                            return;
+                        }
+                        
+                        // 🔧 记录此操作为已处理，并增加已接收计数
+                        _processedActionSet.insert(actionKey);
+                        _spectateReceivedActionCount++;
+                        
+                        // 首次收到新的远程操作，隐藏等待状态
+                        if (_battleUI)
+                        {
+                            _battleUI->showReadyPhaseUI(false);
+                            _battleUI->updateStatus(StringUtils::format("📺 观战中: %s vs %s", 
+                                _spectateAttackerId.c_str(), _spectateDefenderId.c_str()), Color4B::ORANGE);
+                        }
+                        
+                        CCLOG("📥 收到远程部署（新操作 %zu/%zu）: type=%d, pos=(%.1f,%.1f)", 
+                              _spectateReceivedActionCount, _spectateExpectedActionCount,
+                              unitType, x, y);
+                    }
+                    else
                     {
                         CCLOG("📥 收到远程部署: type=%d, pos=(%.1f,%.1f)", unitType, x, y);
-                        _battleManager->deployUnitRemote((UnitType)unitType, Vec2(x, y));
                     }
+                    
+                    _battleManager->deployUnitRemote((UnitType)unitType, Vec2(x, y));
+                    
+                    // 🔧 检查是否所有操作都已接收完毕
+                    checkSpectateEndCondition();
                 });
             }
         });
@@ -599,15 +831,33 @@ void BattleScene::onEnter()
                 
                 if (_isSpectateMode)
                 {
-                    // 观战模式下收到结束通知，显示结果面板
-                    if (_battleManager)
+                    // 🔧 修复：解析结束消息，获取总操作数
+                    // 格式: "BATTLE_ENDED|totalActionCount"
+                    size_t expectedCount = 0;
+                    size_t separatorPos = result.find('|');
+                    if (separatorPos != std::string::npos)
                     {
-                        _battleManager->endBattle(false);
+                        try
+                        {
+                            expectedCount = std::stoul(result.substr(separatorPos + 1));
+                        }
+                        catch (const std::exception& e)
+                        {
+                            CCLOG("⚠️ 解析总操作数失败: %s", e.what());
+                        }
                     }
+                    
+                    _spectateExpectedActionCount = expectedCount;
+                    _spectatePendingEnd = true;
+                    
+                    CCLOG("📺 观战结束信号: 预期操作数=%zu, 已接收=%zu", 
+                          _spectateExpectedActionCount, _spectateReceivedActionCount);
+                    
+                    // 🔧 检查是否可以立即结束（所有操作都已接收）
+                    checkSpectateEndCondition();
                 }
                 else if (!_isAttacker)
                 {
-                    // 防守方收到结束通知
                     if (_battleManager)
                     {
                         _battleManager->endBattle(false);
@@ -616,7 +866,7 @@ void BattleScene::onEnter()
             });
         });
 
-        // 发送本地操作（仅攻击方）
+        // 发送本地操作（仅攻击方，非观战模式）
         if (_battleManager && _isAttacker && !_isSpectateMode)
         {
             _battleManager->setNetworkDeployCallback([this](UnitType type, const Vec2& pos) {
@@ -806,13 +1056,26 @@ void BattleScene::returnToMainScene()
     MusicManager::getInstance().stopMusic();
     disableAllBuildingsBattleMode();
     
-    // 使用 popScene 而不是 end()
-    Director::getInstance()->popScene();
+    auto director = Director::getInstance();
     
-    // 通知主场景恢复
-    Director::getInstance()->getScheduler()->performFunctionInCocosThread([]() {
-        Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("scene_resume");
-    });
+    if (_isPushedScene)
+    {
+        director->popScene();
+        
+        director->getScheduler()->performFunctionInCocosThread([]() {
+            Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("scene_resume");
+        });
+    }
+    else
+    {
+        CCLOG("⚠️ 使用 replaceScene 返回主场景");
+        
+        auto mainScene = createDraggableMapScene();
+        if (mainScene)
+        {
+            director->replaceScene(TransitionFade::create(0.3f, mainScene));
+        }
+    }
 }
 
 void BattleScene::updateBoundary()

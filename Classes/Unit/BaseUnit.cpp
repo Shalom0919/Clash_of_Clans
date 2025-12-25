@@ -3,7 +3,7 @@
  * File Name:     BaseUnit.cpp
  * File Function: 单位基类实现
  * Author:        薛毓哲、赵崇治
- * Update Date:   2025/01/10
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #include "BaseUnit.h"
@@ -15,9 +15,19 @@ USING_NS_CC;
 // ==================== 生命周期管理 ====================
 
 BaseUnit::BaseUnit()
-    : _sprite(nullptr), _isMoving(false), _targetPos(Vec2::ZERO), _moveVelocity(Vec2::ZERO), _moveSpeed(100.0f),
-      _currentDir(UnitDirection::kRight), _currentPathIndex(0), _currentTarget(nullptr), _attackCooldown(0.0f),
-      _unitLevel(1), _isDead(false), _healthBarUI(nullptr), _battleModeEnabled(false)
+    : _sprite(nullptr)
+    , _isMoving(false)
+    , _targetPos(Vec2::ZERO)
+    , _moveVelocity(Vec2::ZERO)
+    , _moveSpeed(100.0f)
+    , _currentDir(UnitDirection::kRight)
+    , _currentPathIndex(0)
+    , _currentTarget(nullptr)
+    , _attackCooldown(0.0f)  // 将在 init 中根据攻击速度设置
+    , _unitLevel(1)
+    , _isDead(false)
+    , _healthBarUI(nullptr)
+    , _battleModeEnabled(false)
 {}
 
 BaseUnit::~BaseUnit()
@@ -40,6 +50,10 @@ bool BaseUnit::init(int level)
     // 子类在loadAnimations()中创建精灵和加载动画
     loadAnimations();
 
+    // 🔴 修复：初始化攻击冷却，防止新部署的单位立即攻击
+    // 设置为攻击速度的一半，给予单位时间移动到目标
+    _attackCooldown = _combatStats.attackSpeed * 0.5f;
+
     // 初始化血条UI
     initHealthBarUI();
 
@@ -52,6 +66,18 @@ void BaseUnit::tick(float dt)
         return;
 
     // 更新移动
+    tickMovement(dt);
+
+    // 更新攻击冷却
+    updateAttackCooldown(dt);
+}
+
+void BaseUnit::tickMovement(float dt)
+{
+    if (_isDead)
+        return;
+
+    // 仅更新移动逻辑
     if (_isMoving)
     {
         Vec2  current_pos = this->getPosition();
@@ -78,9 +104,6 @@ void BaseUnit::tick(float dt)
             this->setPosition(current_pos + _moveVelocity * dt);
         }
     }
-
-    // 更新攻击冷却
-    updateAttackCooldown(dt);
 }
 
 // ==================== 移动系统 ====================
@@ -201,8 +224,22 @@ void BaseUnit::die()
     // 播放死亡动画
     playAnimation(UnitAction::kDeath, _currentDir);
 
+    // 先 retain 防止 removeFromParent 时被释放
+    // BattleManager 会负责最终的 release
+    this->retain();
+
     // 3秒后淡出移除
-    auto removeAction = Sequence::create(DelayTime::create(3.0f), FadeOut::create(1.0f), RemoveSelf::create(), nullptr);
+    auto removeAction = Sequence::create(
+        DelayTime::create(3.0f), 
+        FadeOut::create(1.0f), 
+        CallFunc::create([this]() {
+            // 标记为等待移除状态，通知 BattleManager 可以安全清理
+            _pendingRemoval = true;
+            this->removeFromParent();
+            // 释放之前 retain 的引用，BattleManager 清理时会再次 release
+            this->release();
+        }),
+        nullptr);
     this->runAction(removeAction);
 
     CCLOG("%s died", getDisplayName().c_str());

@@ -3,7 +3,7 @@
  * File Name:     BattleUI.h
  * File Function: 战斗界面 - 负责管理游戏中的战斗相关UI
  * Author:        赵崇治
- * Update Date:   2025/01/10
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #ifndef BATTLE_UI_H_
@@ -55,6 +55,19 @@ public:
     void updateTimer(int remainingTime);
 
     /**
+     * @brief 更新准备阶段倒计时
+     * @param remainingTime 剩余时间（秒）
+     * @note 显示"开始进攻"倒计时，提示玩家计时器尚未启动
+     */
+    void updateReadyPhaseTimer(int remainingTime);
+
+    /**
+     * @brief 显示/隐藏准备阶段UI
+     * @param visible 是否显示
+     */
+    void showReadyPhaseUI(bool visible);
+
+    /**
      * @brief 更新星星数
      * @param stars 星星数
      */
@@ -76,6 +89,18 @@ public:
      * @param isReplay 是否为回放
      */
     void setReplayMode(bool isReplay);
+
+    /**
+     * @brief 设置观战模式
+     * @param isSpectate 是否为观战
+     */
+    void setSpectateMode(bool isSpectate);
+
+    /**
+     * @brief 显示观战等待提示
+     * @param attackerName 攻击者名称
+     */
+    void showSpectateWaitingStatus(const std::string& attackerName);
 
     /** @brief 显示/隐藏战斗HUD */
     void showBattleHUD(bool visible);
@@ -114,9 +139,10 @@ public:
     bool hasSelectedUnit() const { return _hasSelectedUnit; }
 
 private:
-    void setupTopBar();       ///< 设置顶部栏
+    void setupTopBar();        ///< 设置顶部栏
     void setupBottomButtons(); ///< 设置底部按钮
     void setupTroopButtons();  ///< 设置部队按钮
+    void setupReadyPhaseUI();  ///< 设置准备阶段UI
 
     cocos2d::Node* createTroopCard(UnitType type, const std::string& iconPath, const std::string& name);
     void updateTroopCardCount(UnitType type, int count);
@@ -124,6 +150,7 @@ private:
 
     cocos2d::Size _visibleSize;       ///< 可视区域大小
     bool _isReplayMode = false;       ///< 是否为回放模式
+    bool _isSpectateMode = false;     ///< 是否为观战模式
     int _starsEarned = 0;             ///< 获得的星星数
 
     UnitType _selectedUnitType = UnitType::kBarbarian;  ///< 选中的单位类型
@@ -135,6 +162,11 @@ private:
     cocos2d::Label* _destructionLabel = nullptr;  ///< 摧毁百分比标签
     cocos2d::ui::Button* _endBattleButton = nullptr;  ///< 结束战斗按钮
     cocos2d::ui::Button* _returnButton = nullptr;     ///< 返回按钮
+
+    // 准备阶段UI元素
+    cocos2d::Node* _readyPhasePanel = nullptr;        ///< 准备阶段面板
+    cocos2d::Label* _readyPhaseTimerLabel = nullptr;  ///< 准备阶段倒计时标签
+    cocos2d::Label* _readyPhaseTipLabel = nullptr;    ///< 准备阶段提示标签
 
     cocos2d::Node* _troopPanel = nullptr;  ///< 部队面板
 

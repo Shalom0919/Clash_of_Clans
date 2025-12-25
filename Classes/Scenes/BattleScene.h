@@ -3,7 +3,7 @@
  * File Name:     BattleScene.h
  * File Function: 战斗场景
  * Author:        赵崇治
- * Update Date:   2025/12/24
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #pragma once
@@ -19,7 +19,9 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 #include <map>
+#include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 // 前向声明
@@ -37,9 +39,8 @@ class BaseBuilding;
  * 3. 计算战斗结果（星数、掠夺资源）
  * 4. 支持PVP模式和观战模式
  */
-class BattleScene : public cocos2d::Scene
-{
-public:
+class BattleScene : public cocos2d::Scene {
+ public:
     /**
      * @brief 创建战斗场景
      */
@@ -58,7 +59,8 @@ public:
      * @param enemyData 敌方玩家的基地数据
      * @param enemyUserId 敌方玩家ID
      */
-    static BattleScene* createWithEnemyData(const GameStateData& enemyData, const std::string& enemyUserId);
+    static BattleScene* createWithEnemyData(const GameStateData& enemyData, 
+                                            const std::string& enemyUserId);
 
     /**
      * @brief 创建战斗回放场景
@@ -68,7 +70,8 @@ public:
 
     virtual bool init() override;
     virtual bool initWithEnemyData(const GameStateData& enemyData);
-    virtual bool initWithEnemyData(const GameStateData& enemyData, const std::string& enemyUserId);
+    virtual bool initWithEnemyData(const GameStateData& enemyData, 
+                                   const std::string& enemyUserId);
     virtual bool initWithReplayData(const std::string& replayDataStr);
 
     virtual void update(float dt) override;
@@ -99,7 +102,14 @@ public:
      */
     void setSpectateHistory(const std::vector<std::string>& history);
 
-private:
+    /**
+     * @brief 标记场景是否通过 pushScene 进入
+     * @param pushed 是否为 push 进入
+     * @note 用于 returnToMainScene 决定使用 popScene 还是 replaceScene
+     */
+    void setPushedScene(bool pushed) { _isPushedScene = pushed; }
+
+ private:
     BattleScene();
     ~BattleScene();
 
@@ -145,6 +155,9 @@ private:
 
     // ==================== 观战历史回放 ====================
     void replaySpectateHistory();
+    
+    // 🔧 新增：检查观战同步结束条件
+    void checkSpectateEndCondition();
 
     // ==================== PVP/观战状态 ====================
     bool        _isPvpMode      = false;    ///< 是否为PVP模式
@@ -155,6 +168,22 @@ private:
     int64_t     _spectateElapsedMs = 0;     ///< 观战时已经过的时间
     std::vector<std::string> _spectateHistory;  ///< 观战历史操作
     bool        _historyReplayed = false;   ///< 历史是否已回放
+    size_t      _spectateHistoryIndex = 0;  ///< 已处理的历史操作索引（用于跳过重复）
+
+    // 🔧 新增：用于防止重复部署的同步机制
+    bool _spectateHistoryProcessed = false;  // 历史操作是否已完全处理
+    std::set<std::string> _processedActionSet;  // 已处理的操作集合（用于去重）
+    std::vector<std::tuple<int, float, float>> _pendingRemoteActions;  // 缓存的远程操作
+
+    // 🔧 新增：观战同步结束机制
+    bool   _spectatePendingEnd = false;       ///< 是否收到结束信号但等待同步
+    size_t _spectateExpectedActionCount = 0;  ///< 服务器端总操作数
+    size_t _spectateReceivedActionCount = 0;  ///< 已接收的操作数
+    float  _spectatePendingEndTimer = 0.0f;   ///< 等待同步超时计时器
+    static constexpr float kSpectateEndTimeout = 5.0f;  ///< 观战同步超时时间（秒）
+
+    // ==================== 场景栈标记 ====================
+    bool        _isPushedScene = true;      ///< 是否通过 pushScene 进入（默认为 true）
 };
 
-#endif // __BATTLE_SCENE_H__#endif // __BATTLE_SCENE_H__
+#endif  // __BATTLE_SCENE_H__

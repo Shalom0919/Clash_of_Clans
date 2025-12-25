@@ -208,7 +208,8 @@ void DefenseBuilding::tick(float dt)
 
     if (_currentTarget)
     {
-        if (_currentTarget->isDead())
+        // 检查目标是否死亡或等待移除
+        if (_currentTarget->isDead() || _currentTarget->isPendingRemoval())
         {
             clearTarget();
             return;
@@ -237,7 +238,7 @@ void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
         return;
 
     // 如果已有有效目标，不重新选择
-    if (_currentTarget && !_currentTarget->isDead())
+    if (_currentTarget && !_currentTarget->isDead() && !_currentTarget->isPendingRemoval())
         return;
 
     Vec2      myPos           = this->getPosition();
@@ -246,7 +247,8 @@ void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
 
     for (auto* unit : units)
     {
-        if (!unit || unit->isDead())
+        // 跳过空指针、已死亡或等待移除的单位
+        if (!unit || unit->isDead() || unit->isPendingRemoval())
             continue;
 
         Vec2  unitPos  = unit->getPosition();
@@ -267,7 +269,8 @@ void DefenseBuilding::detectEnemies(const std::vector<BaseUnit*>& units)
 
 void DefenseBuilding::attackTarget(BaseUnit* target)
 {
-    if (!target || target->isDead())
+    // 增加 isPendingRemoval 检查
+    if (!target || target->isDead() || target->isPendingRemoval())
         return;
 
     BaseBuilding::attackTarget(target);
@@ -278,8 +281,12 @@ void DefenseBuilding::attackTarget(BaseUnit* target)
 
 void DefenseBuilding::fireProjectile(BaseUnit* target)
 {
-    if (!target)
+    if (!target || target->isDead() || target->isPendingRemoval())
         return;
+
+    // 保持对目标的引用，防止在动画过程中被释放
+    target->retain();
+    float damage = _combatStats.damage;
 
     // 创建炮弹/箭矢视觉效果
     Sprite* projectile      = nullptr;
@@ -308,7 +315,11 @@ void DefenseBuilding::fireProjectile(BaseUnit* target)
     if (!projectile || !this->getParent())
     {
         // 创建失败时直接造成伤害
-        target->takeDamage(_combatStats.damage);
+        if (!target->isDead() && !target->isPendingRemoval())
+        {
+            target->takeDamage(damage);
+        }
+        target->release();
         return;
     }
 
@@ -331,11 +342,16 @@ void DefenseBuilding::fireProjectile(BaseUnit* target)
     }
 
     auto moveTo = MoveTo::create(duration, endPos);
-    auto hitCallback = CallFunc::create([this, target, projectile]() {
-        if (target && !target->isDead())
+    
+    // 在回调中使用 retain/release 管理目标生命周期
+    auto hitCallback = CallFunc::create([target, damage, projectile]() {
+        // 确保目标仍然存在且未死亡
+        if (!target->isDead() && !target->isPendingRemoval())
         {
-            target->takeDamage(_combatStats.damage);
+            target->takeDamage(damage);
         }
+        // 释放之前 retain 的引用
+        target->release();
         projectile->removeFromParent();
     });
 

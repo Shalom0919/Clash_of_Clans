@@ -3,7 +3,7 @@
  * File Name:     BaseUnit.h
  * File Function: 单位基类 - 所有士兵的父类
  * Author:        赵崇治、薛毓哲
- * Update Date:   2025/01/10
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #ifndef BASE_UNIT_H_
@@ -28,16 +28,23 @@ constexpr int kDamageEffectTag = 1002;  ///< 受击颜色效果 Tag
  * @class BaseUnit
  * @brief 单位基类 - 定义所有士兵的通用接口和行为
  */
-class BaseUnit : public cocos2d::Node
-{
-public:
+class BaseUnit : public cocos2d::Node {
+ public:
     virtual ~BaseUnit();
 
     /**
-     * @brief 每帧更新
+     * @brief 每帧更新（完整更新，包括移动和攻击冷却）
      * @param dt 帧时间间隔
+     * @note 当由 BattleManager 统一管理攻击冷却时，应使用 tickMovement
      */
     virtual void tick(float dt);
+
+    /**
+     * @brief 每帧移动更新（仅更新移动逻辑，不更新攻击冷却）
+     * @param dt 帧时间间隔
+     * @note 当攻击冷却由外部（如 BattleManager）管理时使用此方法
+     */
+    virtual void tickMovement(float dt);
 
     /**
      * @brief 移动到指定位置
@@ -81,6 +88,12 @@ public:
 
     /** @brief 是否死亡 */
     bool isDead() const { return _isDead; }
+
+    /** @brief 是否等待移除（已从父节点移除，等待清理） */
+    bool isPendingRemoval() const { return _pendingRemoval; }
+
+    /** @brief 标记为等待移除状态 */
+    void markPendingRemoval() { _pendingRemoval = true; }
 
     /** @brief 设置攻击目标 */
     void setTarget(BaseBuilding* target) { _currentTarget = target; }
@@ -157,7 +170,7 @@ public:
     UnitType GetType() const { return getUnitType(); }
     float    GetMoveSpeed() const { return getMoveSpeed(); }
 
-protected:
+ protected:
     BaseUnit();
 
     /**
@@ -187,13 +200,14 @@ protected:
     /**
      * @brief 从帧添加动画
      */
-    void addAnimFromFrames(const std::string& unitName, const std::string& key, int start, int end, float delay);
+    void addAnimFromFrames(const std::string& unitName, const std::string& key, 
+                           int start, int end, float delay);
 
     /**
      * @brief 从文件添加动画
      */
-    void addAnimFromFiles(const std::string& basePath, const std::string& namePattern, const std::string& key,
-                          int start, int end, float delay);
+    void addAnimFromFiles(const std::string& basePath, const std::string& namePattern, 
+                          const std::string& key, int start, int end, float delay);
 
     virtual void onAttackBefore() {}   ///< 攻击前回调
     virtual void onAttackAfter() {}    ///< 攻击后回调
@@ -207,7 +221,7 @@ protected:
      */
     UnitDirection calculateDirection(const cocos2d::Vec2& direction);
 
-protected:
+ protected:
     cocos2d::Sprite* _sprite = nullptr;                      ///< 精灵
     std::map<std::string, cocos2d::Animation*> _animCache;   ///< 动画缓存
 
@@ -224,9 +238,10 @@ protected:
     float _attackCooldown = 0.0f;              ///< 攻击冷却
     int _unitLevel = 1;                        ///< 单位等级
     bool _isDead = false;                      ///< 是否死亡
+    bool _pendingRemoval = false;              ///< 是否等待移除（防止野指针访问）
 
     UnitHealthBarUI* _healthBarUI = nullptr;   ///< 血条UI
     bool _battleModeEnabled = false;           ///< 战斗模式是否启用
 };
 
-#endif // BASE_UNIT_H_
+#endif  // BASE_UNIT_H_

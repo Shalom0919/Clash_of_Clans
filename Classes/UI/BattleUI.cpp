@@ -3,7 +3,7 @@
  * File Name:     BattleUI.cpp
  * File Function: 战斗界面 - 负责管理游戏中的战斗相关UI
  * Author:        赵崇治
- * Update Date:   2025/12/24
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 
@@ -36,6 +36,7 @@ bool BattleUI::init()
     setupTopBar();
     setupBottomButtons();
     setupTroopButtons();
+    setupReadyPhaseUI();
 
     return true;
 }
@@ -89,6 +90,38 @@ void BattleUI::setupTopBar()
     _destructionLabel->setTextColor(Color4B::WHITE);
     _destructionLabel->setVisible(false);
     this->addChild(_destructionLabel, 100);
+}
+
+void BattleUI::setupReadyPhaseUI()
+{
+    // 创建准备阶段面板
+    _readyPhasePanel = Node::create();
+    _readyPhasePanel->setPosition(Vec2(_visibleSize.width / 2, _visibleSize.height / 2 + 100));
+    _readyPhasePanel->setVisible(false);
+    this->addChild(_readyPhasePanel, 150);
+
+    // 准备阶段背景
+    auto readyBg = LayerColor::create(Color4B(0, 0, 0, 180), 400, 150);
+    readyBg->setPosition(Vec2(-200, -75));
+    _readyPhasePanel->addChild(readyBg);
+
+    // 准备阶段标题
+    auto readyTitle = Label::createWithSystemFont("⚔️ 准备进攻 ⚔️", "Arial", 28);
+    readyTitle->setPosition(Vec2(0, 40));
+    readyTitle->setTextColor(Color4B::YELLOW);
+    _readyPhasePanel->addChild(readyTitle);
+
+    // 准备阶段倒计时标签
+    _readyPhaseTimerLabel = Label::createWithSystemFont("30", "Arial", 56);
+    _readyPhaseTimerLabel->setPosition(Vec2(0, -10));
+    _readyPhaseTimerLabel->setTextColor(Color4B::WHITE);
+    _readyPhasePanel->addChild(_readyPhaseTimerLabel);
+
+    // 准备阶段提示标签
+    _readyPhaseTipLabel = Label::createWithSystemFont("部署士兵开始战斗！", "Arial", 18);
+    _readyPhaseTipLabel->setPosition(Vec2(0, -50));
+    _readyPhaseTipLabel->setTextColor(Color4B(200, 200, 200, 255));
+    _readyPhasePanel->addChild(_readyPhaseTipLabel);
 }
 
 void BattleUI::setupBottomButtons()
@@ -158,11 +191,11 @@ void BattleUI::setupBottomButtons()
 
 Node* BattleUI::createTroopCard(UnitType type, const std::string& iconPath, const std::string& name)
 {
-    // 🆕 创建卡片容器
+    // 创建卡片容器
     auto card = Node::create();
     card->setContentSize(Size(90, 120));
 
-    // 卡片背景 - 深色渐变效果 (使用DrawNode模拟圆角矩形背景)
+    // 卡片背景 - 深色渐变效果
     auto cardBg = DrawNode::create();
     cardBg->drawSolidRect(Vec2(0, 0), Vec2(90, 120), Color4F(0.15f, 0.18f, 0.25f, 0.9f));
     card->addChild(cardBg, 0);
@@ -250,7 +283,7 @@ Node* BattleUI::createTroopCard(UnitType type, const std::string& iconPath, cons
 
 void BattleUI::onTroopCardClicked(UnitType type)
 {
-    // 🆕 如果点击的是已选中的兵种，则取消选中
+    // 如果点击的是已选中的兵种，则取消选中
     if (_hasSelectedUnit && _selectedUnitType == type)
     {
         clearTroopHighlight();
@@ -273,16 +306,16 @@ void BattleUI::onTroopCardClicked(UnitType type)
 
 void BattleUI::setupTroopButtons()
 {
-    // 🆕 创建底部兵种面板
+    // 创建底部兵种面板
     _troopPanel = Node::create();
     _troopPanel->setPosition(Vec2(_visibleSize.width / 2, 80));
     _troopPanel->setVisible(false);
     this->addChild(_troopPanel, 100);
 
     // 面板背景
-    float panelWidth  = 550; // 增加宽度以容纳所有卡片
+    float panelWidth  = 550;
     float panelHeight = 150;
-    auto  panelBg     = LayerColor::create(Color4B(15, 20, 30, 240), panelWidth, panelHeight); // 更深色的背景
+    auto  panelBg     = LayerColor::create(Color4B(15, 20, 30, 240), panelWidth, panelHeight);
     panelBg->setPosition(Vec2(-panelWidth / 2, -25));
     _troopPanel->addChild(panelBg, -1);
 
@@ -295,11 +328,8 @@ void BattleUI::setupTroopButtons()
     _selectionFrame = Sprite::create();
     if (_selectionFrame)
     {
-        // 使用DrawNode绘制选中框
         auto frameNode = DrawNode::create();
-        // 外发光效果
         frameNode->drawRect(Vec2(-4, -4), Vec2(94, 124), Color4F(1.0f, 0.9f, 0.3f, 0.4f));
-        // 主边框
         frameNode->drawRect(Vec2(-2, -2), Vec2(92, 122), Color4F(1.0f, 0.85f, 0.2f, 1.0f));
         
         _selectionFrame->addChild(frameNode);
@@ -310,11 +340,9 @@ void BattleUI::setupTroopButtons()
 
     // 卡片布局参数
     float cardWidth   = 90;
-    float cardSpacing = 105; // 稍微增加间距
+    float cardSpacing = 105;
     int   numCards    = 5;
     
-    // 计算起始X坐标，使卡片组整体居中
-    // 总宽度 = (卡片数量-1) * 间距 + 卡片宽度
     float totalWidth = (numCards - 1) * cardSpacing + cardWidth;
     float startX     = -totalWidth / 2;
     float cardY      = 0;
@@ -418,8 +446,7 @@ void BattleUI::updateTroopCardCount(UnitType type, int count)
         // 根据数量改变颜色
         if (count <= 0)
         {
-            countLabel->setTextColor(Color4B(150, 150, 150, 255)); // 灰色
-            // 图标变灰
+            countLabel->setTextColor(Color4B(150, 150, 150, 255));
             auto icon = card->getChildByName("icon");
             if (icon)
                 icon->setColor(Color3B(100, 100, 100));
@@ -427,7 +454,6 @@ void BattleUI::updateTroopCardCount(UnitType type, int count)
         else
         {
             countLabel->setTextColor(Color4B::WHITE);
-            // 图标恢复
             auto icon = card->getChildByName("icon");
             if (icon)
                 icon->setColor(Color3B::WHITE);
@@ -460,6 +486,108 @@ void BattleUI::updateTimer(int remainingTime)
     else
     {
         _timerLabel->setTextColor(Color4B::WHITE);
+    }
+}
+
+void BattleUI::updateReadyPhaseTimer(int remainingTime)
+{
+    if (!_readyPhaseTimerLabel)
+        return;
+
+    _readyPhaseTimerLabel->setString(StringUtils::format("%d", remainingTime));
+
+    // 根据剩余时间改变颜色
+    if (remainingTime <= 5)
+    {
+        _readyPhaseTimerLabel->setTextColor(Color4B::RED);
+        // 最后5秒时闪烁效果
+        _readyPhaseTimerLabel->stopAllActions();
+        auto blink = RepeatForever::create(Sequence::create(
+            FadeTo::create(0.3f, 100),
+            FadeTo::create(0.3f, 255),
+            nullptr));
+        _readyPhaseTimerLabel->runAction(blink);
+    }
+    else if (remainingTime <= 10)
+    {
+        _readyPhaseTimerLabel->setTextColor(Color4B::YELLOW);
+        _readyPhaseTimerLabel->stopAllActions();
+        _readyPhaseTimerLabel->setOpacity(255);
+    }
+    else
+    {
+        _readyPhaseTimerLabel->setTextColor(Color4B::WHITE);
+        _readyPhaseTimerLabel->stopAllActions();
+        _readyPhaseTimerLabel->setOpacity(255);
+    }
+}
+
+void BattleUI::showReadyPhaseUI(bool visible)
+{
+    if (_readyPhasePanel)
+    {
+        _readyPhasePanel->setVisible(visible);
+        
+        if (visible)
+        {
+            // 显示时添加入场动画
+            _readyPhasePanel->setScale(0.5f);
+            _readyPhasePanel->setOpacity(0);
+            _readyPhasePanel->runAction(Spawn::create(
+                EaseBackOut::create(ScaleTo::create(0.3f, 1.0f)),
+                FadeIn::create(0.3f),
+                nullptr));
+        }
+        else
+        {
+            // 隐藏时停止所有动画
+            if (_readyPhaseTimerLabel)
+            {
+                _readyPhaseTimerLabel->stopAllActions();
+                _readyPhaseTimerLabel->setOpacity(255);
+            }
+        }
+    }
+}
+
+void BattleUI::setSpectateMode(bool isSpectate)
+{
+    _isSpectateMode = isSpectate;
+}
+
+void BattleUI::showSpectateWaitingStatus(const std::string& attackerName)
+{
+    if (_statusLabel)
+    {
+        _statusLabel->setString(StringUtils::format("📺 等待 %s 部署士兵...", attackerName.c_str()));
+        _statusLabel->setTextColor(Color4B::ORANGE);
+    }
+    
+    // 显示等待动画
+    if (_readyPhasePanel)
+    {
+        _readyPhasePanel->setVisible(true);
+        
+        if (_readyPhaseTimerLabel)
+        {
+            _readyPhaseTimerLabel->setString("⏳");
+        }
+        
+        if (_readyPhaseTipLabel)
+        {
+            _readyPhaseTipLabel->setString(StringUtils::format("等待 %s 开始进攻", attackerName.c_str()));
+        }
+        
+        // 添加旋转动画
+        if (_readyPhaseTimerLabel)
+        {
+            _readyPhaseTimerLabel->stopAllActions();
+            auto rotate = RepeatForever::create(Sequence::create(
+                RotateTo::create(1.0f, 360),
+                RotateTo::create(0.0f, 0),
+                nullptr));
+            _readyPhaseTimerLabel->runAction(rotate);
+        }
     }
 }
 
@@ -618,7 +746,7 @@ void BattleUI::showReturnButton(bool visible)
 
 void BattleUI::highlightTroopButton(UnitType type)
 {
-    // 🆕 更新所有卡片的高亮状态
+    // 更新所有卡片的高亮状态
     auto updateCardHighlight = [](Node* card, bool highlight) {
         if (!card)
             return;
@@ -697,7 +825,7 @@ void BattleUI::highlightTroopButton(UnitType type)
 
 void BattleUI::clearTroopHighlight()
 {
-    // 🆕 清除所有卡片的高亮状态
+    // 清除所有卡片的高亮状态
     auto clearCardHighlight = [](Node* card) {
         if (!card)
             return;
@@ -743,26 +871,19 @@ void BattleUI::setEndBattleButtonText(const std::string& text)
     {
         _endBattleButton->setTitleText(text);
 
-        // 如果是退出回放，更换按钮背景以避免与 end_battle.png 的文字重叠
-        if (text == "退出回放")
+        // 如果是退出回放/观战，更换按钮背景
+        if (text == "退出回放" || text == "退出观战")
         {
-            // 隐藏文字，只显示图标/背景
             _endBattleButton->setTitleText("");
-
-            // 使用 return_button.png 作为背景（假设它是一个通用的按钮背景）
             _endBattleButton->loadTextures("icon/return_button.png", "icon/return_button.png", "");
-
-            // 使用缩放而不是强制设置大小，避免图片变形
             _endBattleButton->ignoreContentAdaptWithSize(true);
 
             if (_endBattleButton->getContentSize().width > 0)
             {
-                // 保持宽度为 120 左右，自适应高度
                 _endBattleButton->setScale(120.0f / _endBattleButton->getContentSize().width);
             }
             else
             {
-                // 如果图片加载失败，回退到固定大小
                 _endBattleButton->ignoreContentAdaptWithSize(false);
                 _endBattleButton->setContentSize(Size(120, 50));
                 _endBattleButton->setScale(1.0f);
@@ -777,6 +898,7 @@ void BattleUI::showResultPanel(int stars, int destructionPercent, int goldLooted
     // 隐藏战斗UI
     showBattleHUD(false);
     showTroopButtons(false);
+    showReadyPhaseUI(false);
 
     // 创建结果面板
     auto panel = LayerColor::create(Color4B(0, 0, 0, 220));

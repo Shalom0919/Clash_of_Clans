@@ -3,7 +3,7 @@
  * File Name:     ClanDataCache.cpp
  * File Function: 部落数据缓存实现
  * Author:        赵崇治
- * Update Date:   2025/12/21
+ * Update Date:   2025/12/25
  * License:       MIT License
  ****************************************************************/
 #include "ClanDataCache.h"
@@ -54,9 +54,9 @@ void ClanDataCache::setClanList(const std::vector<ClanInfoClient>& clans)
     {
         for (const auto& clan : clans)
         {
-            if (clan.clanId == _currentClanId)
+            if (clan.clan_id == _currentClanId)
             {
-                _currentClanName = clan.clanName;
+                _currentClanName = clan.clan_name;
                 break;
             }
         }
@@ -101,9 +101,9 @@ std::string ClanDataCache::findClanNameById(const std::string& clanId) const
 {
     for (const auto& clan : _clanList)
     {
-        if (clan.clanId == clanId)
+        if (clan.clan_id == clanId)
         {
-            return clan.clanName;
+            return clan.clan_name;
         }
     }
     return "";

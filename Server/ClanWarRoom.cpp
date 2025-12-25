@@ -229,6 +229,7 @@ void ClanWarRoom::HandleAttackEnd(const std::string& war_id,
     std::string defender_id;
     SOCKET defender_socket = INVALID_SOCKET;
     std::vector<std::pair<std::string, SOCKET>> spectators_to_notify;
+    size_t total_action_count = 0;  // 🔧 新增：总操作数量
 
     {
         std::lock_guard<std::mutex> lock(session_mutex_);
@@ -251,6 +252,7 @@ void ClanWarRoom::HandleAttackEnd(const std::string& war_id,
         }
 
         defender_id = battle_it->second.defenderId;
+        total_action_count = battle_it->second.actionHistory.size();  // 🔧 获取总操作数
         
         // 🔧 修复：收集需要通知的观战者（在锁内收集socket）
         for (const auto& spectator_id : battle_it->second.spectatorIds) {
@@ -297,7 +299,8 @@ void ClanWarRoom::HandleAttackEnd(const std::string& war_id,
 
             std::cout << "[ClanWar] 攻击结束: " << record.attackerId << " -> "
                       << defender_id << " (获得 " << record.starsEarned
-                      << " 星)" << std::endl;
+                      << " 星, 总操作数: " << total_action_count << ")"
+                      << std::endl;
         }
 
         // 获取防守方socket（在锁内）
@@ -311,15 +314,22 @@ void ClanWarRoom::HandleAttackEnd(const std::string& war_id,
         need_broadcast = true;
     }
 
+    // 🔧 修复：构建包含总操作数的结束消息
+    std::ostringstream end_msg;
+    end_msg << "BATTLE_ENDED|" << total_action_count;
+    std::string end_message = end_msg.str();
+
     // 🔧 修复：在锁外发送网络包，防止死锁
     // 通知防守方战斗结束
     if (defender_socket != INVALID_SOCKET) {
-        sendPacket(defender_socket, PACKET_CLAN_WAR_ATTACK_END, "BATTLE_ENDED");
+        sendPacket(defender_socket, PACKET_CLAN_WAR_ATTACK_END, end_message);
     }
 
     // 通知观战者
     for (const auto& pair : spectators_to_notify) {
-        sendPacket(pair.second, PACKET_CLAN_WAR_ATTACK_END, "BATTLE_ENDED");
+        sendPacket(pair.second, PACKET_CLAN_WAR_ATTACK_END, end_message);
+        std::cout << "[ClanWar] 已通知观战者: " << pair.first 
+                  << " (总操作数: " << total_action_count << ")" << std::endl;
     }
 
     if (need_broadcast) {
