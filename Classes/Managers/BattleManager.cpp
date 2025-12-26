@@ -570,7 +570,7 @@ void BattleManager::deployUnit(UnitType type, const cocos2d::Vec2& position)
     }
 
     // 验证部署位置是否有效（不在建筑及其周围一格内）
-    if (_deploymentValidator && !_deploymentValidator->CanDeployAt(position))
+    if (_deploymentValidator && !_deploymentValidator->CanDeployAtWorldPosition(position))
     {
         CCLOG("❌ 部署被拒绝: 位置(%.1f, %.1f)在建筑禁区内", position.x, position.y);
         if (_onInvalidDeploy)

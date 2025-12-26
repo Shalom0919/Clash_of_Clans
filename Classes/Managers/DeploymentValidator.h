@@ -2,7 +2,6 @@
  * Project Name:  Clash_of_Clans
  * File Name:     DeploymentValidator.h
  * File Function: 部署验证器 - 验证单位部署位置的有效性
- * Author:        GitHub Copilot
  * Update Date:   2025/12/26
  * License:       MIT License
  ****************************************************************/

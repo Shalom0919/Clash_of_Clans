@@ -2,7 +2,6 @@
  * Project Name:  Clash_of_Clans
  * File Name:     DeploymentValidator.cpp
  * File Function: 部署验证器实现 - 验证单位部署位置的有效性
- * Author:        GitHub Copilot
  * Update Date:   2025/12/26
  * License:       MIT License
  ****************************************************************/
@@ -26,8 +25,6 @@ bool DeploymentValidator::Init(GridMap* grid_map) {
     return false;
   }
 
-void DeploymentValidator::Init(GridMap* grid_map,
-                               const std::vector<BaseBuilding*>& buildings) {
   grid_map_ = grid_map;
   grid_width_ = grid_map_->getGridWidth();
   grid_height_ = grid_map_->getGridHeight();
