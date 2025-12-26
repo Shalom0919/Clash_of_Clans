@@ -179,6 +179,51 @@ bool BattleScene::initWithEnemyData(const AccountGameData& enemyData, const std:
                                              _battleManager->getTroopCount(UnitType::kWallBreaker));
             }
         });
+
+        // 设置无效部署回调（显示视觉反馈）
+        _battleManager->setInvalidDeployCallback([this](const cocos2d::Vec2& position) {
+            if (_mapSprite)
+            {
+                // 在无效位置显示红色闪烁效果
+                auto invalidMarker = Sprite::create("ui/invalid_deploy.png");
+                if (!invalidMarker)
+                {
+                    // 如果图片不存在，使用DrawNode绘制红色圆圈
+                    auto drawNode = DrawNode::create();
+                    drawNode->drawSolidCircle(Vec2::ZERO, 30.0f, 0.0f, 32, 
+                                             Color4F(1.0f, 0.0f, 0.0f, 0.5f));
+                    drawNode->setPosition(position);
+                    _mapSprite->addChild(drawNode, 9999);
+                    
+                    // 闪烁并消失
+                    auto blink = Sequence::create(
+                        FadeOut::create(0.15f),
+                        FadeIn::create(0.15f),
+                        FadeOut::create(0.15f),
+                        RemoveSelf::create(),
+                        nullptr
+                    );
+                    drawNode->runAction(blink);
+                }
+                else
+                {
+                    invalidMarker->setPosition(position);
+                    invalidMarker->setOpacity(180);
+                    _mapSprite->addChild(invalidMarker, 9999);
+                    
+                    auto blink = Sequence::create(
+                        FadeOut::create(0.15f),
+                        FadeIn::create(0.15f),
+                        FadeOut::create(0.15f),
+                        RemoveSelf::create(),
+                        nullptr
+                    );
+                    invalidMarker->runAction(blink);
+                }
+                
+                CCLOG("🚫 显示无效部署位置反馈: (%.1f, %.1f)", position.x, position.y);
+            }
+        });
     }
 
     // 加载建筑

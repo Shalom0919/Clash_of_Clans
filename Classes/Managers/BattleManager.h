@@ -3,7 +3,8 @@
  * File Name:     BattleManager.h
  * File Function: 战斗逻辑管理器
  * Author:        赵崇治
- * Update Date:   2025/12/25
+ * Update Date:   2025/12/26
+ * Modified By:   GitHub Copilot - 添加部署验证支持
  * License:       MIT License
  ****************************************************************/
 #ifndef BATTLE_MANAGER_H_
@@ -13,6 +14,7 @@
 #include "Buildings/DefenseBuilding.h"
 #include "GameDataModels.h"
 #include "GridMap.h"
+#include "Managers/DeploymentValidator.h"
 #include "Managers/ReplaySystem.h"
 #include "PathFinder.h"
 #include "Unit/BaseUnit.h"
@@ -21,6 +23,7 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -204,6 +207,14 @@ class BattleManager {
         _onTroopDeploy = callback; 
     }
 
+    /**
+     * @brief 设置无效部署回调
+     * @param callback 无效部署时调用的回调函数，参数为尝试部署的位置
+     */
+    void setInvalidDeployCallback(const std::function<void(const cocos2d::Vec2&)>& callback) {
+        _onInvalidDeploy = callback;
+    }
+
     /** 
      * @brief 设置战斗正式开始回调
      * @note 当首次部署单位时触发，通知 UI 战斗计时器已开始
@@ -335,10 +346,13 @@ class BattleManager {
     std::function<void()>              _onBattleEnd;    ///< 战斗结束回调
     std::function<void()>              _onBattleStart;  ///< 战斗正式开始回调
     std::function<void(UnitType, int)> _onTroopDeploy;  ///< 部队部署回调
+    std::function<void(const cocos2d::Vec2&)> _onInvalidDeploy; ///< 无效部署回调
 
     bool _isNetworked = false; ///< 是否为网络模式
     bool _isAttacker  = false; ///< 是否为攻击者
     std::function<void(UnitType, const cocos2d::Vec2&)> _onNetworkDeploy; ///< 网络部署回调
+
+    std::unique_ptr<DeploymentValidator> _deploymentValidator; ///< 部署验证器
 };
 
 #endif  // BATTLE_MANAGER_H_

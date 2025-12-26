@@ -3,13 +3,15 @@
  * File Name:     BattleManager.cpp
  * File Function: 战斗逻辑实现 - 管理战斗流程和状态
  * Author:        赵崇治
- * Update Date:   2025/12/25
+ * Update Date:   2025/12/26
+ * Modified By:   GitHub Copilot - 添加部署验证支持
  * License:       MIT License
  ****************************************************************/
 
 #include "BattleManager.h"
 #include "AccountManager.h"
 #include "Managers/DefenseLogSystem.h"
+#include "Managers/DeploymentValidator.h"
 #include "Managers/MusicManager.h"
 #include "Managers/TroopInventory.h"
 #include "PathFinder.h"
@@ -20,7 +22,7 @@
 
 USING_NS_CC;
 
-BattleManager::BattleManager() {}
+BattleManager::BattleManager() : _deploymentValidator(std::make_unique<DeploymentValidator>()) {}
 
 BattleManager::~BattleManager() {}
 
@@ -123,6 +125,13 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
                 _gridMap->markArea(gridPos, gridSize, true);
             }
         }
+    }
+
+    // 初始化部署验证器
+    if (_deploymentValidator && _gridMap)
+    {
+        _deploymentValidator->Init(_gridMap, buildings);
+        CCLOG("📍 部署验证器初始化完成");
     }
 
     CCLOG("📊 总血量: %d", _totalBuildingHP);
@@ -557,6 +566,17 @@ void BattleManager::deployUnit(UnitType type, const cocos2d::Vec2& position)
         return;
     }
 
+    // 验证部署位置是否有效（不在建筑及其周围一格内）
+    if (_deploymentValidator && !_deploymentValidator->CanDeployAt(position))
+    {
+        CCLOG("❌ 部署被拒绝: 位置(%.1f, %.1f)在建筑禁区内", position.x, position.y);
+        if (_onInvalidDeploy)
+        {
+            _onInvalidDeploy(position);
+        }
+        return;
+    }
+
     // 获取对应部队计数器
     int* count = nullptr;
     switch (type)
@@ -607,7 +627,8 @@ void BattleManager::deployUnit(UnitType type, const cocos2d::Vec2& position)
 
 void BattleManager::deployUnitRemote(UnitType type, const cocos2d::Vec2& position)
 {
-    // 远程部署不消耗本地部队计数
+    // 远程部署不进行位置验证，因为原始部署已在攻击方验证过
+    // 这适用于网络同步、观战和回放场景
     spawnUnit(type, position);
 }
 
