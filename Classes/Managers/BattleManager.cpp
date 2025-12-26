@@ -4,7 +4,6 @@
  * File Function: 战斗逻辑实现 - 管理战斗流程和状态
  * Author:        赵崇治
  * Update Date:   2025/12/26
- * Modified By:   GitHub Copilot - 添加部署验证支持
  * License:       MIT License
  ****************************************************************/
 
@@ -22,7 +21,7 @@
 
 USING_NS_CC;
 
-BattleManager::BattleManager() : _deploymentValidator(std::make_unique<DeploymentValidator>()) {}
+BattleManager::BattleManager() : _deploymentValidator(nullptr) {}
 
 BattleManager::~BattleManager() {}
 
@@ -128,10 +127,14 @@ void BattleManager::setBuildings(const std::vector<BaseBuilding*>& buildings)
     }
 
     // 初始化部署验证器
-    if (_deploymentValidator && _gridMap)
+    if (_gridMap)
     {
-        _deploymentValidator->Init(_gridMap, buildings);
-        CCLOG("📍 部署验证器初始化完成");
+        _deploymentValidator.reset(DeploymentValidator::Create(_gridMap));
+        if (_deploymentValidator)
+        {
+            _deploymentValidator->SetBuildings(buildings);
+            CCLOG("📍 部署验证器初始化完成");
+        }
     }
 
     CCLOG("📊 总血量: %d", _totalBuildingHP);
@@ -867,22 +870,70 @@ void BattleManager::endBattle(bool surrender)
           _starsEarned, _destructionPercent,
           static_cast<int>(_endReason), isVictory ? "是" : "否");
 
-    // 非回放非网络模式下返还未使用的部队
+    // Issue 1 Fix: 非回放非网络模式下返还未使用的部队并正确保存
     if (!_isReplayMode && !_isNetworked)
     {
-        auto& inventory = TroopInventory::getInstance();
-        inventory.addTroops(UnitType::kBarbarian, _barbarianCount);
-        inventory.addTroops(UnitType::kArcher, _archerCount);
-        inventory.addTroops(UnitType::kGiant, _giantCount);
-        inventory.addTroops(UnitType::kGoblin, _goblinCount);
-        inventory.addTroops(UnitType::kWallBreaker, _wallBreakerCount);
-
-        AccountManager::getInstance().saveGameStateToFile();
+        returnUnusedTroops();
         uploadBattleResult();
     }
 
     if (_onBattleEnd)
         _onBattleEnd();
+}
+
+void BattleManager::returnUnusedTroops()
+{
+    auto& inventory = TroopInventory::getInstance();
+    
+    CCLOG("📦 返还未使用部队: 野蛮人=%d, 弓箭手=%d, 巨人=%d, 哥布林=%d, 炸弹人=%d",
+          _barbarianCount, _archerCount, _giantCount, _goblinCount, _wallBreakerCount);
+
+    // 检查是否有需要返还的部队
+    int totalToReturn = _barbarianCount + _archerCount + _giantCount + 
+                        _goblinCount + _wallBreakerCount;
+    
+    if (totalToReturn == 0)
+    {
+        CCLOG("📦 没有需要返还的部队");
+        return;
+    }
+
+    // 获取当前库存并合并返还的部队
+    // 注意：不使用 addTroops() 因为战斗开始时已经从库存扣除
+    // 这里直接恢复库存数量
+    std::map<UnitType, int> currentTroops = inventory.getAllTroops();
+    
+    if (_barbarianCount > 0)
+    {
+        currentTroops[UnitType::kBarbarian] += _barbarianCount;
+    }
+    if (_archerCount > 0)
+    {
+        currentTroops[UnitType::kArcher] += _archerCount;
+    }
+    if (_giantCount > 0)
+    {
+        currentTroops[UnitType::kGiant] += _giantCount;
+    }
+    if (_goblinCount > 0)
+    {
+        currentTroops[UnitType::kGoblin] += _goblinCount;
+    }
+    if (_wallBreakerCount > 0)
+    {
+        currentTroops[UnitType::kWallBreaker] += _wallBreakerCount;
+    }
+    
+    // 使用 setAllTroops 直接设置库存，避免触发人口检查
+    inventory.setAllTroops(currentTroops);
+
+    // 保存到文件
+    inventory.save();
+
+    // 同步保存游戏状态
+    AccountManager::getInstance().saveGameStateToFile();
+
+    CCLOG("✅ 部队已返还并保存到文件（共 %d 个单位）", totalToReturn);
 }
 
 void BattleManager::calculateBattleResult()

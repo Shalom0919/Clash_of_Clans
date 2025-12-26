@@ -4,7 +4,6 @@
  * File Function: 战斗逻辑管理器
  * Author:        赵崇治
  * Update Date:   2025/12/26
- * Modified By:   GitHub Copilot - 添加部署验证支持
  * License:       MIT License
  ****************************************************************/
 #ifndef BATTLE_MANAGER_H_
@@ -353,6 +352,9 @@ class BattleManager {
     std::function<void(UnitType, const cocos2d::Vec2&)> _onNetworkDeploy; ///< 网络部署回调
 
     std::unique_ptr<DeploymentValidator> _deploymentValidator; ///< 部署验证器
+
+    /** @brief 返还未使用的部队到库存并保存 */
+    void returnUnusedTroops();
 };
 
 #endif  // BATTLE_MANAGER_H_
