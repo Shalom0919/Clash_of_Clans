@@ -244,7 +244,14 @@ bool AccountManager::loadGameStateForUser(const std::string& userId)
             resMgr.setResourceCount(ResourceType::kElixir, info.gameState.resources.elixir);
             resMgr.setResourceCount(ResourceType::kGem, info.gameState.resources.gems);
 
-            TroopInventory::getInstance().clearAll();
+            // 修复：从保存的数据中恢复士兵库存
+            auto& troopInv = TroopInventory::getInstance();
+            troopInv.clearAll();
+            if (!info.gameState.troopInventoryJson.empty())
+            {
+                troopInv.fromJson(info.gameState.troopInventoryJson);
+                CCLOG("✅ Troop inventory loaded: %s", info.gameState.troopInventoryJson.c_str());
+            }
 
             CCLOG("✅ Game state loaded for: %s", userId.c_str());
             return true;

@@ -993,16 +993,19 @@ void BuildingManager::loadCurrentAccountState()
     }
 
     // 3. 加载士兵库存
+    //  修复：优先从单独的士兵库存文件加载，因为 TroopInventory::addTroops() 会自动保存到
+    //    troop_inv_{userId}.json，而 gameData.troopInventory 只在 saveCurrentState() 时同步
     auto& troopInv = TroopInventory::getInstance();
-    if (!gameData.troopInventory.empty())
+    troopInv.load();  // 从 troop_inv_{userId}.json 加载
+    
+    // 如果单独文件没有数据，尝试从 gameData 恢复（兼容旧数据）
+    if (troopInv.getTotalPopulation() == 0 && !gameData.troopInventory.empty())
     {
         troopInv.fromJson(gameData.troopInventory);
-        restoreArmyCampTroopDisplays();
+        CCLOG("📦 Troop inventory loaded from gameData (fallback)");
     }
-    else
-    {
-        troopInv.clearAll();
-    }
+    
+    restoreArmyCampTroopDisplays();
     
     // 4. 加载资源数量
     resMgr.setResourceCount(ResourceType::kGold, gameData.gold);
