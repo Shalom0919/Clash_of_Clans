@@ -81,6 +81,7 @@ target_link_libraries(${APP_NAME} cocos2d)
 target_include_directories(${APP_NAME}
     PRIVATE Classes
     PRIVATE Classes/App
+    PRIVATE Classes/Audio
     PRIVATE Classes/Buildings
     PRIVATE Classes/GridMap
     PRIVATE Classes/Managers
