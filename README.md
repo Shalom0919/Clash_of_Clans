@@ -1,4 +1,4 @@
-﻿# ⚔️ Clash of Clans - 程序设计范式期末项目
+# ⚔️ Clash of Clans - 程序设计范式期末项目
 
 ![C++](https://img.shields.io/badge/language-C%2B%2B14-blue.svg?style=flat-square)
 ![Cocos2d-x](https://img.shields.io/badge/framework-Cocos2d--x%204.0-green.svg?style=flat-square)
@@ -6,6 +6,20 @@
 ![License](https://img.shields.io/badge/license-MIT-orange.svg?style=flat-square)
 
 > 基于 **Cocos2d-x 4.0** 开发的塔防策略游戏，支持本地多账号管理、Socket 网络通信、本地账号之间对战、联机部落之内对战及战斗回放功能。
+
+---
+
+## 📸 游戏截图 (Game Preview)
+
+| 主界面 / 基地建设 | 战斗场景 / 施放单位 |
+| :---: | :---: |
+| ![{59E64FCB-1FD0-4C86-8FB1-BB184AF233C6}](C:\Users\刘相成\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{59E64FCB-1FD0-4C86-8FB1-BB184AF233C6}.png) | ![{A2AFF892-9AB7-49F1-81CE-E09164FCAC4F}](C:\Users\刘相成\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{A2AFF892-9AB7-49F1-81CE-E09164FCAC4F}.png) |
+| *自定义布局与建筑升级* | *实时寻路与战斗特效* |
+
+| 部落系统 / 聊天 | 回放系统 / 防守日志 |
+| :---: | :---: |
+| ![{619604FC-C04D-4CF2-BC2D-3E2620AF6CCD}](C:\Users\刘相成\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{619604FC-C04D-4CF2-BC2D-3E2620AF6CCD}.png) | ![{DBA2390A-417F-451F-B020-A5E6903C48E0}](C:\Users\刘相成\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{DBA2390A-417F-451F-B020-A5E6903C48E0}.png)![{59294869-8BF7-4942-8AF5-C49DE2B19DDF}](C:\Users\刘相成\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{59294869-8BF7-4942-8AF5-C49DE2B19DDF}.png) |
+| *多人在线聊天与捐兵* | *完整复盘战斗过程* |
 
 ---
 
@@ -94,9 +108,25 @@ coc/
 
 > 📱 **本项目已成功适配并运行于 Android 平台！**
 
-1.  **打开项目**：启动 Android Studio，选择 `Open`，指向 `proj.android` 目录。
-2.  **同步**：等待 Gradle Sync 完成（如网络不通请配置代理）。
-3.  **部署**：连接真机或启动模拟器，点击顶部绿色的 **Run** 按钮。
+1. **打开项目**：启动 Android Studio，选择 `Open`，指向 `proj.android` 目录。
+
+2. **同步**：等待 Gradle Sync 完成（如网络不通请配置代理）。
+
+3. **部署**：连接真机或启动模拟器，点击顶部绿色的 **Run** 按钮。
+
+   ![{79E58991-70D2-4DE8-9A13-7817FC23CAAC}](C:\Users\刘相成\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{79E58991-70D2-4DE8-9A13-7817FC23CAAC}.png)
+
+---
+
+## 🎮 操作说明 (Controls)
+
+| 动作 | Windows (鼠标) | Android (触屏) |
+| :--- | :--- | :--- |
+| **移动地图** | 按住鼠标左键拖动 | 单指按住拖动 |
+| **缩放视角** | 鼠标滚轮滚动 | 双指捏合/张开 |
+| **选中建筑** | 鼠标左键点击 | 单指点击 |
+| **放置单位** | 鼠标左键点击 (战斗中) | 单指点击 (战斗中) |
+| **取消/关闭** | 鼠标右键点击 | 点击关闭按钮 |
 
 ---
 
@@ -123,13 +153,16 @@ coc/
     * **PVP**：在线实时 Socket 对战，支持观战模式。
 * **智能 AI**：基于 A* 寻路的自动索敌、攻击判定、城墙破坏逻辑。
 * **结算体系**：0-3 星评级、摧毁百分比、资源掠夺量、奖杯升降。
-* **固定时间步长**：60 FPS 物理更新，确保回放一致性。
+* **人性化机制**：
+    * **智能返还**：战斗结束后，未投入战场的兵种将自动返还至兵营，避免资源浪费。
+    * **固定步长**：60 FPS 物理更新，确保不同设备上的战斗逻辑一致性。
 
 ### 🌐 4. 网络与多人 (Network & Multiplayer)
 * **Socket 通信**：自定义 TCP 协议，支持多线程并发处理。
 * **部落功能**：创建部落、成员管理、部落战匹配。
+* **聊天系统**：支持部落内实时聊天，采用本地缓存策略，支持历史记录查看。
 * **数据同步**：玩家数据本地备份，支持多设备登录。
-* **观战同步**：支持实时时间偏移同步，观战者可中途加入。
+* **观战同步**：支持实时时间偏移同步，观战者可中途加入，自动同步战斗进度。
 
 ### 📹 5. 高级特性
 * **回放系统**：采用**指令序列化**技术，重现整场战斗过程（下兵位置、时机）。
@@ -172,15 +205,17 @@ coc/
 - **视听体验**: 支持多地图切换，包含完整的背景音乐与战斗音效。
 
 ### 扩展功能 (Advanced Features)
+- **多种音效支持**: 支持UI交互、单位行为（部署/攻击/死亡）、建筑交互及资源采集等多种音效。
 - **联机对战 (Multiplayer/PVP 进攻）**: 匹配并攻击其他玩家的村庄，支持**实时 PVP 对战**。
 - **观战模式 (Spectator)**: 实时观看正在进行的战斗（部落内 PVP 战斗）。
 - **部落系统 (Clan)**: 创建或加入部落，查看成员列表，参与**部落战 (Clan War)**及**实时观战**。
 - **回放系统 (Replay)**: 完整记录并回放战斗过程(包括本地账号战斗与联机部落内战斗)。
 - **防守日志 (Defense Log)**: 查看被攻击记录。
 - **建筑升级加速**: 真实的建筑施工/升级加速时间机制。
-- **建筑工人匹配升级**:限制同一时刻最大升级数量。
+- **建筑工人匹配升级**:限制同一时刻建筑的最大升级数量。
 - **账号创建与删除**:本地支持无缝切换多个游戏账号，数据完全隔离。
-- **本地存储**:玩家数据云端/本地双重备份，支持多设备登录。
+- **本地存储**:玩家数据本地备份，支持多设备登录。
+- **聊天系统**：支持部落内实时聊天，采用本地缓存策略，支持历史记录查看。
 
 ---
 
@@ -219,7 +254,7 @@ coc/
 | 要求 | 完成情况 | 说明 |
 |:---|:---:|:---|
 | **GitHub 使用规范** | ✅ | 使用 Git 进行版本管理，团队协作开发 |
-| **合理分工** | ✅ | 三人团队明确分工：场景/UI/建筑、单位/战斗/AI、网络/回放/跨平台 |
+| **合理分工** | ✅ | 三人团队明确分工：场景/UI/建筑、小兵/战斗/AI寻路、网络/回放/跨平台 |
 | **Commit 记录清晰** | ✅ | 提交信息描述明确，便于追溯代码变更历史 |
 
 ### ✅ 代码质量 (Code Quality)
@@ -282,8 +317,8 @@ struct PacketHeader {
 ## 💾 数据持久化模型
 
 数据存储采用 JSON 格式，路径如下：
-* **Win32**: `%LOCALAPPDATA%\HelloCpp\`
-* **Android**: `/data/data/org.cocos2dx.hellocpp/files/`
+* **Win32**: `%LOCALAPPDATA%\Clash_of_Clans\`
+* **Android**: `/data/data/org.cocos2dx.Clash_of_Clans/files/`
 
 ```json
 {
@@ -299,6 +334,44 @@ struct PacketHeader {
   ]
 }
 ```
+
+---
+
+## 🧩 设计模式实践 (Design Patterns)
+
+本项目在开发过程中广泛应用了多种设计模式，以提高代码的可维护性与扩展性：
+
+*   **单例模式 (Singleton)**:
+    *   `AccountManager`: 全局管理用户账号与游戏状态。
+    *   `SocketClient`: 统一管理网络连接资源。
+    *   `ResourceManager`: 全局资源统筹。
+*   **观察者模式 (Observer)**:
+    *   `ClanDataCache`: 作为被观察者，当部落数据（成员、聊天、在线状态）变更时，通知 `ClanPanel` 等 UI 组件刷新。
+*   **工厂模式 (Factory)**:
+    *   `UnitFactory`: 封装了不同兵种 (`Barbarian`, `Archer` 等) 的创建逻辑，解耦了单位生成与具体类。
+*   **状态模式 (State)**:
+    *   `BattleManager`: 维护战斗状态机 (`LOADING` -> `READY` -> `FIGHTING` -> `FINISHED`)，控制战斗流程流转。
+
+---
+
+## 💡 技术深度解析 (Technical Deep Dive)
+
+### 1. 确定性回放系统 (Deterministic Replay System)
+本项目实现了一套基于**指令序列化**的高效回放系统，而非简单的视频录制。
+*   **核心原理**：记录初始状态（随机种子、敌方数据）+ 操作序列（帧号、单位类型、坐标）。
+*   **逻辑帧同步**：战斗逻辑在 `FixedUpdate` 中以固定 60Hz 运行，与渲染帧率解耦，确保不同设备上运算结果严格一致。
+*   **数据压缩**：一场 3 分钟的战斗回放数据仅需 ~2KB，极大地节省了存储空间与网络带宽。
+
+### 2. 智能寻路 AI (A* Pathfinding)
+针对 RTS 游戏单位众多的特点，定制优化了 A* 算法：
+*   **动态权重**：普通地块 Cost=1，城墙地块 Cost=20。单位会优先寻找绕过城墙的路径；若绕路代价过大（>20格），则选择攻击城墙。
+*   **二叉堆优化**：使用二叉堆（Binary Heap）管理 Open List，将节点检索时间复杂度从 O(N) 降低至 O(logN)。
+*   **路径平滑**：引入弗洛伊德算法（Floyd）对折线路径进行平滑处理，使单位移动更自然。
+
+### 3. 线程安全与并发 (Thread Safety)
+网络层 (`SocketClient`) 运行于独立线程，负责阻塞式 Socket I/O。
+*   **消息队列**: 接收到的数据包被封装为 `ReceivedPacket` 存入线程安全的互斥队列。
+*   **主线程调度**: 通过 `Director::getInstance()->getScheduler()->performFunctionInCocosThread` 将回调逻辑调度回 Cocos 主线程执行，确保 UI 操作的安全性，避免多线程渲染崩溃。
 
 ---
 
@@ -325,153 +398,196 @@ struct PacketHeader {
 
 ### 整体架构概览
 
+> 💡 **提示**：下方为完整架构总览图（已放大配置），如需查看更清晰的分模块视图，请参阅后续拆分子图。
+
 ```mermaid
-graph TB
-    subgraph "🚀 应用入口 App"
-        AppDelegate[AppDelegate<br/>应用程序入口]
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '36px', 'fontFamily': 'arial', 'primaryTextColor': '#000', 'lineColor': '#333', 'nodeBorder': '#222', 'mainBkg': '#fafafa' }, 'flowchart': { 'nodeSpacing': 20, 'rankSpacing': 35, 'curve': 'basis', 'padding': 10 }}}%%
+graph LR
+    subgraph APP["🚀 应用入口"]
+        AppDelegate["AppDelegate<br/>应用程序入口"]
     end
 
-    subgraph "🎬 场景层 Scenes"
-        HelloWorld[HelloWorldScene<br/>启动场景]
-        AccountSelect[AccountSelectScene<br/>账号选择场景]
-        DraggableMap[DraggableMapScene<br/>主村庄场景]
-        BattleScene[BattleScene<br/>战斗场景]
+    subgraph SCENES["🎬 场景层"]
+        HelloWorld["HelloWorldScene<br/>启动场景"]
+        AccountSelect["AccountSelectScene<br/>账号选择"]
+        DraggableMap["DraggableMapScene<br/>主村庄场景"]
+        BattleScene["BattleScene<br/>战斗场景"]
     end
 
-    subgraph "🖼️ UI层 User Interface"
-        HUDLayer[HUDLayer<br/>顶部资源栏]
-        ShopLayer[ShopLayer<br/>商店界面]
-        BattleUI[BattleUI<br/>战斗界面]
-        ClanPanel[ClanPanel<br/>部落面板]
-        SettingsPanel[SettingsPanel<br/>设置面板]
-        PlayerListLayer[PlayerListLayer<br/>玩家列表]
-        PlayerListItem[PlayerListItem<br/>玩家列表项]
-        BuildingHealthBarUI[BuildingHealthBarUI<br/>建筑血条]
-        UnitHealthBarUI[UnitHealthBarUI<br/>单位血条]
-        ResourceCollectionUI[ResourceCollectionUI<br/>资源收集UI]
-        UpgradeTimerUI[UpgradeTimerUI<br/>升级计时UI]
-        TrainingUI[TrainingUI<br/>训练界面]
-        BuildingUpgradeUI[BuildingUpgradeUI<br/>建筑升级UI]
-        TownHallUpgradeUI[TownHallUpgradeUI<br/>大本营升级UI]
-        ResourceDisplayUI[ResourceDisplayUI<br/>资源显示UI]
+    subgraph UI["🖼️ UI层"]
+        HUDLayer["HUDLayer<br/>资源栏"]
+        ShopLayer["ShopLayer<br/>商店"]
+        BattleUI["BattleUI<br/>战斗UI"]
+        ClanPanel["ClanPanel<br/>部落面板"]
+        SettingsPanel["SettingsPanel<br/>设置"]
     end
 
-    subgraph "⚙️ 管理器层 Managers"
-        AccountManager[AccountManager<br/>账号管理器]
-        BuildingManager[BuildingManager<br/>建筑管理器]
-        BattleManager[BattleManager<br/>战斗管理器]
-        ResourceManager[ResourceManager<br/>资源管理器]
-        UpgradeManager[UpgradeManager<br/>升级管理器]
-        TroopInventory[TroopInventory<br/>士兵库存]
-        NetworkManager[NetworkManager<br/>HTTP网络管理器]
-        SocketClient[SocketClient<br/>Socket客户端]
-        ReplaySystem[ReplaySystem<br/>回放系统]
-        DefenseLogSystem[DefenseLogSystem<br/>防守日志系统]
-        MusicManager[MusicManager<br/>音乐管理器]
-        GlobalAudioManager[GlobalAudioManager<br/>全局音频管理器]
-        StorageManager[StorageManager<br/>存储管理器]
-        MapConfigManager[MapConfigManager<br/>地图配置管理器]
-        BuildingCapacityManager[BuildingCapacityManager<br/>建筑容量管理器]
-        BuildingLimitManager[BuildingLimitManager<br/>建筑限制管理器]
-        ResourceCollectionManager[ResourceCollectionManager<br/>资源收集管理器]
-        ClanDataCache[ClanDataCache<br/>部落数据缓存]
-        GameConfig[GameConfig<br/>游戏配置]
+    subgraph MANAGERS["⚙️ 管理器层"]
+        AccountManager["AccountManager<br/>账号管理"]
+        BuildingManager["BuildingManager<br/>建筑管理"]
+        BattleManager["BattleManager<br/>战斗管理"]
+        ResourceManager["ResourceManager<br/>资源管理"]
+        UpgradeManager["UpgradeManager<br/>升级管理"]
+        TroopInventory["TroopInventory<br/>士兵库存"]
     end
 
-    subgraph "🎮 控制器层 Controllers"
-        MapController[MapController<br/>地图控制器]
-        InputController[InputController<br/>输入控制器]
-        SceneUIController[SceneUIController<br/>场景UI控制器]
+    subgraph CONTROLLERS["🎮 控制器层"]
+        MapController["MapController<br/>地图控制"]
+        InputController["InputController<br/>输入控制"]
+        SceneUIController["SceneUIController<br/>场景UI控制"]
     end
 
-    subgraph "🔧 服务层 Services"
-        BuildingUpgradeService[BuildingUpgradeService<br/>建筑升级服务]
-        ClanService[ClanService<br/>部落服务]
+    subgraph SERVICES["🔧 服务层"]
+        ClanService["ClanService<br/>部落服务"]
+        BuildingUpgradeService["BuildingUpgradeService<br/>升级服务"]
     end
 
-    subgraph "🏠 建筑系统 Buildings"
-        BaseBuilding[BaseBuilding<br/>建筑基类]
-        TownHallBuilding[TownHallBuilding<br/>大本营]
-        DefenseBuilding[DefenseBuilding<br/>防御建筑]
-        ResourceBuilding[ResourceBuilding<br/>资源建筑]
-        ArmyBuilding[ArmyBuilding<br/>兵营]
-        ArmyCampBuilding[ArmyCampBuilding<br/>军营]
-        WallBuilding[WallBuilding<br/>城墙]
-        BuildersHutBuilding[BuildersHutBuilding<br/>建筑工人小屋]
-        BuildingConfig[BuildingConfig<br/>建筑配置管理]
+    subgraph NETWORK["🌐 网络层"]
+        SocketClient["SocketClient<br/>Socket客户端"]
+        NetworkManager["NetworkManager<br/>网络管理"]
+        ReplaySystem["ReplaySystem<br/>回放系统"]
+        DefenseLogSystem["DefenseLogSystem<br/>防守日志"]
     end
 
-    subgraph "⚔️ 单位系统 Units"
-        BaseUnit[BaseUnit<br/>单位基类]
-        BarbarianUnit[BarbarianUnit<br/>野蛮人]
-        ArcherUnit[ArcherUnit<br/>弓箭手]
-        GiantUnit[GiantUnit<br/>巨人]
-        GoblinUnit[GoblinUnit<br/>哥布林]
-        WallBreakerUnit[WallBreakerUnit<br/>炸弹人]
-        UnitFactory[UnitFactory<br/>单位工厂]
-        PathFinder[PathFinder<br/>A*寻路器]
+    subgraph BUILDINGS["🏠 建筑系统"]
+        BaseBuilding["BaseBuilding<br/>建筑基类"]
+        TownHall["TownHallBuilding<br/>大本营"]
+        Defense["DefenseBuilding<br/>防御建筑"]
+        Resource["ResourceBuilding<br/>资源建筑"]
+        Army["ArmyBuilding<br/>兵营"]
+        Wall["WallBuilding<br/>城墙"]
     end
 
-    subgraph "🗺️ 地图系统 GridMap"
-        GridMap[GridMap<br/>网格地图]
-        OccupiedGridOverlay[OccupiedGridOverlay<br/>占用网格覆盖层]
-        DeploymentValidator[DeploymentValidator<br/>部署验证器]
+    subgraph UNITS["⚔️ 单位系统"]
+        BaseUnit["BaseUnit<br/>单位基类"]
+        Barbarian["BarbarianUnit<br/>野蛮人"]
+        Archer["ArcherUnit<br/>弓箭手"]
+        Giant["GiantUnit<br/>巨人"]
+        Goblin["GoblinUnit<br/>哥布林"]
+        WallBreaker["WallBreakerUnit<br/>炸弹人"]
+        UnitFactory["UnitFactory<br/>单位工厂"]
+        PathFinder["PathFinder<br/>寻路器"]
     end
 
-    subgraph "📦 数据层 Data Models"
-        GameStateData[GameStateData<br/>游戏状态数据]
-        ResourceData[ResourceData<br/>资源数据]
-        ProgressData[ProgressData<br/>进度数据]
-        AccountData[AccountData<br/>账户数据]
-        AccountInfo[AccountInfo<br/>账户信息]
-        BuildingData[BuildingData<br/>建筑数据]
-        BuildingSerialData[BuildingSerialData<br/>建筑序列化数据]
-        BuildingConfigData[BuildingConfigData<br/>建筑配置数据]
-        BuildingLevelData[BuildingLevelData<br/>建筑等级数据]
-        BuildingConfigItem[BuildingConfigItem<br/>建筑配置项]
-        CombatStats[CombatStats<br/>战斗属性]
-        ReplayData[ReplayData<br/>回放数据]
-        ReplayEvent[ReplayEvent<br/>回放事件]
-        DefenseLog[DefenseLog<br/>防守日志]
-        TrainingTask[TrainingTask<br/>训练任务]
-        UpgradeTask[UpgradeTask<br/>升级任务]
-        UpgradeTaskData[UpgradeTaskData<br/>升级任务数据]
-        PathNode[PathNode<br/>寻路节点]
-        PlayerInfo[PlayerInfo<br/>玩家信息]
-        ClanInfo[ClanInfo<br/>部落信息]
-        ClanMember[ClanMember<br/>部落成员]
-        BattleStatus[BattleStatus<br/>战斗状态]
+    subgraph GRIDMAP["🗺️ 地图系统"]
+        GridMap["GridMap<br/>网格地图"]
+        OccupiedOverlay["OccupiedGridOverlay<br/>占用覆盖层"]
+        DeployValidator["DeploymentValidator<br/>部署验证"]
     end
 
-    subgraph "🔢 枚举类型 Enums"
-        BuildingType[BuildingType<br/>建筑类型]
-        DefenseType[DefenseType<br/>防御类型]
-        ResourceBuildingType[ResourceBuildingType<br/>资源建筑类型]
-        ResourceType[ResourceType<br/>资源类型]
-        UnitType[UnitType<br/>单位类型]
-        UnitAction[UnitAction<br/>单位动作]
-        UnitDirection[UnitDirection<br/>单位方向]
-        BattleState[BattleState<br/>战斗状态]
-        BattleMode[BattleMode<br/>战斗模式]
-        BattleEndReason[BattleEndReason<br/>战斗结束原因]
-        ReplayEventType[ReplayEventType<br/>回放事件类型]
+    subgraph DATA["📦 数据层"]
+        GameStateData["GameStateData<br/>游戏状态"]
+        AccountInfo["AccountInfo<br/>账户信息"]
+        BuildingData["BuildingSerialData<br/>建筑数据"]
+        CombatStats["CombatStats<br/>战斗属性"]
     end
 
-    subgraph "🔄 序列化层 Serialization"
-        GameDataSerializer[GameDataSerializer<br/>游戏数据序列化器]
-        GameDataRepository[GameDataRepository<br/>游戏数据仓库]
-        JsonSerializer[JsonSerializer<br/>JSON序列化器]
+    subgraph SERIAL["🔄 序列化层"]
+        GameDataSerializer["GameDataSerializer<br/>序列化器"]
+        GameDataRepository["GameDataRepository<br/>数据仓库"]
+        StorageManager["StorageManager<br/>存储管理"]
     end
 
-    %% 应用入口
+    %% 应用流程
     AppDelegate --> HelloWorld
-
-    %% 场景层关系
     HelloWorld --> AccountSelect
     AccountSelect --> DraggableMap
     DraggableMap --> BattleScene
+
+    %% 场景依赖
+    DraggableMap --> MapController
+    DraggableMap --> InputController
+    DraggableMap --> SceneUIController
+    DraggableMap --> BuildingManager
+    DraggableMap --> HUDLayer
+    BattleScene --> BattleManager
+    BattleScene --> BattleUI
+
+    %% 管理器依赖
+    BuildingManager --> GridMap
+    BuildingManager --> BaseBuilding
+    BattleManager --> BaseUnit
+    BattleManager --> DeployValidator
+    BattleManager --> UnitFactory
+    AccountManager --> GameStateData
+    AccountManager --> StorageManager
+
+    %% 服务依赖
+    ClanService --> SocketClient
+    BuildingUpgradeService --> UpgradeManager
+    UpgradeManager --> ResourceManager
+
+    %% 建筑继承
+    BaseBuilding --> TownHall
+    BaseBuilding --> Defense
+    BaseBuilding --> Resource
+    BaseBuilding --> Army
+    BaseBuilding --> Wall
+
+    %% 单位继承
+    BaseUnit --> Barbarian
+    BaseUnit --> Archer
+    BaseUnit --> Giant
+    BaseUnit --> Goblin
+    BaseUnit --> WallBreaker
+    UnitFactory -.-> BaseUnit
+    BaseUnit --> PathFinder
+    PathFinder --> GridMap
+
+    %% 数据序列化
+    GameDataSerializer --> GameStateData
+    GameDataRepository --> GameDataSerializer
+    GameDataRepository --> StorageManager
+```
+
+---
+
+由于架构图节点较多，以下拆分为多个子图以便更清晰查看各模块细节。
+
+#### 🚀 应用流程与场景
+
+```mermaid
+graph LR
+    subgraph "应用入口"
+        AppDelegate["AppDelegate<br/>应用程序入口"]
+    end
+
+    subgraph "场景流程"
+        HelloWorld["HelloWorldScene<br/>启动场景"]
+        AccountSelect["AccountSelectScene<br/>账号选择场景"]
+        DraggableMap["DraggableMapScene<br/>主村庄场景"]
+        BattleScene["BattleScene<br/>战斗场景"]
+    end
+
+    AppDelegate --> HelloWorld
+    HelloWorld --> AccountSelect
+    AccountSelect --> DraggableMap
+    DraggableMap --> BattleScene
+```
+
+#### 🖼️ 主村庄场景依赖
+
+```mermaid
+graph TB
+    DraggableMap["DraggableMapScene<br/>主村庄场景"]
     
-    %% 主村庄场景依赖
+    subgraph "控制器"
+        MapController["MapController<br/>地图控制器"]
+        InputController["InputController<br/>输入控制器"]
+        SceneUIController["SceneUIController<br/>场景UI控制器"]
+    end
+    
+    subgraph "管理器"
+        BuildingManager["BuildingManager<br/>建筑管理器"]
+        ResourceCollectionManager["ResourceCollectionManager<br/>资源收集管理器"]
+    end
+    
+    subgraph "UI组件"
+        HUDLayer["HUDLayer<br/>顶部资源栏"]
+        ShopLayer["ShopLayer<br/>商店界面"]
+        SettingsPanel["SettingsPanel<br/>设置面板"]
+    end
+
     DraggableMap --> MapController
     DraggableMap --> InputController
     DraggableMap --> SceneUIController
@@ -480,111 +596,170 @@ graph TB
     DraggableMap --> ResourceCollectionManager
     DraggableMap --> SettingsPanel
     DraggableMap --> ShopLayer
+```
+
+#### ⚔️ 战斗场景依赖
+
+```mermaid
+graph TB
+    BattleScene["BattleScene<br/>战斗场景"]
     
-    %% 战斗场景依赖
+    subgraph "战斗核心"
+        BattleManager["BattleManager<br/>战斗管理器"]
+        GridMap["GridMap<br/>网格地图"]
+        DeploymentValidator["DeploymentValidator<br/>部署验证器"]
+    end
+    
+    subgraph "UI"
+        BattleUI["BattleUI<br/>战斗界面"]
+    end
+    
+    subgraph "单位系统"
+        UnitFactory["UnitFactory<br/>单位工厂"]
+        PathFinder["PathFinder<br/>A*寻路器"]
+    end
+
     BattleScene --> BattleManager
     BattleScene --> BattleUI
-    BattleScene --> BuildingManager
     BattleScene --> GridMap
-    
-    %% UI层依赖
-    HUDLayer --> ResourceManager
-    ShopLayer --> BuildingManager
-    ShopLayer --> GameConfig
-    BattleUI --> TroopInventory
-    ClanPanel --> ClanService
-    SettingsPanel --> MusicManager
-    SettingsPanel --> GlobalAudioManager
-    PlayerListLayer --> PlayerListItem
-    BuildingUpgradeUI --> UpgradeManager
-    TrainingUI --> ArmyBuilding
-    TrainingUI --> TroopInventory
-    
-    %% 管理器依赖
-    BuildingManager --> GridMap
-    BuildingManager --> BaseBuilding
-    BuildingManager --> OccupiedGridOverlay
-    BuildingManager --> BuildingData
-    BattleManager --> BaseUnit
-    BattleManager --> BaseBuilding
-    BattleManager --> ReplaySystem
     BattleManager --> DeploymentValidator
-    BattleManager --> GridMap
     BattleManager --> UnitFactory
-    AccountManager --> GameStateData
-    AccountManager --> AccountInfo
-    AccountManager --> StorageManager
-    UpgradeManager --> BaseBuilding
-    UpgradeManager --> ResourceManager
-    UpgradeManager --> UpgradeTask
-    TroopInventory --> GameDataSerializer
-    ResourceCollectionManager --> ResourceBuilding
-    ResourceCollectionManager --> ResourceCollectionUI
-    BuildingCapacityManager --> ResourceManager
-    BuildingLimitManager --> GameConfig
-    GameConfig --> BuildingConfigItem
+    BattleManager --> GridMap
+    UnitFactory --> PathFinder
+```
+
+#### 🏠 建筑系统继承关系
+
+```mermaid
+graph TB
+    BaseBuilding["BaseBuilding<br/>建筑基类"]
     
-    %% 服务层依赖
+    TownHallBuilding["TownHallBuilding<br/>大本营"]
+    DefenseBuilding["DefenseBuilding<br/>防御建筑"]
+    ResourceBuilding["ResourceBuilding<br/>资源建筑"]
+    ArmyBuilding["ArmyBuilding<br/>兵营"]
+    ArmyCampBuilding["ArmyCampBuilding<br/>军营"]
+    WallBuilding["WallBuilding<br/>城墙"]
+    BuildersHutBuilding["BuildersHutBuilding<br/>建筑工人小屋"]
+
+    BaseBuilding --> TownHallBuilding
+    BaseBuilding --> DefenseBuilding
+    BaseBuilding --> ResourceBuilding
+    BaseBuilding --> ArmyBuilding
+    BaseBuilding --> ArmyCampBuilding
+    BaseBuilding --> WallBuilding
+    BaseBuilding --> BuildersHutBuilding
+    
+    BaseBuilding --> BuildingConfig["BuildingConfig<br/>建筑配置"]
+    BaseBuilding --> CombatStats["CombatStats<br/>战斗属性"]
+    BaseBuilding --> BuildingHealthBarUI["BuildingHealthBarUI<br/>建筑血条"]
+```
+
+#### ⚔️ 单位系统继承关系
+
+```mermaid
+graph TB
+    BaseUnit["BaseUnit<br/>单位基类"]
+    
+    BarbarianUnit["BarbarianUnit<br/>野蛮人"]
+    ArcherUnit["ArcherUnit<br/>弓箭手"]
+    GiantUnit["GiantUnit<br/>巨人"]
+    GoblinUnit["GoblinUnit<br/>哥布林"]
+    WallBreakerUnit["WallBreakerUnit<br/>炸弹人"]
+
+    BaseUnit --> BarbarianUnit
+    BaseUnit --> ArcherUnit
+    BaseUnit --> GiantUnit
+    BaseUnit --> GoblinUnit
+    BaseUnit --> WallBreakerUnit
+    
+    UnitFactory["UnitFactory<br/>单位工厂"] -.->|创建| BaseUnit
+    BaseUnit --> PathFinder["PathFinder<br/>寻路器"]
+    BaseUnit --> CombatStats["CombatStats<br/>战斗属性"]
+    BaseUnit --> UnitHealthBarUI["UnitHealthBarUI<br/>单位血条"]
+```
+
+#### ⚙️ 核心管理器关系
+
+```mermaid
+graph TB
+    subgraph "账号与存储"
+        AccountManager["AccountManager<br/>账号管理器"]
+        StorageManager["StorageManager<br/>存储管理器"]
+        GameStateData["GameStateData<br/>游戏状态数据"]
+    end
+    
+    subgraph "资源与升级"
+        ResourceManager["ResourceManager<br/>资源管理器"]
+        UpgradeManager["UpgradeManager<br/>升级管理器"]
+        TroopInventory["TroopInventory<br/>士兵库存"]
+    end
+    
+    subgraph "建筑管理"
+        BuildingManager["BuildingManager<br/>建筑管理器"]
+        GridMap["GridMap<br/>网格地图"]
+        OccupiedGridOverlay["OccupiedGridOverlay<br/>占用网格覆盖层"]
+    end
+
+    AccountManager --> GameStateData
+    AccountManager --> StorageManager
+    UpgradeManager --> ResourceManager
+    BuildingManager --> GridMap
+    BuildingManager --> OccupiedGridOverlay
+```
+
+#### 🌐 网络与服务系统
+
+```mermaid
+graph TB
+    subgraph "网络通信"
+        SocketClient["SocketClient<br/>Socket客户端"]
+        NetworkManager["NetworkManager<br/>HTTP网络管理器"]
+    end
+    
+    subgraph "部落服务"
+        ClanService["ClanService<br/>部落服务"]
+        ClanDataCache["ClanDataCache<br/>部落数据缓存"]
+    end
+    
+    subgraph "回放系统"
+        ReplaySystem["ReplaySystem<br/>回放系统"]
+        DefenseLogSystem["DefenseLogSystem<br/>防守日志系统"]
+        ReplayData["ReplayData<br/>回放数据"]
+        DefenseLog["DefenseLog<br/>防守日志"]
+    end
+
     ClanService --> SocketClient
     ClanService --> ClanDataCache
-    BuildingUpgradeService --> UpgradeManager
-    BuildingUpgradeService --> ResourceManager
+    ReplaySystem --> ReplayData
+    DefenseLogSystem --> DefenseLog
+```
+
+#### 📦 数据序列化
+
+```mermaid
+graph TB
+    subgraph "数据模型"
+        GameStateData["GameStateData<br/>游戏状态数据"]
+        AccountInfo["AccountInfo<br/>账户信息"]
+        BuildingSerialData["BuildingSerialData<br/>建筑序列化数据"]
+    end
     
-    %% 建筑继承关系
-    TownHallBuilding --> BaseBuilding
-    DefenseBuilding --> BaseBuilding
-    ResourceBuilding --> BaseBuilding
-    ArmyBuilding --> BaseBuilding
-    ArmyCampBuilding --> BaseBuilding
-    WallBuilding --> BaseBuilding
-    BuildersHutBuilding --> BaseBuilding
-    BaseBuilding --> BuildingConfig
-    BuildingConfig --> BuildingLevelData
+    subgraph "序列化"
+        GameDataSerializer["GameDataSerializer<br/>游戏数据序列化器"]
+        GameDataRepository["GameDataRepository<br/>游戏数据仓库"]
+        JsonSerializer["JsonSerializer<br/>JSON序列化器"]
+    end
     
-    %% 单位继承关系
-    BarbarianUnit --> BaseUnit
-    ArcherUnit --> BaseUnit
-    GiantUnit --> BaseUnit
-    GoblinUnit --> BaseUnit
-    WallBreakerUnit --> BaseUnit
-    UnitFactory --> BaseUnit
-    
-    %% 战斗相关
-    BaseUnit --> PathFinder
-    BaseUnit --> CombatStats
-    BaseUnit --> UnitHealthBarUI
-    BaseBuilding --> CombatStats
-    BaseBuilding --> BuildingHealthBarUI
-    DefenseBuilding --> BaseUnit
-    PathFinder --> PathNode
-    PathFinder --> GridMap
-    
-    %% 数据关系
-    GameStateData --> ResourceData
-    GameStateData --> ProgressData
-    GameStateData --> BuildingSerialData
-    GameStateData --> UpgradeTaskData
-    AccountInfo --> AccountData
+    subgraph "存储"
+        StorageManager["StorageManager<br/>存储管理器"]
+    end
+
     AccountInfo --> GameStateData
-    ClanDataCache --> PlayerInfo
-    ClanDataCache --> ClanInfo
-    ClanDataCache --> ClanMember
-    ClanDataCache --> BattleStatus
-    
-    %% 数据序列化
+    GameStateData --> BuildingSerialData
     GameDataSerializer --> GameStateData
-    GameDataSerializer --> BuildingSerialData
     GameDataRepository --> GameDataSerializer
     GameDataRepository --> StorageManager
-    
-    %% 网络相关
-    SocketClient --> NetworkManager
-    ReplaySystem --> ReplayData
-    ReplaySystem --> ReplayEvent
-    DefenseLogSystem --> DefenseLog
-    
-    %% 音频相关
-    MusicManager --> GlobalAudioManager
 ```
 
 ---
@@ -1539,6 +1714,14 @@ classDiagram
 
 > 检查 `Resources/fonts/` 下的 TTF 字体文件是否完整，且代码中引用的字体名称是否正确。
 </details>
+
+---
+
+## ⚠️ 免责声明 (Disclaimer)
+
+本项目为大学期末课程设计作品，仅供学习与技术交流使用。
+*   项目中的美术资源（图片、动画）与音频资源版权归 **Supercell** 公司所有。
+*   本项目不用于任何商业用途。
 
 ---
 
