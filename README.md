@@ -9,16 +9,25 @@
 
 ---
 
+
+## ⚠️ 免责声明 (Disclaimer)
+
+本项目为同济大学《程序设计范式》课程期末设计作品，仅供学习与技术交流使用。
+*   项目中的美术资源（图片、动画）与音频资源版权归 **Supercell** 公司所有。
+*   本项目不用于任何商业用途。
+
+---
+
 ## 📸 游戏截图 (Game Preview)
 
 | 主界面 / 基地建设 | 战斗场景 / 施放单位 |
 | :---: | :---: |
-| ![{59E64FCB-1FD0-4C86-8FB1-BB184AF233C6}](Resources/readme/{59E64FCB-1FD0-4C86-8FB1-BB184AF233C6}.png) | ![{A2AFF892-9AB7-49F1-81CE-E09164FCAC4F}](Resources/readme/{A2AFF892-9AB7-49F1-81CE-E09164FCAC4F}.png) |
+| ![{59E64FCB-1FD0-4C86-8FB1-BB184AF233C6}](src/Resources/readme/{59E64FCB-1FD0-4C86-8FB1-BB184AF233C6}.png) | ![{A2AFF892-9AB7-49F1-81CE-E09164FCAC4F}](src/Resources/readme/{A2AFF892-9AB7-49F1-81CE-E09164FCAC4F}.png) |
 | *自定义布局与建筑升级* | *实时寻路与战斗特效* |
 
 | 部落系统 / 聊天 | 回放系统 / 防守日志 |
 | :---: | :---: |
-| ![{619604FC-C04D-4CF2-BC2D-3E2620AF6CCD}](Resources/readme/{619604FC-C04D-4CF2-BC2D-3E2620AF6CCD}.png) | ![{DBA2390A-417F-451F-B020-A5E6903C48E0}](Resources/readme/{DBA2390A-417F-451F-B020-A5E6903C48E0}.png)![{59294869-8BF7-4942-8AF5-C49DE2B19DDF}](Resources/readme/{59294869-8BF7-4942-8AF5-C49DE2B19DDF}.png) |
+| ![{619604FC-C04D-4CF2-BC2D-3E2620AF6CCD}](src/Resources/readme/{619604FC-C04D-4CF2-BC2D-3E2620AF6CCD}.png) | ![{DBA2390A-417F-451F-B020-A5E6903C48E0}](src/Resources/readme/{DBA2390A-417F-451F-B020-A5E6903C48E0}.png)![{59294869-8BF7-4942-8AF5-C49DE2B19DDF}](src/Resources/readme/{59294869-8BF7-4942-8AF5-C49DE2B19DDF}.png) |
 | *多人在线聊天与捐兵* | *完整复盘战斗过程* |
 
 ---
@@ -1813,14 +1822,6 @@ Windows 防火墙默认会拦截来自虚拟网卡的入站连接，你必须手
 > 💡 **提示**：配置完成后，你和朋友就如同在同一个局域网内，可以愉快地进行 PVP 对战、部落战和观战啦！
 
 </details>
-
----
-
-## ⚠️ 免责声明 (Disclaimer)
-
-本项目为同济大学《程序设计方式》课程期末设计作品，仅供学习与技术交流使用。
-*   项目中的美术资源（图片、动画）与音频资源版权归 **Supercell** 公司所有。
-*   本项目不用于任何商业用途。
 
 ---
 
