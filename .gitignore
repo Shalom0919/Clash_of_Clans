@@ -108,7 +108,6 @@ local.properties
 
 # NDK
 *.so
-*.apk
 *.ap_
 *.dex
 
