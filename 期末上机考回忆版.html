@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>期末上机考回忆版.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/*
+
+Intellij Idea-like styling (c) Vasily Polovnyov <vast@whiteants.net>
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #000;
+  background: #fff;
+}
+
+.hljs-subst,
+.hljs-title {
+  font-weight: normal;
+  color: #000;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #808080;
+  font-style: italic;
+}
+
+.hljs-meta {
+  color: #808000;
+}
+
+.hljs-tag {
+  background: #efefef;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-literal,
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type,
+.hljs-selector-id,
+.hljs-selector-class {
+  font-weight: bold;
+  color: #000080;
+}
+
+.hljs-attribute,
+.hljs-number,
+.hljs-regexp,
+.hljs-link {
+  font-weight: bold;
+  color: #0000ff;
+}
+
+.hljs-number,
+.hljs-regexp,
+.hljs-link {
+  font-weight: normal;
+}
+
+.hljs-string {
+  color: #008000;
+  font-weight: bold;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-formula {
+  color: #000;
+  background: #d0eded;
+  font-style: italic;
+}
+
+.hljs-doctag {
+  text-decoration: underline;
+}
+
+.hljs-variable,
+.hljs-template-variable {
+  color: #660e7a;
+}
+
+.hljs-addition {
+  background: #baeeba;
+}
+
+.hljs-deletion {
+  background: #ffc8bd;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%E7%A8%8B%E8%AE%BE%E8%8C%83%E5%BC%8F%E6%9C%9F%E6%9C%AB%E4%B8%8A%E6%9C%BA%E8%80%83%E5%9B%9E%E5%BF%86%E7%89%88">程设范式期末上机考回忆版</h1>
+<h2 id="p1">P1</h2>
+<ul>
+<li>给定一个长度为$n$的字符串$s$，找到两个不相交的回文子序列，使得它们的长度之乘积最大。</li>
+</ul>
+<blockquote>
+<p>$ 2 \leq n \leq 10 $</p>
+</blockquote>
+<details>
+<summary>提示1：</summary>
+数据规模较小，可以考虑先构造出两个不相交的子序列(字符串)，再判断两个串是否都是回文的，但是要如何在特定情况下保存下当前已经选中了哪些字符？最坏情况下复杂度可能达到多少？
+</details>
+<details>
+<summary>提示2：</summary>
+考虑位运算，从1到(1<< n)-1 枚举所有可能的子集（01向量）。
+</details>
+<details>
+<summary>AC Code：</summary>
+去问LLM吧。
+</details>
+<hr>
+<h2 id="p2">P2</h2>
+<ul>
+<li>每年的这一道OOP题型比较固定，参考以下题目描述并询问LLM即可(不要使用国内LLM)。</li>
+</ul>
+<blockquote>
+<p>在未说明的情况下，本题所需实现的成员函数不不需要是公有(public)函数。
+所有测试点只测试公有(public)函数。
+在实现时，你可以在不不破坏约定的接⼝口的情况下，为每个类实现更更多的函数，包括不不限于构造函数、析构函数等。你提交的代码将作为头⽂文件，被测试代码include、编译并测试。因此你的代码中不不要包含main() 等⽆无关代码。
+在所有函数中，请勿包括任何输出。</p>
+</blockquote>
+<pre class="hljs"><code><div>1. 抽象基类 Hero 
+代表英雄。英雄具有⽣生命值和基础攻击⼒力力，可以对其他英雄造成伤害，也会受到来⾃自其他英雄的伤害。
+当英雄⽣生命值减⼩小⾄至0时，英雄死亡。英雄有两个流派，⼀一个是战⼠士流派，⼀一个是法师流派，不不同流派具有各⾃自的特性。如战⼠士会削减受到的伤害，法师会造成更更⾼高额伤害。
+
+抽象成员函数 
+bool attack(Hero&amp; hero) ：攻击英雄hero 并对其造成伤害,若被攻击的英雄死亡，则返回true ，否则返回false 。调⽤用者保证不不会在英雄已死亡时调⽤用该函数，且不不会攻击已死亡的英雄。该函数必须为公有(public)函数以供调⽤用。
+抽象成员函数
+void getHurt(double value) ：英雄被攻击时受到伤害，实际⽣生命值减少由伤害
+数值及英雄流派决定。该函数必须为保护(protected)函数，并在
+attack(Hero&amp; hero) 函数中被
+调⽤用。
+成员函数
+double getCurrentLife() ：返回英雄当前⽣生命值。注意英雄⽣生命值不不应⼩小于0 。该函
+数必须为公有(public)函数，且为常量量函数。
+成员函数
+double getBaseDamage() ：返回英雄基础伤害值。该函数必须为公有(public)函数，且
+为常量量函数。
+构造函数
+Hero(double life, double baseAttack) ：构造函数，初始化英雄的⽣生命值和基础
+攻击⼒力力。
+2. 抽象类 Warrior 
+代表战⼠士。由于战⼠士⽪皮糙⾁肉厚，在受到伤害时，其⽣生命值只会减少伤害数值的80%。
+成员函数
+void getHurt(double value) ：战⼠士受到攻击时，其⽣生命值减少。减少量量应为
+* 0.8 。
+3. 抽象类 Mage 
+代表法师。法师在造成伤害时会对其他英雄打出基础攻击⼒力力125%的伤害。
+成员函数
+value
+bool attack(Hero&amp; hero) ：法师在攻击时，其打出的伤害为基础伤害的125%。
+4. 类 Arthur 
+代表战⼠士英雄亚瑟。⽼老老亚瑟具有3200的初始⽣生命值，以及200的基础攻击⼒力力。
+成员函数
+attack(Hero&amp; hero) : 亚瑟与法师有仇，当被攻击的英雄
+hero 为法师类型时，会打出
+基础攻击⼒力力110%的伤害；当被攻击的英雄
+hero 为战⼠士时，亚瑟与其惺惺相惜，只会打出基础攻
+击⼒力力90%的伤害。
+5. 类 Angela 
+代表法师英雄安琪拉。安琪拉具有2500的初始⽣生命值，以及180的基础攻击⼒力力。
+成员函数
+void getHurt(double value) ：安琪拉的玩偶会在安琪拉⽣生命受到威胁时保护她。当
+安琪拉⽣生命值少于500时，安琪拉每次受伤时，其⽣生命值减少量量为伤害数值
+提示 
+value 的30%。
+前三个测试点不不测试类的继承。
+测试点说明 
+测试点1（10分）：只测试类Arthur
+测试点2（10分）：只测试类Angela
+测试点3（20分）：测试类Arthur与类Angela
+测试点3（10分）：测试抽象类Warrior和类Arthur
+测试点4（10分）：测试抽象类Mage和类Angela
+测试点5（10分）：测试抽象基类Hero，Mage抽象类和Warrior
+测试点6（10分）：测试所有类，并会⾃自定义继承⾃自Warrior类的新英雄，以测试你的Warrior类的
+正确性。
+测试点7（10分）：测试所有类，并会⾃自定义继承⾃自Mage类的新英雄，以测试你的Mage类的正确
+性。
+测试点8（10分）：测试所有类，并测试const修饰的正确性
+</div></code></pre>
+<hr>
+<h2 id="p3">P3</h2>
+<ul>
+<li>今年的P3是一道双指针滑窗，<a href="https://leetcode.cn/problems/minimum-size-subarray-sum/">力扣原题在这</a>；再前一年的P3也是<a href="https://leetcode.cn/problems/spiral-matrix">力扣原题在这</a>，当然这时候要是还想去力扣刷题突击肯定是来不及了。</li>
+<li>说实话这门课的上机考确实挺难绷的，属于是区分度为0，旱的旱死涝的涝死，体感上今年P1就开始上强度了，暴力也很难拿分，十分搞心态，所幸的是分数占比应该不大。</li>
+</ul>
+
+</body>
+</html>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });
+</script>
